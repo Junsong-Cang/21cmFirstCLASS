@@ -27,8 +27,8 @@ pkgdir = os.path.dirname(os.path.abspath(__file__))
 if "TOXENV" in os.environ and "SETUPPY_CFLAGS" in os.environ:
     os.environ["CFLAGS"] = os.environ["SETUPPY_CFLAGS"]
 
-os.environ['CC']='gcc-11'
-os.environ['CXX']='gcc-11'
+#os.environ['CC']='gcc-11'
+#os.environ['CXX']='gcc-11'
 
 test_req = [
     "pre-commit",
