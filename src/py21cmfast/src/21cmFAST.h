@@ -97,6 +97,14 @@ struct AstroParams
     float t_STAR;
 
     int N_RSD_STEPS;
+
+    // Junsong Cang: added parameters for excess Radio Background
+    float fR; // Radio efficiency
+    float aR; // Radio SED power index
+    float fR_mini; // Radio efficiency for mini halo
+    float aR_mini; // Radio SED power index for minihalo
+    float Radio_Zmin; // Kill radio emmisivity below this redshift, a phenomenological param motivated by ARCADE2 upper limit
+
 };
 
 struct FlagOptions
@@ -114,6 +122,11 @@ struct FlagOptions
     bool M_MIN_in_Mass;
     bool PHOTON_CONS;
     bool FIX_VCB_AVG;
+
+    // Settings for Radio Excess Background
+    bool USE_RADIO_ACG;
+    bool USE_RADIO_MCG;
+    bool Calibrate_EoR_feedback;
 };
 
 struct InitialConditions
@@ -167,6 +180,21 @@ struct TsBox
     float *T_chi_box;           // JordanFlitter: added T_chi_box to the Ts_box structure
     float *V_chi_b_box;         // JordanFlitter: added V_chi_b_box to the Ts_box structure
     float next_redshift_output; // JordanFlitter: added next_redshift_output to the Ts_box structure
+    
+    // Boxes for Inhomogeneous Radio Background
+    float *Trad_box;
+    float mturns_EoR[2];
+    float *History_box;
+    /*
+    History_box saves averaged quantities from previous boxes, to be updated at every z step
+    Supports 5 data fields in current version, can be expanded if needed, e.g. for m_turn_II or m_turn_III
+    Most conveniently managed in History_box_Interp
+    contents: 
+        History_box[0] specifies box length
+        Data structure: [z, Phi_II, Tk, Phi_III, zpp[0]]
+    */
+    float *SFRD_box;
+    float *SFRD_MINI_box;
 };
 
 struct IonizedBox

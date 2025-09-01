@@ -1064,6 +1064,12 @@ class FlagOptions(StructWithDefaults):
         Determines whether to use a fixed vcb=VAVG (*regardless* of USE_RELATIVE_VELOCITIES). It includes the average effect of velocities but not its fluctuations. See Muñoz+21 (2110.13919).
     USE_VELS_AUX: bool, optional
         Auxiliary variable (not input) to check if minihaloes are being used without relative velocities and complain
+    USE_RADIO_ACG: bool, optional
+        Determines whether to use radio excess background from ACG, if True then AstroParams.fR is used
+    USE_RADIO_MCG: bool, optional
+        Determines whether to use radio excess background from MCG, if True then AstroParams.fR_mini is used
+    Calibrate_EoR_feedback: bool
+        Whether to calibrate EoR/photo-heating feedback for Pop II/III radio excess, used only when MINIHALO is activated
     """
 
     _ffi = ffi
@@ -1080,6 +1086,9 @@ class FlagOptions(StructWithDefaults):
         "M_MIN_in_Mass": False,
         "PHOTON_CONS": False,
         "FIX_VCB_AVG": False,
+        "USE_RADIO_ACG": False,
+        "USE_RADIO_MCG": False,
+        "Calibrate_EoR_feedback": True,
     }
 
     # This checks if relative velocities are off to complain if minihaloes are on
@@ -1260,6 +1269,17 @@ class AstroParams(StructWithDefaults):
         Impact of the LW feedback on Mturn for minihaloes. Default is 22.8685 and 0.47 following Machacek+01, respectively. Latest simulations suggest 2.0 and 0.6. See Sec 2 of Muñoz+21 (2110.13919).
     A_VCB, BETA_VCB: float, optional
         Impact of the DM-baryon relative velocities on Mturn for minihaloes. Default is 1.0 and 1.8, and agrees between different sims. See Sec 2 of Muñoz+21 (2110.13919).
+    fR: float, optional
+        Radio efficiency for galaxies, normalised to 1 for modern day galaxies. Given in log10 units.
+    aR: float, optional
+        Power-law energy spectra index
+    fR_mini: float, optional
+        Radio efficiency for molecularly cooling galaxies (MCG) in mini-halos, normalised to 1 for modern day galaxies. Given in log10 units.
+    aR_mini: float, optional
+        Power-law energy spectra index for mini-halos
+        PBH X-ray emission efficiency
+    Radio_Zmin: float, optional
+        Turn off radio emmisivity below this redshift, a phenomenological param motivated by ARCADE2 upper limit
     """
 
     _ffi = ffi
@@ -1288,6 +1308,12 @@ class AstroParams(StructWithDefaults):
         "BETA_LW": 0.6,
         "A_VCB": 1.0,
         "BETA_VCB": 1.8,
+        # Radio excess params
+        "fR": -10.0,
+        "aR": 0.7,
+        "fR_mini": -10.0,
+        "aR_mini": 0.7,
+        "Radio_Zmin": 0.0,
     }
 
     def __init__(
@@ -1310,6 +1336,8 @@ class AstroParams(StructWithDefaults):
             "L_X",
             "L_X_MINI",
             "X_RAY_Tvir_MIN",
+            "fR",
+            "fR_mini",
         ]:
             return 10 ** val
         else:
