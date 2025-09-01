@@ -427,6 +427,11 @@ class TsBox(_AllParamsBox):
             "Tk_box": shape,
             "J_21_LW_box": shape,
             "J_Lya_box": shape, # JordanFlitter: added Lya flux box to the TsBox structure (because why not)
+            # Junsong: adding boxes for Trad and SFRD
+            "Trad_box": shape,
+            "History_box": shape,
+            "SFRD_box": shape,
+            "SFRD_MINI_box": shape,
         }
         # JordanFlitter: added new SDM boxes to the TsBox structure
         if (self.user_params.SCATTERING_DM):
@@ -444,6 +449,30 @@ class TsBox(_AllParamsBox):
             )
         else:
             return np.mean(self.Ts_box)
+    
+    @cached_property
+    def global_Trad(self):
+        """Global Radio Temp."""
+        if "Trad_box" not in self._computed_arrays:
+            raise AttributeError("Something went wrong, maybe Trad not computed?")
+        else:
+            return np.mean(self.Trad_box)
+    
+    @cached_property
+    def global_SFRD(self):
+        """Global SFRD for Pop II."""
+        if "SFRD_box" not in self._computed_arrays:
+            raise AttributeError("SFRD_box object not found.")
+        else:
+            return np.mean(self.SFRD_box)
+    
+    @cached_property
+    def global_SFRD_MINI(self):
+        """Global SFRD for Pop III."""
+        if "SFRD_MINI_box" not in self._computed_arrays:
+            raise AttributeError("SFRD_MINI_box object not found.")
+        else:
+            return np.mean(self.SFRD_MINI_box)
 
     @cached_property
     def global_Tk(self):
@@ -480,6 +509,10 @@ class TsBox(_AllParamsBox):
             required += [
                 "Tk_box",
                 "x_e_box",
+                "Trad_box",
+                "History_box",
+                "SFRD_box",
+                "SFRD_MINI_box",
             ]
             if self.flag_options.USE_MINI_HALOS:
                 required += ["J_21_LW_box"]
@@ -591,7 +624,7 @@ class IonizedBox(_AllParamsBox):
         elif isinstance(input_box, PerturbedField):
             required += ["density"]
         elif isinstance(input_box, TsBox):
-            required += ["J_21_LW_box", "x_e_box", "Tk_box"]
+            required += ["J_21_LW_box", "x_e_box", "Tk_box", "Trad_box", "History_box", "SFRD_box", "SFRD_MINI_box"]
         elif isinstance(input_box, IonizedBox):
             required += ["z_re_box", "Gamma12_box"]
             if self.flag_options.INHOMO_RECO:
