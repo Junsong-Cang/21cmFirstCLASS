@@ -68,6 +68,7 @@ src/py21cmfast/src/Globals.h
 src/py21cmfast/src/IonisationBox.c
 src/py21cmfast/src/PerturbField.c
 src/py21cmfast/src/PerturbHaloField.c
+src/py21cmfast/src/RadioExcess.h
 src/py21cmfast/src/SpinTemperatureBox.c
 src/py21cmfast/src/UsefulFunctions.c
 src/py21cmfast/src/bubble_helper_progs.c

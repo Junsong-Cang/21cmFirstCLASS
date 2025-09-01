@@ -579,8 +579,8 @@ static void *_cffi_types[] = {
 /*  1 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 13), // float
 /*  2 */ _CFFI_OP(_CFFI_OP_FUNCTION_END, 0),
 /*  3 */ _CFFI_OP(_CFFI_OP_FUNCTION, 1), // float()(struct UserParams *, struct CosmoParams *, int, float *, float *)
-/*  4 */ _CFFI_OP(_CFFI_OP_POINTER, 185), // struct UserParams *
-/*  5 */ _CFFI_OP(_CFFI_OP_POINTER, 176), // struct CosmoParams *
+/*  4 */ _CFFI_OP(_CFFI_OP_POINTER, 187), // struct UserParams *
+/*  5 */ _CFFI_OP(_CFFI_OP_POINTER, 178), // struct CosmoParams *
 /*  6 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 7), // int
 /*  7 */ _CFFI_OP(_CFFI_OP_POINTER, 1), // float *
 /*  8 */ _CFFI_OP(_CFFI_OP_NOOP, 7),
@@ -620,14 +620,14 @@ static void *_cffi_types[] = {
 /* 42 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 13),
 /* 43 */ _CFFI_OP(_CFFI_OP_NOOP, 4),
 /* 44 */ _CFFI_OP(_CFFI_OP_NOOP, 5),
-/* 45 */ _CFFI_OP(_CFFI_OP_POINTER, 174), // struct AstroParams *
-/* 46 */ _CFFI_OP(_CFFI_OP_POINTER, 177), // struct FlagOptions *
+/* 45 */ _CFFI_OP(_CFFI_OP_POINTER, 176), // struct AstroParams *
+/* 46 */ _CFFI_OP(_CFFI_OP_POINTER, 179), // struct FlagOptions *
 /* 47 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 13),
 /* 48 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 13),
 /* 49 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 5), // short
-/* 50 */ _CFFI_OP(_CFFI_OP_POINTER, 183), // struct PerturbedField *
-/* 51 */ _CFFI_OP(_CFFI_OP_POINTER, 184), // struct TsBox *
-/* 52 */ _CFFI_OP(_CFFI_OP_POINTER, 180), // struct InitialConditions *
+/* 50 */ _CFFI_OP(_CFFI_OP_POINTER, 185), // struct PerturbedField *
+/* 51 */ _CFFI_OP(_CFFI_OP_POINTER, 186), // struct TsBox *
+/* 52 */ _CFFI_OP(_CFFI_OP_POINTER, 182), // struct InitialConditions *
 /* 53 */ _CFFI_OP(_CFFI_OP_NOOP, 51),
 /* 54 */ _CFFI_OP(_CFFI_OP_FUNCTION_END, 0),
 /* 55 */ _CFFI_OP(_CFFI_OP_FUNCTION, 6), // int()(float, float, struct UserParams *, struct CosmoParams *, struct AstroParams *, struct FlagOptions *, struct PerturbedField *, struct PerturbedField *, struct IonizedBox *, struct TsBox *, struct PerturbHaloField *, struct InitialConditions *, struct IonizedBox *)
@@ -639,9 +639,9 @@ static void *_cffi_types[] = {
 /* 61 */ _CFFI_OP(_CFFI_OP_NOOP, 46),
 /* 62 */ _CFFI_OP(_CFFI_OP_NOOP, 50),
 /* 63 */ _CFFI_OP(_CFFI_OP_NOOP, 50),
-/* 64 */ _CFFI_OP(_CFFI_OP_POINTER, 181), // struct IonizedBox *
+/* 64 */ _CFFI_OP(_CFFI_OP_POINTER, 183), // struct IonizedBox *
 /* 65 */ _CFFI_OP(_CFFI_OP_NOOP, 51),
-/* 66 */ _CFFI_OP(_CFFI_OP_POINTER, 182), // struct PerturbHaloField *
+/* 66 */ _CFFI_OP(_CFFI_OP_POINTER, 184), // struct PerturbHaloField *
 /* 67 */ _CFFI_OP(_CFFI_OP_NOOP, 52),
 /* 68 */ _CFFI_OP(_CFFI_OP_NOOP, 64),
 /* 69 */ _CFFI_OP(_CFFI_OP_FUNCTION_END, 0),
@@ -652,7 +652,7 @@ static void *_cffi_types[] = {
 /* 74 */ _CFFI_OP(_CFFI_OP_NOOP, 45),
 /* 75 */ _CFFI_OP(_CFFI_OP_NOOP, 46),
 /* 76 */ _CFFI_OP(_CFFI_OP_NOOP, 52),
-/* 77 */ _CFFI_OP(_CFFI_OP_POINTER, 179), // struct HaloField *
+/* 77 */ _CFFI_OP(_CFFI_OP_POINTER, 181), // struct HaloField *
 /* 78 */ _CFFI_OP(_CFFI_OP_FUNCTION_END, 0),
 /* 79 */ _CFFI_OP(_CFFI_OP_FUNCTION, 6), // int()(float, struct UserParams *, struct CosmoParams *, struct AstroParams *, struct FlagOptions *, struct InitialConditions *, struct HaloField *, struct PerturbHaloField *)
 /* 80 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 13),
@@ -673,7 +673,7 @@ static void *_cffi_types[] = {
 /* 95 */ _CFFI_OP(_CFFI_OP_NOOP, 51),
 /* 96 */ _CFFI_OP(_CFFI_OP_NOOP, 64),
 /* 97 */ _CFFI_OP(_CFFI_OP_NOOP, 50),
-/* 98 */ _CFFI_OP(_CFFI_OP_POINTER, 175), // struct BrightnessTemp *
+/* 98 */ _CFFI_OP(_CFFI_OP_POINTER, 177), // struct BrightnessTemp *
 /* 99 */ _CFFI_OP(_CFFI_OP_FUNCTION_END, 0),
 /* 100 */ _CFFI_OP(_CFFI_OP_FUNCTION, 6), // int()(float, struct UserParams *, struct CosmoParams *, struct InitialConditions *, struct PerturbedField *)
 /* 101 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 13),
@@ -712,27 +712,27 @@ static void *_cffi_types[] = {
 /* 134 */ _CFFI_OP(_CFFI_OP_NOOP, 5),
 /* 135 */ _CFFI_OP(_CFFI_OP_NOOP, 52),
 /* 136 */ _CFFI_OP(_CFFI_OP_FUNCTION_END, 0),
-/* 137 */ _CFFI_OP(_CFFI_OP_FUNCTION, 186), // void()(struct FlagOptions *)
+/* 137 */ _CFFI_OP(_CFFI_OP_FUNCTION, 188), // void()(struct FlagOptions *)
 /* 138 */ _CFFI_OP(_CFFI_OP_NOOP, 46),
 /* 139 */ _CFFI_OP(_CFFI_OP_FUNCTION_END, 0),
-/* 140 */ _CFFI_OP(_CFFI_OP_FUNCTION, 186), // void()(struct UserParams *, struct CosmoParams *)
+/* 140 */ _CFFI_OP(_CFFI_OP_FUNCTION, 188), // void()(struct UserParams *, struct CosmoParams *)
 /* 141 */ _CFFI_OP(_CFFI_OP_NOOP, 4),
 /* 142 */ _CFFI_OP(_CFFI_OP_NOOP, 5),
 /* 143 */ _CFFI_OP(_CFFI_OP_FUNCTION_END, 0),
-/* 144 */ _CFFI_OP(_CFFI_OP_FUNCTION, 186), // void()(struct UserParams *, struct CosmoParams *, struct AstroParams *, struct FlagOptions *)
+/* 144 */ _CFFI_OP(_CFFI_OP_FUNCTION, 188), // void()(struct UserParams *, struct CosmoParams *, struct AstroParams *, struct FlagOptions *)
 /* 145 */ _CFFI_OP(_CFFI_OP_NOOP, 4),
 /* 146 */ _CFFI_OP(_CFFI_OP_NOOP, 5),
 /* 147 */ _CFFI_OP(_CFFI_OP_NOOP, 45),
 /* 148 */ _CFFI_OP(_CFFI_OP_NOOP, 46),
 /* 149 */ _CFFI_OP(_CFFI_OP_FUNCTION_END, 0),
-/* 150 */ _CFFI_OP(_CFFI_OP_FUNCTION, 186), // void()(struct UserParams *, struct FlagOptions *)
+/* 150 */ _CFFI_OP(_CFFI_OP_FUNCTION, 188), // void()(struct UserParams *, struct FlagOptions *)
 /* 151 */ _CFFI_OP(_CFFI_OP_NOOP, 4),
 /* 152 */ _CFFI_OP(_CFFI_OP_NOOP, 46),
 /* 153 */ _CFFI_OP(_CFFI_OP_FUNCTION_END, 0),
-/* 154 */ _CFFI_OP(_CFFI_OP_FUNCTION, 186), // void()(void *)
-/* 155 */ _CFFI_OP(_CFFI_OP_POINTER, 186), // void *
+/* 154 */ _CFFI_OP(_CFFI_OP_FUNCTION, 188), // void()(void *)
+/* 155 */ _CFFI_OP(_CFFI_OP_POINTER, 188), // void *
 /* 156 */ _CFFI_OP(_CFFI_OP_FUNCTION_END, 0),
-/* 157 */ _CFFI_OP(_CFFI_OP_FUNCTION, 186), // void()(void)
+/* 157 */ _CFFI_OP(_CFFI_OP_FUNCTION, 188), // void()(void)
 /* 158 */ _CFFI_OP(_CFFI_OP_FUNCTION_END, 0),
 /* 159 */ _CFFI_OP(_CFFI_OP_POINTER, 160), // char *
 /* 160 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 2), // char
@@ -743,25 +743,27 @@ static void *_cffi_types[] = {
 /* 165 */ (_cffi_opcode_t)(149),
 /* 166 */ _CFFI_OP(_CFFI_OP_ARRAY, 1), // float[21000]
 /* 167 */ (_cffi_opcode_t)(21000),
-/* 168 */ _CFFI_OP(_CFFI_OP_ARRAY, 1), // float[300]
-/* 169 */ (_cffi_opcode_t)(300),
-/* 170 */ _CFFI_OP(_CFFI_OP_ARRAY, 1), // float[30300]
-/* 171 */ (_cffi_opcode_t)(30300),
-/* 172 */ _CFFI_OP(_CFFI_OP_ARRAY, 1), // float[70]
-/* 173 */ (_cffi_opcode_t)(70),
-/* 174 */ _CFFI_OP(_CFFI_OP_STRUCT_UNION, 0), // struct AstroParams
-/* 175 */ _CFFI_OP(_CFFI_OP_STRUCT_UNION, 1), // struct BrightnessTemp
-/* 176 */ _CFFI_OP(_CFFI_OP_STRUCT_UNION, 2), // struct CosmoParams
-/* 177 */ _CFFI_OP(_CFFI_OP_STRUCT_UNION, 3), // struct FlagOptions
-/* 178 */ _CFFI_OP(_CFFI_OP_STRUCT_UNION, 4), // struct GlobalParams
-/* 179 */ _CFFI_OP(_CFFI_OP_STRUCT_UNION, 5), // struct HaloField
-/* 180 */ _CFFI_OP(_CFFI_OP_STRUCT_UNION, 6), // struct InitialConditions
-/* 181 */ _CFFI_OP(_CFFI_OP_STRUCT_UNION, 7), // struct IonizedBox
-/* 182 */ _CFFI_OP(_CFFI_OP_STRUCT_UNION, 8), // struct PerturbHaloField
-/* 183 */ _CFFI_OP(_CFFI_OP_STRUCT_UNION, 9), // struct PerturbedField
-/* 184 */ _CFFI_OP(_CFFI_OP_STRUCT_UNION, 10), // struct TsBox
-/* 185 */ _CFFI_OP(_CFFI_OP_STRUCT_UNION, 11), // struct UserParams
-/* 186 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 0), // void
+/* 168 */ _CFFI_OP(_CFFI_OP_ARRAY, 1), // float[2]
+/* 169 */ (_cffi_opcode_t)(2),
+/* 170 */ _CFFI_OP(_CFFI_OP_ARRAY, 1), // float[300]
+/* 171 */ (_cffi_opcode_t)(300),
+/* 172 */ _CFFI_OP(_CFFI_OP_ARRAY, 1), // float[30300]
+/* 173 */ (_cffi_opcode_t)(30300),
+/* 174 */ _CFFI_OP(_CFFI_OP_ARRAY, 1), // float[70]
+/* 175 */ (_cffi_opcode_t)(70),
+/* 176 */ _CFFI_OP(_CFFI_OP_STRUCT_UNION, 0), // struct AstroParams
+/* 177 */ _CFFI_OP(_CFFI_OP_STRUCT_UNION, 1), // struct BrightnessTemp
+/* 178 */ _CFFI_OP(_CFFI_OP_STRUCT_UNION, 2), // struct CosmoParams
+/* 179 */ _CFFI_OP(_CFFI_OP_STRUCT_UNION, 3), // struct FlagOptions
+/* 180 */ _CFFI_OP(_CFFI_OP_STRUCT_UNION, 4), // struct GlobalParams
+/* 181 */ _CFFI_OP(_CFFI_OP_STRUCT_UNION, 5), // struct HaloField
+/* 182 */ _CFFI_OP(_CFFI_OP_STRUCT_UNION, 6), // struct InitialConditions
+/* 183 */ _CFFI_OP(_CFFI_OP_STRUCT_UNION, 7), // struct IonizedBox
+/* 184 */ _CFFI_OP(_CFFI_OP_STRUCT_UNION, 8), // struct PerturbHaloField
+/* 185 */ _CFFI_OP(_CFFI_OP_STRUCT_UNION, 9), // struct PerturbedField
+/* 186 */ _CFFI_OP(_CFFI_OP_STRUCT_UNION, 10), // struct TsBox
+/* 187 */ _CFFI_OP(_CFFI_OP_STRUCT_UNION, 11), // struct UserParams
+/* 188 */ _CFFI_OP(_CFFI_OP_PRIMITIVE, 0), // void
 };
 
 static void _cffi_d_Broadcast_struct_global_HF(struct UserParams * x0, struct CosmoParams * x1, struct AstroParams * x2, struct FlagOptions * x3)
@@ -2702,6 +2704,11 @@ static void _cffi_checkfld_struct_AstroParams(struct AstroParams *p)
   { double *tmp = &p->BETA_VCB; (void)tmp; }
   { float *tmp = &p->t_STAR; (void)tmp; }
   (void)((p->N_RSD_STEPS) | 0);  /* check that 'struct AstroParams.N_RSD_STEPS' is an integer */
+  { float *tmp = &p->fR; (void)tmp; }
+  { float *tmp = &p->aR; (void)tmp; }
+  { float *tmp = &p->fR_mini; (void)tmp; }
+  { float *tmp = &p->aR_mini; (void)tmp; }
+  { float *tmp = &p->Radio_Zmin; (void)tmp; }
 }
 struct _cffi_align_struct_AstroParams { char x; struct AstroParams y; };
 
@@ -2752,6 +2759,9 @@ static void _cffi_checkfld_struct_FlagOptions(struct FlagOptions *p)
   (void)((p->M_MIN_in_Mass) | 0);  /* check that 'struct FlagOptions.M_MIN_in_Mass' is an integer */
   (void)((p->PHOTON_CONS) | 0);  /* check that 'struct FlagOptions.PHOTON_CONS' is an integer */
   (void)((p->FIX_VCB_AVG) | 0);  /* check that 'struct FlagOptions.FIX_VCB_AVG' is an integer */
+  (void)((p->USE_RADIO_ACG) | 0);  /* check that 'struct FlagOptions.USE_RADIO_ACG' is an integer */
+  (void)((p->USE_RADIO_MCG) | 0);  /* check that 'struct FlagOptions.USE_RADIO_MCG' is an integer */
+  (void)((p->Calibrate_EoR_feedback) | 0);  /* check that 'struct FlagOptions.Calibrate_EoR_feedback' is an integer */
 }
 struct _cffi_align_struct_FlagOptions { char x; struct FlagOptions y; };
 
@@ -2956,6 +2966,11 @@ static void _cffi_checkfld_struct_TsBox(struct TsBox *p)
   { float * *tmp = &p->T_chi_box; (void)tmp; }
   { float * *tmp = &p->V_chi_b_box; (void)tmp; }
   { float *tmp = &p->next_redshift_output; (void)tmp; }
+  { float * *tmp = &p->Trad_box; (void)tmp; }
+  { float(*tmp)[2] = &p->mturns_EoR; (void)tmp; }
+  { float * *tmp = &p->History_box; (void)tmp; }
+  { float * *tmp = &p->SFRD_box; (void)tmp; }
+  { float * *tmp = &p->SFRD_MINI_box; (void)tmp; }
 }
 struct _cffi_align_struct_TsBox { char x; struct TsBox y; };
 
@@ -3045,7 +3060,7 @@ static const struct _cffi_global_s _cffi_globals[] = {
   { "atomic_cooling_threshold", (void *)_cffi_f_atomic_cooling_threshold, _CFFI_OP(_CFFI_OP_CPYTHON_BLTN_O, 0), (void *)_cffi_d_atomic_cooling_threshold },
   { "free", (void *)_cffi_f_free, _CFFI_OP(_CFFI_OP_CPYTHON_BLTN_O, 154), (void *)_cffi_d_free },
   { "free_TsCalcBoxes", (void *)_cffi_f_free_TsCalcBoxes, _CFFI_OP(_CFFI_OP_CPYTHON_BLTN_V, 150), (void *)_cffi_d_free_TsCalcBoxes },
-  { "global_params", (void *)_cffi_var_global_params, _CFFI_OP(_CFFI_OP_GLOBAL_VAR_F, 178), (void *)0 },
+  { "global_params", (void *)_cffi_var_global_params, _CFFI_OP(_CFFI_OP_GLOBAL_VAR_F, 180), (void *)0 },
   { "init_heat", (void *)_cffi_f_init_heat, _CFFI_OP(_CFFI_OP_CPYTHON_BLTN_O, 37), (void *)_cffi_d_init_heat },
   { "interpolation_tables_allocated", (void *)_cffi_var_interpolation_tables_allocated, _CFFI_OP(_CFFI_OP_GLOBAL_VAR_F, 11), (void *)0 },
   { "molecular_cooling_threshold", (void *)_cffi_f_molecular_cooling_threshold, _CFFI_OP(_CFFI_OP_CPYTHON_BLTN_O, 0), (void *)_cffi_d_molecular_cooling_threshold },
@@ -3122,6 +3137,21 @@ static const struct _cffi_field_s _cffi_fields[] = {
   { "N_RSD_STEPS", offsetof(struct AstroParams, N_RSD_STEPS),
                    sizeof(((struct AstroParams *)0)->N_RSD_STEPS),
                    _CFFI_OP(_CFFI_OP_NOOP, 6) },
+  { "fR", offsetof(struct AstroParams, fR),
+          sizeof(((struct AstroParams *)0)->fR),
+          _CFFI_OP(_CFFI_OP_NOOP, 1) },
+  { "aR", offsetof(struct AstroParams, aR),
+          sizeof(((struct AstroParams *)0)->aR),
+          _CFFI_OP(_CFFI_OP_NOOP, 1) },
+  { "fR_mini", offsetof(struct AstroParams, fR_mini),
+               sizeof(((struct AstroParams *)0)->fR_mini),
+               _CFFI_OP(_CFFI_OP_NOOP, 1) },
+  { "aR_mini", offsetof(struct AstroParams, aR_mini),
+               sizeof(((struct AstroParams *)0)->aR_mini),
+               _CFFI_OP(_CFFI_OP_NOOP, 1) },
+  { "Radio_Zmin", offsetof(struct AstroParams, Radio_Zmin),
+                  sizeof(((struct AstroParams *)0)->Radio_Zmin),
+                  _CFFI_OP(_CFFI_OP_NOOP, 1) },
   { "brightness_temp", offsetof(struct BrightnessTemp, brightness_temp),
                        sizeof(((struct BrightnessTemp *)0)->brightness_temp),
                        _CFFI_OP(_CFFI_OP_NOOP, 7) },
@@ -3200,6 +3230,15 @@ static const struct _cffi_field_s _cffi_fields[] = {
   { "FIX_VCB_AVG", offsetof(struct FlagOptions, FIX_VCB_AVG),
                    sizeof(((struct FlagOptions *)0)->FIX_VCB_AVG),
                    _CFFI_OP(_CFFI_OP_NOOP, 11) },
+  { "USE_RADIO_ACG", offsetof(struct FlagOptions, USE_RADIO_ACG),
+                     sizeof(((struct FlagOptions *)0)->USE_RADIO_ACG),
+                     _CFFI_OP(_CFFI_OP_NOOP, 11) },
+  { "USE_RADIO_MCG", offsetof(struct FlagOptions, USE_RADIO_MCG),
+                     sizeof(((struct FlagOptions *)0)->USE_RADIO_MCG),
+                     _CFFI_OP(_CFFI_OP_NOOP, 11) },
+  { "Calibrate_EoR_feedback", offsetof(struct FlagOptions, Calibrate_EoR_feedback),
+                              sizeof(((struct FlagOptions *)0)->Calibrate_EoR_feedback),
+                              _CFFI_OP(_CFFI_OP_NOOP, 11) },
   { "ALPHA_UVB", offsetof(struct GlobalParams, ALPHA_UVB),
                  sizeof(((struct GlobalParams *)0)->ALPHA_UVB),
                  _CFFI_OP(_CFFI_OP_NOOP, 1) },
@@ -3421,22 +3460,22 @@ static const struct _cffi_field_s _cffi_fields[] = {
                                _CFFI_OP(_CFFI_OP_NOOP, 1) },
   { "LOG_Z_ARR", offsetof(struct GlobalParams, LOG_Z_ARR),
                  sizeof(((struct GlobalParams *)0)->LOG_Z_ARR),
-                 _CFFI_OP(_CFFI_OP_NOOP, 172) },
+                 _CFFI_OP(_CFFI_OP_NOOP, 174) },
   { "LOG_T_k", offsetof(struct GlobalParams, LOG_T_k),
                sizeof(((struct GlobalParams *)0)->LOG_T_k),
-               _CFFI_OP(_CFFI_OP_NOOP, 172) },
+               _CFFI_OP(_CFFI_OP_NOOP, 174) },
   { "LOG_x_e", offsetof(struct GlobalParams, LOG_x_e),
                sizeof(((struct GlobalParams *)0)->LOG_x_e),
-               _CFFI_OP(_CFFI_OP_NOOP, 172) },
+               _CFFI_OP(_CFFI_OP_NOOP, 174) },
   { "LOG_SIGF", offsetof(struct GlobalParams, LOG_SIGF),
                 sizeof(((struct GlobalParams *)0)->LOG_SIGF),
-                _CFFI_OP(_CFFI_OP_NOOP, 172) },
+                _CFFI_OP(_CFFI_OP_NOOP, 174) },
   { "LOG_T_chi", offsetof(struct GlobalParams, LOG_T_chi),
                  sizeof(((struct GlobalParams *)0)->LOG_T_chi),
-                 _CFFI_OP(_CFFI_OP_NOOP, 172) },
+                 _CFFI_OP(_CFFI_OP_NOOP, 174) },
   { "LOG_V_chi_b", offsetof(struct GlobalParams, LOG_V_chi_b),
                    sizeof(((struct GlobalParams *)0)->LOG_V_chi_b),
-                   _CFFI_OP(_CFFI_OP_NOOP, 172) },
+                   _CFFI_OP(_CFFI_OP_NOOP, 174) },
   { "LOG_K_ARR_FOR_TRANSFERS", offsetof(struct GlobalParams, LOG_K_ARR_FOR_TRANSFERS),
                                sizeof(((struct GlobalParams *)0)->LOG_K_ARR_FOR_TRANSFERS),
                                _CFFI_OP(_CFFI_OP_NOOP, 164) },
@@ -3451,7 +3490,7 @@ static const struct _cffi_field_s _cffi_fields[] = {
                                 _CFFI_OP(_CFFI_OP_NOOP, 164) },
   { "LOG_K_ARR_FOR_SDGF", offsetof(struct GlobalParams, LOG_K_ARR_FOR_SDGF),
                           sizeof(((struct GlobalParams *)0)->LOG_K_ARR_FOR_SDGF),
-                          _CFFI_OP(_CFFI_OP_NOOP, 168) },
+                          _CFFI_OP(_CFFI_OP_NOOP, 170) },
   { "LOG_SDGF_BARYONS", offsetof(struct GlobalParams, LOG_SDGF_BARYONS),
                         sizeof(((struct GlobalParams *)0)->LOG_SDGF_BARYONS),
                         _CFFI_OP(_CFFI_OP_NOOP, 166) },
@@ -3463,13 +3502,13 @@ static const struct _cffi_field_s _cffi_fields[] = {
                     _CFFI_OP(_CFFI_OP_NOOP, 166) },
   { "LOG_M_ARR", offsetof(struct GlobalParams, LOG_M_ARR),
                  sizeof(((struct GlobalParams *)0)->LOG_M_ARR),
-                 _CFFI_OP(_CFFI_OP_NOOP, 168) },
+                 _CFFI_OP(_CFFI_OP_NOOP, 170) },
   { "Z_ARRAY_FOR_SIGMA", offsetof(struct GlobalParams, Z_ARRAY_FOR_SIGMA),
                          sizeof(((struct GlobalParams *)0)->Z_ARRAY_FOR_SIGMA),
                          _CFFI_OP(_CFFI_OP_NOOP, 162) },
   { "SIGMA_MZ", offsetof(struct GlobalParams, SIGMA_MZ),
                 sizeof(((struct GlobalParams *)0)->SIGMA_MZ),
-                _CFFI_OP(_CFFI_OP_NOOP, 170) },
+                _CFFI_OP(_CFFI_OP_NOOP, 172) },
   { "n_halos", offsetof(struct HaloField, n_halos),
                sizeof(((struct HaloField *)0)->n_halos),
                _CFFI_OP(_CFFI_OP_NOOP, 6) },
@@ -3644,6 +3683,21 @@ static const struct _cffi_field_s _cffi_fields[] = {
   { "next_redshift_output", offsetof(struct TsBox, next_redshift_output),
                             sizeof(((struct TsBox *)0)->next_redshift_output),
                             _CFFI_OP(_CFFI_OP_NOOP, 1) },
+  { "Trad_box", offsetof(struct TsBox, Trad_box),
+                sizeof(((struct TsBox *)0)->Trad_box),
+                _CFFI_OP(_CFFI_OP_NOOP, 7) },
+  { "mturns_EoR", offsetof(struct TsBox, mturns_EoR),
+                  sizeof(((struct TsBox *)0)->mturns_EoR),
+                  _CFFI_OP(_CFFI_OP_NOOP, 168) },
+  { "History_box", offsetof(struct TsBox, History_box),
+                   sizeof(((struct TsBox *)0)->History_box),
+                   _CFFI_OP(_CFFI_OP_NOOP, 7) },
+  { "SFRD_box", offsetof(struct TsBox, SFRD_box),
+                sizeof(((struct TsBox *)0)->SFRD_box),
+                _CFFI_OP(_CFFI_OP_NOOP, 7) },
+  { "SFRD_MINI_box", offsetof(struct TsBox, SFRD_MINI_box),
+                     sizeof(((struct TsBox *)0)->SFRD_MINI_box),
+                     _CFFI_OP(_CFFI_OP_NOOP, 7) },
   { "HII_DIM", offsetof(struct UserParams, HII_DIM),
                sizeof(((struct UserParams *)0)->HII_DIM),
                _CFFI_OP(_CFFI_OP_NOOP, 6) },
@@ -3758,30 +3812,30 @@ static const struct _cffi_field_s _cffi_fields[] = {
 };
 
 static const struct _cffi_struct_union_s _cffi_struct_unions[] = {
-  { "AstroParams", 174, _CFFI_F_CHECK_FIELDS,
-    sizeof(struct AstroParams), offsetof(struct _cffi_align_struct_AstroParams, y), 0, 23 },
-  { "BrightnessTemp", 175, _CFFI_F_CHECK_FIELDS,
-    sizeof(struct BrightnessTemp), offsetof(struct _cffi_align_struct_BrightnessTemp, y), 23, 1 },
-  { "CosmoParams", 176, _CFFI_F_CHECK_FIELDS,
-    sizeof(struct CosmoParams), offsetof(struct _cffi_align_struct_CosmoParams, y), 24, 14 },
-  { "FlagOptions", 177, _CFFI_F_CHECK_FIELDS,
-    sizeof(struct FlagOptions), offsetof(struct _cffi_align_struct_FlagOptions, y), 38, 11 },
-  { "GlobalParams", 178, _CFFI_F_CHECK_FIELDS,
-    sizeof(struct GlobalParams), offsetof(struct _cffi_align_struct_GlobalParams, y), 49, 90 },
-  { "HaloField", 179, _CFFI_F_CHECK_FIELDS,
-    sizeof(struct HaloField), offsetof(struct _cffi_align_struct_HaloField, y), 139, 10 },
-  { "InitialConditions", 180, _CFFI_F_CHECK_FIELDS,
-    sizeof(struct InitialConditions), offsetof(struct _cffi_align_struct_InitialConditions, y), 149, 19 },
-  { "IonizedBox", 181, _CFFI_F_CHECK_FIELDS,
-    sizeof(struct IonizedBox), offsetof(struct _cffi_align_struct_IonizedBox, y), 168, 13 },
-  { "PerturbHaloField", 182, _CFFI_F_CHECK_FIELDS,
-    sizeof(struct PerturbHaloField), offsetof(struct _cffi_align_struct_PerturbHaloField, y), 181, 3 },
-  { "PerturbedField", 183, _CFFI_F_CHECK_FIELDS,
-    sizeof(struct PerturbedField), offsetof(struct _cffi_align_struct_PerturbedField, y), 184, 4 },
-  { "TsBox", 184, _CFFI_F_CHECK_FIELDS,
-    sizeof(struct TsBox), offsetof(struct _cffi_align_struct_TsBox, y), 188, 9 },
-  { "UserParams", 185, _CFFI_F_CHECK_FIELDS,
-    sizeof(struct UserParams), offsetof(struct _cffi_align_struct_UserParams, y), 197, 37 },
+  { "AstroParams", 176, _CFFI_F_CHECK_FIELDS,
+    sizeof(struct AstroParams), offsetof(struct _cffi_align_struct_AstroParams, y), 0, 28 },
+  { "BrightnessTemp", 177, _CFFI_F_CHECK_FIELDS,
+    sizeof(struct BrightnessTemp), offsetof(struct _cffi_align_struct_BrightnessTemp, y), 28, 1 },
+  { "CosmoParams", 178, _CFFI_F_CHECK_FIELDS,
+    sizeof(struct CosmoParams), offsetof(struct _cffi_align_struct_CosmoParams, y), 29, 14 },
+  { "FlagOptions", 179, _CFFI_F_CHECK_FIELDS,
+    sizeof(struct FlagOptions), offsetof(struct _cffi_align_struct_FlagOptions, y), 43, 14 },
+  { "GlobalParams", 180, _CFFI_F_CHECK_FIELDS,
+    sizeof(struct GlobalParams), offsetof(struct _cffi_align_struct_GlobalParams, y), 57, 90 },
+  { "HaloField", 181, _CFFI_F_CHECK_FIELDS,
+    sizeof(struct HaloField), offsetof(struct _cffi_align_struct_HaloField, y), 147, 10 },
+  { "InitialConditions", 182, _CFFI_F_CHECK_FIELDS,
+    sizeof(struct InitialConditions), offsetof(struct _cffi_align_struct_InitialConditions, y), 157, 19 },
+  { "IonizedBox", 183, _CFFI_F_CHECK_FIELDS,
+    sizeof(struct IonizedBox), offsetof(struct _cffi_align_struct_IonizedBox, y), 176, 13 },
+  { "PerturbHaloField", 184, _CFFI_F_CHECK_FIELDS,
+    sizeof(struct PerturbHaloField), offsetof(struct _cffi_align_struct_PerturbHaloField, y), 189, 3 },
+  { "PerturbedField", 185, _CFFI_F_CHECK_FIELDS,
+    sizeof(struct PerturbedField), offsetof(struct _cffi_align_struct_PerturbedField, y), 192, 4 },
+  { "TsBox", 186, _CFFI_F_CHECK_FIELDS,
+    sizeof(struct TsBox), offsetof(struct _cffi_align_struct_TsBox, y), 196, 14 },
+  { "UserParams", 187, _CFFI_F_CHECK_FIELDS,
+    sizeof(struct UserParams), offsetof(struct _cffi_align_struct_UserParams, y), 210, 37 },
 };
 
 static const struct _cffi_type_context_s _cffi_type_context = {
@@ -3796,7 +3850,7 @@ static const struct _cffi_type_context_s _cffi_type_context = {
   0,  /* num_enums */
   0,  /* num_typenames */
   NULL,  /* no includes */
-  187,  /* num_types */
+  189,  /* num_types */
   0,  /* flags */
 };
 
