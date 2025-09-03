@@ -1,3 +1,4 @@
+#include "RadioExcess.h"
 
 // Re-write of find_HII_bubbles.c for being accessible within the MCMC
 
@@ -182,6 +183,15 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
         float delta_baryons_local, delta_baryons_derivative_local;
         float delta_SDM_local, delta_SDM_derivative_local;
 
+        // Junsong: added variables for radio excess
+        double Radio_Temp, Radio_Temp_HMG, Trad_inv, zpp_max, Phi, Phi_mini, Radio_zpp, Phi_ave, Phi_ave_mini, T_IGM_ave, dT_Radio;
+        double Radio_Prefix_ACG, Radio_Prefix_MCG, Fill_Fraction, Radio_Temp_ave, dzpp_Rct0, zpp_Rct0, H_Rct0, Tr_EoR, SFRD_EoR_MINI, SFRD_MINI_ave, Radio_Prefix_ACG_Rct, Radio_Prefix_MCG_Rct;
+        int idx, ArchiveSize, head, phi_idx, tk_idx, phi3_idx, zpp_idx, Radio_Silent, m2_idx, m3_idx;
+        FILE *OutputFile;
+
+        Radio_Prefix_ACG = 113.6161 * astro_params->fR * cosmo_params->OMb * (pow(cosmo_params->hlittle, 2)) * (astro_params->F_STAR10) * pow(astro_nu0 / 1.4276, astro_params->aR) * pow(1 + redshift, 3 + astro_params->aR);
+        Radio_Prefix_MCG = 113.6161 * astro_params->fR_mini * cosmo_params->OMb * (pow(cosmo_params->hlittle, 2)) * (astro_params->F_STAR7_MINI) * pow(astro_nu0 / 1.4276, astro_params->aR_mini) * pow(1 + redshift, 3 + astro_params->aR_mini);
+
         if (flag_options->USE_MASS_DEPENDENT_ZETA)
         {
             ION_EFF_FACTOR = global_params.Pop2_ion * astro_params->F_STAR10 * astro_params->F_ESC10;
@@ -239,6 +249,33 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                 delta_SDM = (fftwf_complex *)fftwf_malloc(sizeof(fftwf_complex) * HII_KSPACE_NUM_PIXELS);
                 delta_SDM_derivative = (fftwf_complex *)fftwf_malloc(sizeof(fftwf_complex) * HII_KSPACE_NUM_PIXELS);
             }
+        }
+
+        // ---------------- Radio Excess Preflight checks ----------------
+        if ((flag_options->USE_RADIO_MCG) && (!flag_options->USE_MINI_HALOS))
+        {
+            fprintf(stderr, "Error: You must set USE_MINI_HALOS to True if USE_RADIO_MCG.\n");
+            Throw(ValueError);
+        }
+        if (flag_options->USE_RADIO_ACG || flag_options->USE_RADIO_MCG)
+        {
+            Radio_Silent = 0;
+        }
+        else
+        {
+            Radio_Silent = 1;
+        }
+        Fill_Fraction = (double)previous_spin_temp->History_box[0] * History_box_DIM / ((double)HII_TOT_NUM_PIXELS);
+        if (Fill_Fraction > 0.8)
+        {
+            LOG_ERROR("History_box not large enough to record previous coevals, consider the following: increse HII_DIM, reduce z_prime_factor");
+            Throw(ValueError);
+        }
+
+        if (redshift < astro_params->Radio_Zmin)
+        {
+            LOG_ERROR("Need to use Refine_T_Radio for this feature, which has not been tested for mpi.");
+            Throw(ValueError);
         }
 
         // JordanFlitter: We don't need these during the dark ages
@@ -502,6 +539,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                 TsInterpArraysInitialised = true;
                 LOG_SUPER_DEBUG("initalised Ts Interp Arrays");
             }
+
             ///////////////////////////////  BEGIN INITIALIZATION   //////////////////////////////
 
             // set the minimum ionizing source mass
@@ -663,6 +701,10 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                                 this_spin_temp->T_chi_box[HII_R_INDEX(i, j, k)] = T_chi_BC;     // K
                                 this_spin_temp->V_chi_b_box[HII_R_INDEX(i, j, k)] = V_chi_b_BC; // km/sec
                             }
+                            // Junsong: added radio excess & SFRD boxes, might need to remove this to reduce memory overloads
+                            this_spin_temp->Trad_box[HII_R_INDEX(i, j, k)] = 0.0;
+                            this_spin_temp->SFRD_box[HII_R_INDEX(i, j, k)] = 0.0;
+                            this_spin_temp->SFRD_MINI_box[HII_R_INDEX(i, j, k)] = 0.0;
                         }
                     }
                 }
@@ -2598,6 +2640,10 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
 
                 LOG_SUPER_DEBUG("looping over box...");
 
+                zpp_max = zpp_for_evolve_list[global_params.NUM_FILTER_STEPS_FOR_Ts - 1];
+                // Correcting for the radio temp from sources > R_XLy_MAX
+                Radio_Temp_HMG = Get_Radio_Temp_HMG(previous_spin_temp, this_spin_temp, astro_params, cosmo_params, flag_options, zpp_max, redshift);
+
                 // JordanFlitter: if we evolve the baryons density field, we need to have delta_b(z) and its redshift derivative
                 if (user_params->EVOLVE_BARYONS)
                 {
@@ -2710,10 +2756,10 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                 if (flag_options->USE_MASS_DEPENDENT_ZETA)
                 {
 // JordanFlitter: I added more shared variables
-#pragma omp parallel shared(del_fcoll_Rct, dxheat_dt_box, dxion_source_dt_box, dxlya_dt_box, dstarlya_dt_box, previous_spin_temp,   \
-                                x_int_XHII, m_xHII_low_box, inverse_val_box, inverse_diff, dstarlyLW_dt_box, dstarlyLW_dt_box_MINI, \
-                                dxheat_dt_box_MINI, dxion_source_dt_box_MINI, dxlya_dt_box_MINI, dstarlya_dt_box_MINI,              \
-                                dstarlya_cont_dt_box, dstarlya_inj_dt_box, dstarlya_cont_dt_box_MINI, dstarlya_inj_dt_box_MINI)     \
+#pragma omp parallel shared(del_fcoll_Rct, dxheat_dt_box, dxion_source_dt_box, dxlya_dt_box, dstarlya_dt_box, previous_spin_temp, this_spin_temp, \
+                                x_int_XHII, m_xHII_low_box, inverse_val_box, inverse_diff, dstarlyLW_dt_box, dstarlyLW_dt_box_MINI,               \
+                                dxheat_dt_box_MINI, dxion_source_dt_box_MINI, dxlya_dt_box_MINI, dstarlya_dt_box_MINI, Radio_Temp_HMG,            \
+                                dstarlya_cont_dt_box, dstarlya_inj_dt_box, dstarlya_cont_dt_box_MINI, dstarlya_inj_dt_box_MINI)                   \
     private(box_ct, xHII_call) num_threads(user_params -> N_THREADS)
                     {
 #pragma omp for
@@ -2721,8 +2767,8 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                         {
 
                             del_fcoll_Rct[box_ct] = 0.;
-
                             dxheat_dt_box[box_ct] = 0.;
+                            this_spin_temp->Trad_box[box_ct] = Radio_Temp_HMG; // Initialize to HMG before R_ct loop
                             dxion_source_dt_box[box_ct] = 0.;
                             dxlya_dt_box[box_ct] = 0.;
                             dstarlya_dt_box[box_ct] = 0.;
@@ -3163,6 +3209,16 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                             dstarlyLW_dt_prefactor[R_ct] *= dfcoll_dz_val;
                             dstarlyLW_dt_prefactor_MINI[R_ct] *= dfcoll_dz_val_MINI;
                         }
+                        if ((zpp_for_evolve_list[R_ct] > astro_params->Radio_Zmin) && (Radio_Silent == 0))
+                        {
+                            Radio_Prefix_ACG_Rct = Radio_Prefix_ACG * pow(1 + zpp_for_evolve_list[R_ct], astro_params->X_RAY_SPEC_INDEX - astro_params->aR);
+                            Radio_Prefix_MCG_Rct = Radio_Prefix_MCG * pow(1 + zpp_for_evolve_list[R_ct], astro_params->X_RAY_SPEC_INDEX - astro_params->aR_mini);
+                        }
+                        else
+                        {
+                            Radio_Prefix_ACG_Rct = 0.0;
+                            Radio_Prefix_MCG_Rct = 0.0;
+                        }
 
 // JordanFlitter: I added more shared and private variables
 #pragma omp parallel shared(dxheat_dt_box, dxion_source_dt_box, dxlya_dt_box, dstarlya_dt_box, dfcoll_dz_val, del_fcoll_Rct, freq_int_heat_tbl_diff,            \
@@ -3174,23 +3230,34 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                                 dstarlya_dt_prefactor_MINI, dstarlyLW_dt_prefactor_MINI, prefactor_2_MINI, const_zp_prefactor_MINI,                             \
                                 dstarlya_cont_dt_box, dstarlya_inj_dt_box, dstarlya_cont_dt_prefactor, dstarlya_inj_dt_prefactor,                               \
                                 dstarlya_cont_dt_box_MINI, dstarlya_inj_dt_box_MINI, dstarlya_cont_dt_prefactor_MINI, dstarlya_inj_dt_prefactor_MINI, rec_data, \
-                                delta_baryons, delta_baryons_derivative, delta_SDM, delta_SDM_derivative)                                                       \
+                                delta_baryons, delta_baryons_derivative, delta_SDM, delta_SDM_derivative, Radio_Prefix_MCG_Rct, Radio_Prefix_ACG_Rct)           \
     private(box_ct, x_e, T, dxion_sink_dt, dxe_dzp, dadia_dzp, dspec_dzp, dcomp_dzp, dxheat_dzp, J_alpha_tot, T_inv, T_inv_sq,                                  \
                 xc_fast, xi_power, xa_tilde_fast_arg, TS_fast, TSold_fast, xa_tilde_fast, dxheat_dzp_MINI, J_alpha_tot_MINI, curr_delNL0,                       \
                 prev_Ts, tau21, xCMB, eps_CMB, dCMBheat_dzp, E_continuum, E_injected, Ndot_alpha_cont, Ndot_alpha_inj,                                          \
                 eps_Lya_cont, eps_Lya_inj, Ndot_alpha_cont_MINI, Ndot_alpha_inj_MINI, eps_Lya_cont_MINI, eps_Lya_inj_MINI,                                      \
                 T_chi, V_chi_b, dSDM_b_heat_dzp, dSDM_chi_heat_dzp, D_V_chi_b_dzp, SDM_rates, dT_b_2_dt_ext, dT_chi_2_dt_ext, dadia_dzp_SDM,                    \
-                delta_baryons_local, delta_baryons_derivative_local, delta_SDM_local, delta_SDM_derivative_local)                                               \
+                delta_baryons_local, delta_baryons_derivative_local, delta_SDM_local, delta_SDM_derivative_local, dT_Radio, Trad_inv)                           \
     num_threads(user_params -> N_THREADS)
                         {
 #pragma omp for reduction(+ : J_alpha_ave, xalpha_ave, Xheat_ave, Xion_ave, Ts_ave, Tk_ave, x_e_ave, J_alpha_ave_MINI, Xheat_ave_MINI, J_LW_ave, J_LW_ave_MINI)
                             for (box_ct = 0; box_ct < HII_TOT_NUM_PIXELS; box_ct++)
                             {
-                                // I've added the addition of zero just in case. It should be zero anyway, but just in case there is some weird
-                                // numerical thing
+                                // I've added the addition of zero just in case. It should be zero anyway, but just in case there is some weird numerical thing
                                 if (ave_fcoll != 0.)
                                 {
                                     dxheat_dt_box[box_ct] += (dfcoll_dz_val * (double)del_fcoll_Rct[box_ct] * ((freq_int_heat_tbl_diff[m_xHII_low_box[box_ct]][R_ct]) * inverse_val_box[box_ct] + freq_int_heat_tbl[m_xHII_low_box[box_ct]][R_ct]));
+                                    // Note: dfcoll_dz_val * (double)del_fcoll_Rct[box_ct] = Phi * dzp
+                                    dT_Radio = 0.0;
+                                    if (flag_options->USE_RADIO_ACG)
+                                    {
+                                        dT_Radio += Radio_Prefix_ACG_Rct * dfcoll_dz_val * (double)del_fcoll_Rct[box_ct];
+                                    }
+                                    if (flag_options->USE_RADIO_MCG)
+                                    {
+                                        dT_Radio += Radio_Prefix_MCG_Rct * dfcoll_dz_val_MINI * (double)del_fcoll_Rct_MINI[box_ct];
+                                    }
+                                    this_spin_temp->Trad_box[box_ct] += dT_Radio;
+
                                     dxion_source_dt_box[box_ct] += (dfcoll_dz_val * (double)del_fcoll_Rct[box_ct] * ((freq_int_ion_tbl_diff[m_xHII_low_box[box_ct]][R_ct]) * inverse_val_box[box_ct] + freq_int_ion_tbl[m_xHII_low_box[box_ct]][R_ct]));
 
                                     dxlya_dt_box[box_ct] += (dfcoll_dz_val * (double)del_fcoll_Rct[box_ct] * ((freq_int_lya_tbl_diff[m_xHII_low_box[box_ct]][R_ct]) * inverse_val_box[box_ct] + freq_int_lya_tbl[m_xHII_low_box[box_ct]][R_ct]));
@@ -3672,6 +3739,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
 
                                     // if (J_alpha_tot > 1.0e-20) { // Must use WF effect
                                     //  New in v1.4
+                                    Trad_inv = 1.0 / (this_spin_temp->Trad_box[box_ct] + T_cmb * (1 + redshift));
                                     if (fabs(J_alpha_tot) > 1.0e-20)
                                     { // Must use WF effect
                                         TS_fast = Trad_fast;
@@ -3719,7 +3787,9 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                                                     xa_tilde_fast *= S_alpha_correction(6.84e13 * hubble(zp) * T * T / (No * pow(1. + zp, 3.) * (1. + curr_delNL0 * growth_factor_zp) * (1. - x_e)), 0);
                                                 }
                                                 // TS_fast = (xCMB+xa_tilde_fast+xc_fast)*pow(xCMB*Trad_fast_inv+xa_tilde_fast*pow(TS_fast,-1.)*(TS_fast+0.402)/(T+0.402)+xc_fast*T_inv,-1.);
-                                                TS_fast = (xCMB + xc_fast + xa_tilde_fast * T / (T + 0.402)) * pow(xCMB * Trad_fast_inv + xa_tilde_fast * pow(T + 0.402, -1.) + xc_fast * T_inv, -1.);
+                                                // TS_fast = (xCMB + xc_fast + xa_tilde_fast * T / (T + 0.402)) * pow(xCMB * Trad_fast_inv + xa_tilde_fast * pow(T + 0.402, -1.) + xc_fast * T_inv, -1.);
+                                                // Junsong: adding Radio Excess contribution to Ts
+                                                TS_fast = (xCMB + xc_fast + xa_tilde_fast * T / (T + 0.402)) * pow(xCMB * Trad_inv + xa_tilde_fast * pow(T + 0.402, -1.) + xc_fast * T_inv, -1.);
                                                 TSold_fast = TS_fast;
                                             }
                                             else
@@ -3728,13 +3798,15 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                                                                  0.401403 * T_inv * pow(TS_fast, -1.) + 0.336463 * T_inv_sq * pow(TS_fast, -1.)) *
                                                                 xa_tilde_fast_arg;
                                                 // JordanFlitter: modified spin temperature by xCMB
-                                                TS_fast = (xCMB + xa_tilde_fast + xc_fast) * pow(xCMB * Trad_fast_inv + xa_tilde_fast * (T_inv + 0.405535 * T_inv * pow(TS_fast, -1.) - 0.405535 * T_inv_sq) + xc_fast * T_inv, -1.);
+                                                // TS_fast = (xCMB + xa_tilde_fast + xc_fast) * pow(xCMB * Trad_fast_inv + xa_tilde_fast * (T_inv + 0.405535 * T_inv * pow(TS_fast, -1.) - 0.405535 * T_inv_sq) + xc_fast * T_inv, -1.);
+                                                TS_fast = (xCMB + xa_tilde_fast + xc_fast) * pow(xCMB * Trad_inv + xa_tilde_fast * (T_inv + 0.405535 * T_inv * pow(TS_fast, -1.) - 0.405535 * T_inv_sq) + xc_fast * T_inv, -1.);
                                             }
                                         }
                                     }
                                     else
                                     { // Collisions only
-                                        TS_fast = (xCMB + xc_fast) / (xCMB * Trad_fast_inv + xc_fast * T_inv);
+                                        // TS_fast = (xCMB + xc_fast) / (xCMB * Trad_fast_inv + xc_fast * T_inv);
+                                        TS_fast = (xCMB + xc_fast) / (xCMB * Trad_inv + xc_fast * T_inv);
 
                                         xa_tilde_fast = 0.0;
                                     }
@@ -3788,12 +3860,12 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                                 density_gridpoints, dfcoll_interp2, freq_int_heat_tbl_diff, freq_int_heat_tbl, freq_int_ion_tbl_diff, freq_int_ion_tbl,       \
                                 freq_int_lya_tbl_diff, freq_int_lya_tbl, dstarlya_dt_prefactor, const_zp_prefactor, prefactor_1, growth_factor_zp, dzp,       \
                                 dt_dzp, dgrowth_factor_dzp, dcomp_dzp_prefactor, this_spin_temp, xc_inverse, TS_prefactor, xa_tilde_prefactor, Trad_fast_inv, \
-                                dstarlya_cont_dt_prefactor, dstarlya_inj_dt_prefactor,                                                                        \
+                                dstarlya_cont_dt_prefactor, dstarlya_inj_dt_prefactor, Radio_Temp_HMG, Radio_Prefix_ACG, Radio_Silent,                        \
                                 rec_data, delta_baryons, delta_baryons_derivative, delNL0_rev_baryons, delta_SDM, delta_SDM_derivative)                       \
     private(box_ct, x_e, T, xHII_call, m_xHII_low, inverse_val, dxheat_dt, dxion_source_dt, dxlya_dt, dstarlya_dt, curr_delNL0, R_ct,                         \
                 dfcoll_dz_val, dxion_sink_dt, dxe_dzp, dadia_dzp, dspec_dzp, dcomp_dzp, J_alpha_tot, T_inv, T_inv_sq, xc_fast, xi_power,                      \
                 xa_tilde_fast_arg, TS_fast, TSold_fast, xa_tilde_fast, prev_Ts, tau21, xCMB, eps_CMB, dCMBheat_dzp, dstarlya_cont_dt, dstarlya_inj_dt,        \
-                E_continuum, E_injected, Ndot_alpha_cont, Ndot_alpha_inj, eps_Lya_cont, eps_Lya_inj,                                                          \
+                E_continuum, E_injected, Ndot_alpha_cont, Ndot_alpha_inj, eps_Lya_cont, eps_Lya_inj, Radio_Temp, dT_Radio,                                    \
                 T_chi, V_chi_b, dSDM_b_heat_dzp, dSDM_chi_heat_dzp, D_V_chi_b_dzp, SDM_rates, dT_b_2_dt_ext, dT_chi_2_dt_ext, dadia_dzp_SDM,                  \
                 delta_baryons_local, delta_baryons_derivative_local, delta_SDM_local, delta_SDM_derivative_local)                                             \
     num_threads(user_params -> N_THREADS)
@@ -3842,6 +3914,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                                 dstarlya_inj_dt = 0;
                             }
                             curr_delNL0 = delNL0_rev[box_ct][0];
+                            Radio_Temp = Radio_Temp_HMG;
 
                             // JordanFlitter: set local baryons density and its derivative
                             //                Note we use box_ct_FFT to access the approporiate cell in the box
@@ -3890,6 +3963,15 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                                             dfcoll_dz_val = ST_over_PS[R_ct] * (1. + delNL0_rev[box_ct][R_ct] * zpp_growth[R_ct]) * (dfcoll_dz(zpp_for_evolve_list[R_ct], sigma_Tmin[R_ct], delNL0_rev[box_ct][R_ct], sigma_atR[R_ct]));
                                         }
                                     }
+                                    if ((zpp_for_evolve_list[R_ct] > astro_params->Radio_Zmin) && (Radio_Silent == 0))
+                                    {
+                                        dT_Radio = Radio_Prefix_ACG * dfcoll_dz_val * pow(1 + zpp_for_evolve_list[R_ct], astro_params->X_RAY_SPEC_INDEX - astro_params->aR);
+                                    }
+                                    else
+                                    {
+                                        dT_Radio = 0.0;
+                                    }
+                                    Radio_Temp += dT_Radio;
 
                                     dxheat_dt += dfcoll_dz_val *
                                                  ((freq_int_heat_tbl_diff[m_xHII_low][R_ct]) * inverse_val + freq_int_heat_tbl[m_xHII_low][R_ct]);
@@ -4206,6 +4288,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                             // Algorithm is the same, but written to be more computationally efficient
                             T_inv = pow(T, -1.);
                             T_inv_sq = pow(T, -2.);
+                            Trad_inv = 1.0 / (Radio_Temp + T_cmb * (1 + redshift));
 
                             // JordanFlitter: we can use the baryons density field
                             if (user_params->EVOLVE_BARYONS)
@@ -4264,7 +4347,8 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                                             xa_tilde_fast *= S_alpha_correction(6.84e13 * hubble(zp) * T * T / (No * pow(1. + zp, 3.) * (1. + curr_delNL0 * growth_factor_zp) * (1. - x_e)), 0);
                                         }
                                         // TS_fast = (xCMB+xa_tilde_fast+xc_fast)*pow(xCMB*Trad_fast_inv+xa_tilde_fast*pow(TS_fast,-1.)*(TS_fast+0.402)/(T+0.402)+xc_fast*T_inv,-1.);
-                                        TS_fast = (xCMB + xc_fast + xa_tilde_fast * T / (T + 0.402)) * pow(xCMB * Trad_fast_inv + xa_tilde_fast * pow(T + 0.402, -1.) + xc_fast * T_inv, -1.);
+                                        // TS_fast = (xCMB + xc_fast + xa_tilde_fast * T / (T + 0.402)) * pow(xCMB * Trad_fast_inv + xa_tilde_fast * pow(T + 0.402, -1.) + xc_fast * T_inv, -1.);
+                                        TS_fast = (xCMB + xc_fast + xa_tilde_fast * T / (T + 0.402)) * pow(xCMB * Trad_inv + xa_tilde_fast * pow(T + 0.402, -1.) + xc_fast * T_inv, -1.);
                                         TSold_fast = TS_fast;
                                     }
                                     else
@@ -4273,13 +4357,15 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                                                          0.401403 * T_inv * pow(TS_fast, -1.) + 0.336463 * T_inv_sq * pow(TS_fast, -1.)) *
                                                         xa_tilde_fast_arg;
                                         // JordanFlitter: modified spin temperature by xCMB
-                                        TS_fast = (xCMB + xa_tilde_fast + xc_fast) * pow(xCMB * Trad_fast_inv + xa_tilde_fast * (T_inv + 0.405535 * T_inv * pow(TS_fast, -1.) - 0.405535 * T_inv_sq) + xc_fast * T_inv, -1.);
+                                        // TS_fast = (xCMB + xa_tilde_fast + xc_fast) * pow(xCMB * Trad_fast_inv + xa_tilde_fast * (T_inv + 0.405535 * T_inv * pow(TS_fast, -1.) - 0.405535 * T_inv_sq) + xc_fast * T_inv, -1.);
+                                        TS_fast = (xCMB + xa_tilde_fast + xc_fast) * pow(xCMB * Trad_inv + xa_tilde_fast * (T_inv + 0.405535 * T_inv * pow(TS_fast, -1.) - 0.405535 * T_inv_sq) + xc_fast * T_inv, -1.);
                                     }
                                 }
                             }
                             else
                             { // Collisions only
-                                TS_fast = (xCMB + xc_fast) / (xCMB * Trad_fast_inv + xc_fast * T_inv);
+                                // TS_fast = (xCMB + xc_fast) / (xCMB * Trad_fast_inv + xc_fast * T_inv);
+                                TS_fast = (xCMB + xc_fast) / (xCMB * Trad_inv + xc_fast * T_inv);
                                 xa_tilde_fast = 0.0;
                             }
 
@@ -4291,6 +4377,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                             }
 
                             this_spin_temp->Ts_box[box_ct] = TS_fast;
+                            this_spin_temp->Trad_box[box_ct] = Radio_Temp;
 
                             // JordanFlitter: added Lya flux to output! (because why not)
                             this_spin_temp->J_Lya_box[box_ct] = J_alpha_tot;
@@ -4327,6 +4414,102 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                         LOG_ERROR("Estimated spin temperature is either infinite of NaN!");
                         //                Throw(ParameterError);
                         Throw(InfinityorNaNError);
+                    }
+                }
+
+                // ---- Computing averaged quantities ----
+                T_IGM_ave = 0.0;
+                Radio_Temp_ave = 0.0;
+                Phi_ave = 0.0;
+                Phi_ave_mini = 0.0;
+                Phi = 0.0;
+                Phi_mini = 0.0;
+                zpp_Rct0 = zpp_for_evolve_list[0];
+                H_Rct0 = hubble(zpp_Rct0);
+
+                for (box_ct = 0; box_ct < HII_TOT_NUM_PIXELS; box_ct++)
+                {
+                    // #1: Gas temperature
+                    T_IGM_ave += this_spin_temp->Tk_box[box_ct] / ((double)HII_TOT_NUM_PIXELS);
+
+                    // #2: Radio Temp
+                    Radio_Temp_ave += this_spin_temp->Trad_box[box_ct] / ((double)HII_TOT_NUM_PIXELS);
+
+                    // #3: Phi and Phi_mini
+                    // at this stage R_ct woube be 0 anyway
+                    if (flag_options->USE_MASS_DEPENDENT_ZETA)
+                    {
+                        Phi = dfcoll_dz_val * (double)del_fcoll_Rct[box_ct] / dzpp_Rct0;
+                        Phi_ave += Phi / ((double)HII_TOT_NUM_PIXELS);
+
+                        if (flag_options->USE_MINI_HALOS)
+                        {
+                            Phi_mini = dfcoll_dz_val_MINI * (double)del_fcoll_Rct_MINI[box_ct] / dzpp_Rct0;
+                            Phi_ave_mini += Phi_mini / ((double)HII_TOT_NUM_PIXELS);
+                        }
+                    }
+                    else
+                    {
+                        Phi = fabs(dfcoll_dz_val / dzpp_Rct0);
+                        Phi_ave += Phi / ((double)HII_TOT_NUM_PIXELS);
+                    }
+                    // SFRD here are not entirely accurate during EoR because Spin.c doesn't have EoR feedback, need to calibrate with Ion.c outputs
+                    this_spin_temp->SFRD_box[box_ct] = Phi_2_SFRD(Phi, zpp_Rct0, H_Rct0, astro_params, cosmo_params, 0);
+                    this_spin_temp->SFRD_MINI_box[box_ct] = Phi_2_SFRD(Phi_mini, zpp_Rct0, H_Rct0, astro_params, cosmo_params, 1);
+
+                    // copying entire History_box
+                    if (!this_spin_temp->first_box)
+                    {
+                        this_spin_temp->History_box[box_ct] = previous_spin_temp->History_box[box_ct];
+                    }
+                }
+
+                // Caching averaged quantities
+                if (this_spin_temp->first_box)
+                {
+                    this_spin_temp->History_box[0] = 1.0;                      // ArchiveSize
+                    this_spin_temp->History_box[1] = global_params.Z_HEAT_MAX; // redshift
+                    this_spin_temp->History_box[2] = 0.0;                      // Phi
+                    this_spin_temp->History_box[3] = Tk_BC;                    // Tk
+                    this_spin_temp->History_box[4] = 0.0;                      // Phi_mini
+                    this_spin_temp->History_box[5] = zpp_for_evolve_list[0];   // zpp0
+                    this_spin_temp->History_box[6] = 1.0e20;                   // mturn_II
+                    this_spin_temp->History_box[7] = 1.0e20;                   // mturn_III
+                    this_spin_temp->History_box[8] = 0.0;                      // Phi_mini_calibrated
+                    this_spin_temp->mturns_EoR[0] = 1.0e20;                    // mturn_II
+                    this_spin_temp->mturns_EoR[1] = 1.0e20;                    // mturn_III
+                }
+                else
+                {
+                    this_spin_temp->History_box[0] = previous_spin_temp->History_box[0] + 1.0; // updating archive size
+                    ArchiveSize = (int)round(this_spin_temp->History_box[0]);                  // remember that this is for current box, at least 2 by now
+
+                    // Save results for this redshift
+                    head = (ArchiveSize - 1) * History_box_DIM + 1;
+                    this_spin_temp->History_box[head] = redshift;
+                    this_spin_temp->History_box[head + 1] = Phi_ave;
+                    this_spin_temp->History_box[head + 2] = T_IGM_ave;
+                    this_spin_temp->History_box[head + 3] = Phi_ave_mini;
+                    this_spin_temp->History_box[head + 4] = zpp_for_evolve_list[0];
+                    this_spin_temp->History_box[head + 5] = previous_spin_temp->mturns_EoR[0];
+                    this_spin_temp->History_box[head + 6] = previous_spin_temp->mturns_EoR[1];
+                }
+
+                if (flag_options->Calibrate_EoR_feedback)
+                {
+                    // Calibrating EoR feedback, coupling to Ts should be negligible by now since T21 would be dominated by xH
+                    // Tr_EoR = Get_EoR_Radio_mini(this_spin_temp, astro_params, cosmo_params, flag_options, redshift, Radio_Temp_ave, x_e_ave / (double)HII_TOT_NUM_PIXELS);
+                    Tr_EoR = Get_EoR_Radio_mini_v2(this_spin_temp, astro_params, cosmo_params, redshift);
+                    // SFRD_EoR_MINI = Get_SFRD_EoR_MINI(previous_spin_temp, this_spin_temp, astro_params, cosmo_params, x_e_ave / (double)HII_TOT_NUM_PIXELS, zpp_Rct0);
+                    SFRD_EoR_MINI = 0.0; // Delibrately setting to 0, will do this later because for now I need to go to sleep
+                    
+                    SFRD_MINI_ave = Phi_2_SFRD(Phi_ave_mini, zpp_Rct0, H_Rct0, astro_params, cosmo_params, 1);
+                    SFRD_MINI_ave = SFRD_MINI_ave > 1e-200 ? SFRD_MINI_ave : 1e-200; // avoid nan in divide
+
+                    for (box_ct = 0; box_ct < HII_TOT_NUM_PIXELS; box_ct++)
+                    {
+                        this_spin_temp->Trad_box[box_ct] = Tr_EoR * this_spin_temp->Trad_box[box_ct] / Radio_Temp_ave;
+                        this_spin_temp->SFRD_MINI_box[box_ct] = SFRD_EoR_MINI * this_spin_temp->SFRD_MINI_box[box_ct] / SFRD_MINI_ave;
                     }
                 }
 

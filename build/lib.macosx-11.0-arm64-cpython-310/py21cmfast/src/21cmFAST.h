@@ -185,7 +185,6 @@ struct TsBox
     float *Trad_box;
     float mturns_EoR[2];
     float *History_box;
-    
     /*
     History_box saves averaged quantities from previous boxes, to be updated at every z step
     Supports 5 data fields in current version, can be expanded if needed, e.g. for m_turn_II or m_turn_III
@@ -196,7 +195,6 @@ struct TsBox
     */
     float *SFRD_box;
     float *SFRD_MINI_box;
-
 };
 
 struct IonizedBox
