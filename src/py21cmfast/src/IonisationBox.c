@@ -510,7 +510,8 @@ int ComputeIonizedBox(float redshift, float prev_redshift, struct UserParams *us
                     LOG_SUPER_DEBUG("Calculating and outputting Mcrit boxes for atomic and molecular halos...");
 
 #pragma omp parallel shared(redshift, previous_ionize_box, spin_temp, Mcrit_atom, log10_Mturnover_unfiltered, log10_Mturnover_MINI_unfiltered) \
-    private(x, y, z, Mcrit_RE, Mcrit_LW, Mturnover, Mturnover_MINI, log10_Mturnover, log10_Mturnover_MINI, curr_vcb) num_threads(user_params -> N_THREADS)
+    private(x, y, z, Mcrit_RE, Mcrit_LW, Mturnover, Mturnover_MINI, log10_Mturnover, log10_Mturnover_MINI, curr_vcb)                           \
+    num_threads(user_params -> N_THREADS)
                     {
 #pragma omp for reduction(+ : ave_log10_Mturnover, ave_log10_Mturnover_MINI)
                         for (x = 0; x < user_params->HII_DIM; x++)
@@ -577,6 +578,13 @@ int ComputeIonizedBox(float redshift, float prev_redshift, struct UserParams *us
                     box->log10_Mturnover_MINI_ave = ave_log10_Mturnover_MINI / (double)HII_TOT_NUM_PIXELS;
                     Mturnover = pow(10., box->log10_Mturnover_ave);
                     Mturnover_MINI = pow(10., box->log10_Mturnover_MINI_ave);
+                    // Saving m_turns, this spin_box is then passed to spin.c as prev_box
+                    if (flag_options->Calibrate_EoR_feedback && (!spin_temp->first_box))
+                    {
+                        spin_temp->mturns_EoR[0] = Mturnover;
+                        spin_temp->mturns_EoR[1] = Mturnover_MINI;
+                    }
+
                     M_MIN = global_params.M_MIN_INTEGRAL;
                     Mlim_Fstar_MINI = Mass_limit_bisection(M_MIN, 1e16, astro_params->ALPHA_STAR_MINI, astro_params->F_STAR7_MINI * pow(1e3, astro_params->ALPHA_STAR_MINI));
                     Mlim_Fesc_MINI = Mass_limit_bisection(M_MIN, 1e16, astro_params->ALPHA_ESC, astro_params->F_ESC7_MINI * pow(1e3, astro_params->ALPHA_ESC));
@@ -744,7 +752,7 @@ int ComputeIonizedBox(float redshift, float prev_redshift, struct UserParams *us
             }
 
             if (box->mean_f_coll * ION_EFF_FACTOR + box->mean_f_coll_MINI * ION_EFF_FACTOR_MINI < global_params.HII_ROUND_ERR)
-            {   // way too small to ionize anything...
+            { // way too small to ionize anything...
                 //        printf( "The mean collapse fraction is %e, which is much smaller than the effective critical collapse fraction of %e\n I will just declare everything to be neutral\n", mean_f_coll, f_coll_crit);
 
                 // find the neutral fraction
