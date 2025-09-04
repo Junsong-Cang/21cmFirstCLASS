@@ -113,7 +113,7 @@ int ComputeBrightnessTemp(float redshift, struct UserParams *user_params, struct
                                 // Converting the prefactors into the optical depth, tau. Factor of 1000 is the conversion of spin temperature from K to mK
                                 box->brightness_temp[HII_R_INDEX(i, j, k)] *= (1. + redshift) / (1000. * spin_temp->Ts_box[HII_R_INDEX(i, j, k)]);
                                 box->brightness_temp[HII_R_INDEX(i, j, k)] = (1. - exp(-box->brightness_temp[HII_R_INDEX(i, j, k)])) *
-                                                                             1000. * (spin_temp->Ts_box[HII_R_INDEX(i, j, k)] - T_rad) / (1. + redshift);
+                                                                             1000. * (spin_temp->Ts_box[HII_R_INDEX(i, j, k)] - T_rad - spin_temp->Trad_box[HII_R_INDEX(i, j, k)]) / (1. + redshift);
                             }
                         }
 
@@ -219,12 +219,12 @@ int ComputeBrightnessTemp(float redshift, struct UserParams *user_params, struct
                                         // Gradient component goes to zero, optical depth diverges.
                                         // But, since we take exp(-tau), this goes to zero and (1 - exp(-tau)) goes to unity.
                                         // Again, factors of 1000. are conversions from K to mK
-                                        box->brightness_temp[HII_R_INDEX(i, j, k)] = 1000. * (xi_correction * spin_temp->Ts_box[HII_R_INDEX(i, j, k)] - T_rad) / (1. + redshift);
+                                        box->brightness_temp[HII_R_INDEX(i, j, k)] = 1000. * (xi_correction * spin_temp->Ts_box[HII_R_INDEX(i, j, k)] - T_rad - spin_temp->Trad_box[HII_R_INDEX(i, j, k)]) / (1. + redshift);
                                     }
                                     else
                                     {
                                         box->brightness_temp[HII_R_INDEX(i, j, k)] = (1. - exp(-box->brightness_temp[HII_R_INDEX(i, j, k)] / gradient_component)) *
-                                                                                     1000. * (xi_correction * spin_temp->Ts_box[HII_R_INDEX(i, j, k)] - T_rad) / (1. + redshift);
+                                                                                     1000. * (xi_correction * spin_temp->Ts_box[HII_R_INDEX(i, j, k)] - T_rad - spin_temp->Trad_box[HII_R_INDEX(i, j, k)]) / (1. + redshift);
                                     }
                                 }
                                 else
