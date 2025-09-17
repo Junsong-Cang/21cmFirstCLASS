@@ -13,6 +13,7 @@ pip-wheel-metadata/
 src/21cmFAST.egg-info/
 pip-wheel-metadata/
 src/py21cmfast\.egg-info/
+src/py21cmfirstclass\.egg-info/
 
 *.so
 build/
@@ -43,6 +44,7 @@ htmlcov/
 data/
 
 pip-wheel-metadata/py21cmfast\.dist-info/
+pip-wheel-metadata/py21cmfirstclass\.dist-info/
 .nfs*
 docs/tutorials/*.h5
 valgrind*
