@@ -27,7 +27,7 @@ from . import _utils as _ut
 from ._cfg import config
 from ._utils import OutputStruct as _BaseOutputStruct
 from ._utils import _check_compatible_inputs
-from .c_21cmfast import ffi, lib
+from .c_21cmfirstclass import ffi, lib
 from .inputs import AstroParams, CosmoParams, FlagOptions, UserParams, global_params
 
 

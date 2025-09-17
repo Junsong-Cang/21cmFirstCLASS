@@ -22,7 +22,7 @@ from pathlib import Path
 from ._cfg import config
 from ._data import DATA_PATH
 from ._utils import StructInstanceWrapper, StructWithDefaults
-from .c_21cmfast import ffi, lib
+from .c_21cmfirstclass import ffi, lib
 
 # JordanFlitter: Need numpy to make arrays
 import numpy as np

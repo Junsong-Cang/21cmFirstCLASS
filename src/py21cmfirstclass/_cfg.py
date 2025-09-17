@@ -58,6 +58,7 @@ class Config(dict):
 
         for k, v in self.items():
             if k not in self._defaults:
+                print("Junsong:", k)
                 raise ConfigurationError(
                     f"The configuration file has key '{k}' which is not known to 21cmFAST."
                 )
@@ -104,7 +105,7 @@ class Config(dict):
             return cls(write=False)
 
 
-config = Config.load(Path("~/.21cmfast/config.yml"))
+config = Config.load(Path("~/.21cmfast/config_21cmfirstclass.yml"))
 
 # Keep an original copy around
 default_config = copy.deepcopy(config)

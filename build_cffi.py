@@ -61,7 +61,7 @@ for k, v in os.environ.items():
 
 # This is the overall C code.
 ffi.set_source(
-    "py21cmfirstclass.c_21cmfast",  # Name/Location of shared library module
+    "py21cmfirstclass.c_21cmfirstclass",  # Name/Location of shared library module
     """
     #define LOG_LEVEL {log_level}
 

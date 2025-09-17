@@ -107,7 +107,7 @@ from ._utils import (
     _check_compatible_inputs,
     _process_exitcode,
 )
-from .c_21cmfast import ffi, lib
+from .c_21cmfirstclass import ffi, lib
 from .inputs import AstroParams, CosmoParams, FlagOptions, UserParams, global_params
 from .outputs import (
     BrightnessTemp,
@@ -1340,7 +1340,7 @@ def initial_conditions(
     direc : str, optional
         The directory in which to search for the boxes and write them. By default, this
         is the directory given by ``boxdir`` in the configuration file,
-        ``~/.21cmfast/config.yml``. This is recursively applied to any potential
+        ``~/.21cmfast/config_21cmfirstclass.yml``. This is recursively applied to any potential
         sub-calculations.
     \*\*global_kwargs :
         Any attributes for :class:`~py21cmfirstclass.inputs.GlobalParams`. This will

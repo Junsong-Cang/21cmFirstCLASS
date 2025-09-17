@@ -44,12 +44,13 @@ test_req = [
 doc_req = ["nbsphinx", "numpydoc", "sphinx >= 1.3", "sphinx-rtd-theme"]
 
 setup(
-    name="21cmFAST",
+    name="21cmFirstCLASS",
     license="MIT license",
     description="A semi-numerical cosmological simulation code for the 21cm signal",
-    author="The 21cmFAST coredev team",
+    author="The 21cmFAST+21cmFirstCLASS coredev team",
     author_email="21cmfast.coredev@gmail.com",
-    url="https://github.com/21cmFAST/21cmFAST",
+    # url="https://github.com/21cmFAST/21cmFAST",
+    url="https://github.com/Junsong-Cang/21cmFirstCLASS/tree/Radio",
     packages=find_packages("src"),
     package_dir={"": "src"},
     include_package_data=True,
@@ -87,7 +88,7 @@ setup(
     ],
     extras_require={"tests": test_req, "docs": doc_req, "dev": test_req + doc_req},
     setup_requires=["cffi>=1.0", "setuptools_scm"],
-    entry_points={"console_scripts": ["21cmfast = py21cmfirstclass.cli:main"]},
+    entry_points={"console_scripts": ["21cmfirstclass = py21cmfirstclass.cli:main"]},
     cffi_modules=[f"{pkgdir}/build_cffi.py:ffi"],
     use_scm_version=True,
 )
