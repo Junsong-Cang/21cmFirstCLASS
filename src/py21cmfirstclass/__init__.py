@@ -1,4 +1,4 @@
-"""The py21cmfast package."""
+"""The py21cmfirstclass package."""
 try:
     from importlib.metadata import PackageNotFoundError, version
 except ImportError:

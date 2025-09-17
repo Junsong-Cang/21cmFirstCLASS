@@ -2,8 +2,8 @@
 The main wrapper for the underlying 21cmFAST C-code.
 
 The module provides both low- and high-level wrappers, using the very low-level machinery
-in :mod:`~py21cmfast._utils`, and the convenient input and output structures from
-:mod:`~py21cmfast.inputs` and :mod:`~py21cmfast.outputs`.
+in :mod:`~py21cmfirstclass._utils`, and the convenient input and output structures from
+:mod:`~py21cmfirstclass.inputs` and :mod:`~py21cmfirstclass.outputs`.
 
 This module provides a number of:
 
@@ -28,7 +28,7 @@ evolution of the ionization field through redshift. In these cases, for best eff
 it is recommended to either use a customised manual approach to calling these low-level
 functions, or to call a higher-level function which optimizes this process.
 
-Finally, note that :mod:`py21cmfast` attempts to optimize the production of the large amount of
+Finally, note that :mod:`py21cmfirstclass` attempts to optimize the production of the large amount of
 data via on-disk caching. By default, if a previous set of data has been computed using
 the current input parameters, it will be read-in from a caching repository and returned
 directly. This behaviour can be tuned in any of the low-level (or high-level) functions
@@ -37,7 +37,7 @@ by setting the `write`, `direc`, `regenerate` and `match_seed` parameters (see d
 to search the cache, and return empty datasets corresponding to each (and these can then be
 filled with the data merely by calling ``.read()`` on any data set). Conversely, a
 specific data set can be read and returned as a proper output object by calling the
-:func:`~py21cmfast.cache_tools.readbox` function.
+:func:`~py21cmfirstclass.cache_tools.readbox` function.
 
 
 **High-level functions**
@@ -57,7 +57,7 @@ Examples
 --------
 A typical example of using this module would be the following.
 
->>> import py21cmfast as p21
+>>> import py21cmfirstclass as p21
 
 Get coeval cubes at redshift 7,8 and 9, without spin temperature or inhomogeneous
 recombinations:
@@ -1343,7 +1343,7 @@ def initial_conditions(
         ``~/.21cmfast/config.yml``. This is recursively applied to any potential
         sub-calculations.
     \*\*global_kwargs :
-        Any attributes for :class:`~py21cmfast.inputs.GlobalParams`. This will
+        Any attributes for :class:`~py21cmfirstclass.inputs.GlobalParams`. This will
         *temporarily* set global attributes for the duration of the function. Note that
         arguments will be treated as case-insensitive.
 
@@ -1407,7 +1407,7 @@ def perturb_field(
     cosmo_params : :class:`~CosmoParams`, optional
         Defines the cosmological parameters used to compute initial conditions.
     \*\*global_kwargs :
-        Any attributes for :class:`~py21cmfast.inputs.GlobalParams`. This will
+        Any attributes for :class:`~py21cmfirstclass.inputs.GlobalParams`. This will
         *temporarily* set global attributes for the duration of the function. Note that
         arguments will be treated as case-insensitive.
 
@@ -1540,7 +1540,7 @@ def determine_halo_list(
     astro_params: :class:`~AstroParams` instance, optional
         The astrophysical parameters defining the course of reionization.
     \*\*global_kwargs :
-        Any attributes for :class:`~py21cmfast.inputs.GlobalParams`. This will
+        Any attributes for :class:`~py21cmfirstclass.inputs.GlobalParams`. This will
         *temporarily* set global attributes for the duration of the function. Note that
         arguments will be treated as case-insensitive.
 
@@ -1668,7 +1668,7 @@ def perturb_halo_list(
     astro_params: :class:`~AstroParams` instance, optional
         The astrophysical parameters defining the course of reionization.
     \*\*global_kwargs :
-        Any attributes for :class:`~py21cmfast.inputs.GlobalParams`. This will
+        Any attributes for :class:`~py21cmfirstclass.inputs.GlobalParams`. This will
         *temporarily* set global attributes for the duration of the function. Note that
         arguments will be treated as case-insensitive.
 
@@ -1848,7 +1848,7 @@ def ionize_box(
         to be calculate has different shape, errors will occur if memory is not cleaned. However,
         it can be useful to set it to False if scrolling through parameters for the same box shape.
     \*\*global_kwargs :
-        Any attributes for :class:`~py21cmfast.inputs.GlobalParams`. This will
+        Any attributes for :class:`~py21cmfirstclass.inputs.GlobalParams`. This will
         *temporarily* set global attributes for the duration of the function. Note that
         arguments will be treated as case-insensitive.
 
@@ -2204,7 +2204,7 @@ def spin_temperature(
         if memory is not cleaned. However, it can be useful to set it to False if
         scrolling through parameters for the same box shape.
     \*\*global_kwargs :
-        Any attributes for :class:`~py21cmfast.inputs.GlobalParams`. This will
+        Any attributes for :class:`~py21cmfirstclass.inputs.GlobalParams`. This will
         *temporarily* set global attributes for the duration of the function. Note that
         arguments will be treated as case-insensitive.
 
@@ -2471,7 +2471,7 @@ def brightness_temperature(
     spin_temp: :class:`TsBox`, optional
         A pre-computed spin temperature, at the same redshift as the other boxes.
     \*\*global_kwargs :
-        Any attributes for :class:`~py21cmfast.inputs.GlobalParams`. This will
+        Any attributes for :class:`~py21cmfirstclass.inputs.GlobalParams`. This will
         *temporarily* set global attributes for the duration of the function. Note that
         arguments will be treated as case-insensitive.
 
@@ -2618,13 +2618,13 @@ def run_coeval(
         if memory is not cleaned. Note that internally, this is set to False until the
         last iteration.
     \*\*global_kwargs :
-        Any attributes for :class:`~py21cmfast.inputs.GlobalParams`. This will
+        Any attributes for :class:`~py21cmfirstclass.inputs.GlobalParams`. This will
         *temporarily* set global attributes for the duration of the function. Note that
         arguments will be treated as case-insensitive.
 
     Returns
     -------
-    coevals : :class:`~py21cmfast.outputs.Coeval`
+    coevals : :class:`~py21cmfirstclass.outputs.Coeval`
         The full data for the Coeval class, with init boxes, perturbed fields, ionized boxes,
         brightness temperature, and potential data from the conservation of photons. If a
         single redshift was specified, it will return such a class. If multiple redshifts
@@ -3102,13 +3102,13 @@ def run_lightcone(
         The types of coeval boxes to store at the output. These may be any of the quantities
         that can be used in ``lightcone_quantities``.
     \*\*global_kwargs :
-        Any attributes for :class:`~py21cmfast.inputs.GlobalParams`. This will
+        Any attributes for :class:`~py21cmfirstclass.inputs.GlobalParams`. This will
         *temporarily* set global attributes for the duration of the function. Note that
         arguments will be treated as case-insensitive.
 
     Returns
     -------
-    lightcone : :class:`~py21cmfast.LightCone`
+    lightcone : :class:`~py21cmfirstclass.LightCone`
         The lightcone object.
     coeval_callback_output : list
         Only if coeval_callback in not None.
@@ -4383,7 +4383,7 @@ def calibrate_photon_cons(
         If given, the user and cosmo params will be set from this object, and it will not be
         re-calculated.
     \*\*global_kwargs :
-        Any attributes for :class:`~py21cmfast.inputs.GlobalParams`. This will
+        Any attributes for :class:`~py21cmfirstclass.inputs.GlobalParams`. This will
         *temporarily* set global attributes for the duration of the function. Note that
         arguments will be treated as case-insensitive.
 

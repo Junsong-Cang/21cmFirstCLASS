@@ -138,7 +138,7 @@ def coeval_sliceplot(
 
     Parameters
     ----------
-    lightcone: :class:`~py21cmfast.wrapper.Lightcone`
+    lightcone: :class:`~py21cmfirstclass.wrapper.Lightcone`
         The lightcone object that stores the coeval box to be plotted.
     redshift: float
         Redshift of the coeval box to be plotted. The redshift of the
@@ -313,7 +313,7 @@ def lightcone_sliceplot(
 
     Parameters
     ----------
-    lightcone: :class:`~py21cmfast.wrapper.Lightcone`
+    lightcone: :class:`~py21cmfirstclass.wrapper.Lightcone`
         The lightcone object that stores the lightcone box to be plotted.
     kind: str, optional
         The quantity to be shown. Must be in the `lightcones` dict in the lightcone.
@@ -573,7 +573,7 @@ def plot_global_history(
 
     Parameters
     ----------
-    lightcone: :class:`~py21cmfast.wrapper.Lightcone`
+    lightcone: :class:`~py21cmfirstclass.wrapper.Lightcone`
         The lightcone object that stores the global quantity to be plotted.
     kind: str, optional
         The quantity to be shown. Must be in the `global_quantities` dict in the lightcone.
@@ -712,7 +712,7 @@ def plot_Cl_data(
 
     Parameters
     ----------
-    lightcone: :class:`~py21cmfast.wrapper.Lightcone`
+    lightcone: :class:`~py21cmfirstclass.wrapper.Lightcone`
         The lightcone object that stores the CMB power spectrum to be plotted.
     mode: str, optional
         The mode of CMB power spectrum to plot.
@@ -802,7 +802,7 @@ def plot_1d_power_spectrum(
 
     Parameters
     ----------
-    power_spectrum: :class:`~py21cmfast.power_spectrum.POWER_SPECTRUM`
+    power_spectrum: :class:`~py21cmfirstclass.power_spectrum.POWER_SPECTRUM`
         The power spectrum object that stores the data to be plotted.
     k: float, optional
         The fixed wavenumber (in Mpc). Power spectrum will be plotted as a
@@ -830,7 +830,7 @@ def plot_1d_power_spectrum(
         Whether to plot the y-axis in log scale or linear scale.
     smooth: bool, optional
         Whether to smooth the curve or not.
-    noise_data: :class:`~py21cmfast.experiment.NOISE_DATA`, optional
+    noise_data: :class:`~py21cmfirstclass.experiment.NOISE_DATA`, optional
         The noise data object that stores the data of the noise.
         If None or not specified, no noise will be plotted.
     error_bars: bool, optional
@@ -1231,7 +1231,7 @@ def plot_2d_power_spectrum(
 
     Parameters
     ----------
-    power_spectrum: :class:`~py21cmfast.power_spectrum.POWER_SPECTRUM`
+    power_spectrum: :class:`~py21cmfirstclass.power_spectrum.POWER_SPECTRUM`
         The power spectrum object that stores the data to be plotted.
     cbar: bool, optional
         Whether or not to show a colorbar.

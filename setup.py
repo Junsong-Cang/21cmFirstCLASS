@@ -87,7 +87,7 @@ setup(
     ],
     extras_require={"tests": test_req, "docs": doc_req, "dev": test_req + doc_req},
     setup_requires=["cffi>=1.0", "setuptools_scm"],
-    entry_points={"console_scripts": ["21cmfast = py21cmfast.cli:main"]},
+    entry_points={"console_scripts": ["21cmfast = py21cmfirstclass.cli:main"]},
     cffi_modules=[f"{pkgdir}/build_cffi.py:ffi"],
     use_scm_version=True,
 )

@@ -78,7 +78,7 @@ def run_21cmSense(
 
     Returns
     -------
-    noise_data: :class:`~py21cmfast.experiment.NOISE_DATA`
+    noise_data: :class:`~py21cmfirstclass.experiment.NOISE_DATA`
         The noise data object that stores the data of the noise.
 
     """

@@ -4,7 +4,7 @@ from cffi import FFI
 
 ffi = FFI()
 LOCATION = os.path.dirname(os.path.abspath(__file__))
-CLOC = os.path.join(LOCATION, "src", "py21cmfast", "src")
+CLOC = os.path.join(LOCATION, "src", "py21cmfirstclass", "src")
 include_dirs = [CLOC]
 
 # =================================================================
@@ -61,7 +61,7 @@ for k, v in os.environ.items():
 
 # This is the overall C code.
 ffi.set_source(
-    "py21cmfast.c_21cmfast",  # Name/Location of shared library module
+    "py21cmfirstclass.c_21cmfast",  # Name/Location of shared library module
     """
     #define LOG_LEVEL {log_level}
 

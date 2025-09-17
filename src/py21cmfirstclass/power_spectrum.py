@@ -114,7 +114,7 @@ def coeval_power_spectrum(
 
     Parameters
     ----------
-    lightcone: :class:`~py21cmfast.wrapper.Lightcone`
+    lightcone: :class:`~py21cmfirstclass.wrapper.Lightcone`
         The lightcone object that stores the coeval box whose power spectrum
         shall be evaluated.
     redshift: float
@@ -132,7 +132,7 @@ def coeval_power_spectrum(
 
     Returns
     -------
-    power_spectrum : :class:`~py21cmfast.power_spectrum.POWER_SPECTRUM`
+    power_spectrum : :class:`~py21cmfirstclass.power_spectrum.POWER_SPECTRUM`
         A power spectrum object that contains the computed data.
 
     """
@@ -213,7 +213,7 @@ def lightcone_power_spectrum(
 
     Parameters
     ----------
-    lightcone: :class:`~py21cmfast.wrapper.Lightcone`
+    lightcone: :class:`~py21cmfirstclass.wrapper.Lightcone`
         The lightcone object that stores the lightcone box whose power spectrum
         shall be evaluated.
     nchunks: int
@@ -235,7 +235,7 @@ def lightcone_power_spectrum(
 
     Returns
     -------
-    power_spectrum : :class:`~py21cmfast.power_spectrum.POWER_SPECTRUM`
+    power_spectrum : :class:`~py21cmfirstclass.power_spectrum.POWER_SPECTRUM`
         A power spectrum object that contains the computed data.
 
     """

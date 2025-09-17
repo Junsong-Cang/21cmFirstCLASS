@@ -377,7 +377,7 @@ class GlobalParams(StructInstanceWrapper):
 
         Examples
         --------
-        >>> from py21cmfast import global_params, run_lightcone
+        >>> from py21cmfirstclass import global_params, run_lightcone
         >>> with global_params.use(zprime_step_factor=1.1, Sheth_c=0.06):
         >>>     run_lightcone(redshift=7)
         """

@@ -1,4 +1,4 @@
-"""Configure logging for py21cmfast.
+"""Configure logging for py21cmfirstclass.
 
 Significantly, adds a new formatter which prepends the PID of the logging process to
 any output. This is helpful when running multiple threads in MPI.
