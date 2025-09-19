@@ -583,6 +583,7 @@ int ComputeIonizedBox(float redshift, float prev_redshift, struct UserParams *us
                     {
                         spin_temp->mturns_EoR[0] = Mturnover;
                         spin_temp->mturns_EoR[1] = Mturnover_MINI;
+                        printf("IO.c: z = %.2f,  Mturnover_MINI = %.2E\n", redshift, Mturnover_MINI);
                     }
 
                     M_MIN = global_params.M_MIN_INTEGRAL;

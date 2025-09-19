@@ -59,7 +59,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
         {
             writeAstroParams(flag_options, astro_params);
         }
-        
+        // printf("Spin.c: redshift = %.2f, first_box = %d\n", redshift, this_spin_temp->first_box);
         // Makes the parameter structs visible to a variety of functions/macros
         // Do each time to avoid Python garbage collection issues
         Broadcast_struct_global_PS(user_params, cosmo_params);
@@ -4495,7 +4495,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                     this_spin_temp->History_box[head + 6] = previous_spin_temp->mturns_EoR[1];
                 }
 
-                if (flag_options->Calibrate_EoR_feedback)
+                if (flag_options->Calibrate_EoR_feedback && !Radio_Silent)
                 {
                     // Calibrating EoR feedback, coupling to Ts should be negligible by now since T21 would be dominated by xH
                     // Tr_EoR = Get_EoR_Radio_mini(this_spin_temp, astro_params, cosmo_params, flag_options, redshift, Radio_Temp_ave, x_e_ave / (double)HII_TOT_NUM_PIXELS);
