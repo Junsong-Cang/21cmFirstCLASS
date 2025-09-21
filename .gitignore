@@ -55,3 +55,4 @@ r2c*
 plots/
 .vscode/
 src/21cmfast/_version.py
+src/py21cmfirstclass/c_21cmfast.abi3.so
