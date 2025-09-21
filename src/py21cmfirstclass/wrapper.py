@@ -432,6 +432,7 @@ def _configure_user_params(user_params,user_params_dic):
                     logger.warning("You have set RUN_CLASS to False but START_AT_RECOMBINATION and USE_ADIABATIC_FLUCTUATIONS are also False!")
                     logger.warning("This means that the code starts with homogeneous temperature box, which would lead to inconsistencies in the 21cm power spectrum.")
                     logger.warning("Automatically setting USE_ADIABATIC_FLUCTUATIONS to True.\n")
+                    # logger.warning("Please consider setting USE_ADIABATIC_FLUCTUATIONS to True!\n")
             except KeyError:
                 pass
             user_params.USE_ADIABATIC_FLUCTUATIONS = True
