@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: 21cmFirstCLASS
-Version: 0.1.dev59+g98f627fca
+Version: 0.1.dev60+g412743b61.d20250923
 Summary: A semi-numerical cosmological simulation code for the 21cm signal
 Home-page: https://github.com/Junsong-Cang/21cmFirstCLASS/tree/Radio
 Author: The 21cmFAST+21cmFirstCLASS coredev team

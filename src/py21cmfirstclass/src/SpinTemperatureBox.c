@@ -4467,17 +4467,17 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                 // Caching averaged quantities
                 if (this_spin_temp->first_box)
                 {
-                    this_spin_temp->History_box[0] = 1.0;                      // ArchiveSize
-                    this_spin_temp->History_box[1] = global_params.Z_HEAT_MAX; // redshift
-                    this_spin_temp->History_box[2] = 0.0;                      // Phi
-                    this_spin_temp->History_box[3] = Tk_BC;                    // Tk
-                    this_spin_temp->History_box[4] = 0.0;                      // Phi_mini
-                    this_spin_temp->History_box[5] = zpp_for_evolve_list[0];   // zpp0
-                    this_spin_temp->History_box[6] = 1.0e20;                   // mturn_II
-                    this_spin_temp->History_box[7] = 1.0e20;                   // mturn_III
-                    this_spin_temp->History_box[8] = 0.0;                      // Phi_mini_calibrated
-                    this_spin_temp->mturns_EoR[0] = 1.0e20;                    // mturn_II
-                    this_spin_temp->mturns_EoR[1] = 1.0e20;                    // mturn_III
+                    this_spin_temp->History_box[0] = 1.0;                    // ArchiveSize
+                    this_spin_temp->History_box[1] = redshift;               // redshift
+                    this_spin_temp->History_box[2] = 0.0;                    // Phi
+                    this_spin_temp->History_box[3] = Tk_BC;                  // Tk
+                    this_spin_temp->History_box[4] = 0.0;                    // Phi_mini
+                    this_spin_temp->History_box[5] = zpp_for_evolve_list[0]; // zpp0
+                    this_spin_temp->History_box[6] = 1.0e20;                 // mturn_II
+                    this_spin_temp->History_box[7] = 1.0e20;                 // mturn_III
+                    this_spin_temp->History_box[8] = 0.0;                    // Phi_mini_calibrated
+                    this_spin_temp->mturns_EoR[0] = 1.0e20;                  // mturn_II
+                    this_spin_temp->mturns_EoR[1] = 1.0e20;                  // mturn_III
                 }
                 else
                 {
@@ -4491,18 +4491,28 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                     this_spin_temp->History_box[head + 2] = T_IGM_ave;
                     this_spin_temp->History_box[head + 3] = Phi_ave_mini;
                     this_spin_temp->History_box[head + 4] = zpp_for_evolve_list[0];
-                    this_spin_temp->History_box[head + 5] = previous_spin_temp->mturns_EoR[0];
-                    this_spin_temp->History_box[head + 6] = previous_spin_temp->mturns_EoR[1];
+                    if (redshift > global_params.Z_HEAT_MAX - 0.2)
+                    {
+                        // P21f sometimes skip IO.c call
+                        this_spin_temp->History_box[head + 5] = 1.0E20;
+                        this_spin_temp->History_box[head + 6] = 1.0E20;
+                    }
+                    else
+                    {
+                        this_spin_temp->History_box[head + 5] = previous_spin_temp->mturns_EoR[0];
+                        this_spin_temp->History_box[head + 6] = previous_spin_temp->mturns_EoR[1];
+                    }
                 }
 
-                if (flag_options->Calibrate_EoR_feedback && !Radio_Silent)
+                // if (flag_options->Calibrate_EoR_feedback && !Radio_Silent)
+                if (flag_options->Calibrate_EoR_feedback)
                 {
                     // Calibrating EoR feedback, coupling to Ts should be negligible by now since T21 would be dominated by xH
                     // Tr_EoR = Get_EoR_Radio_mini(this_spin_temp, astro_params, cosmo_params, flag_options, redshift, Radio_Temp_ave, x_e_ave / (double)HII_TOT_NUM_PIXELS);
                     Tr_EoR = Get_EoR_Radio_mini_v2(this_spin_temp, astro_params, cosmo_params, redshift);
                     // SFRD_EoR_MINI = Get_SFRD_EoR_MINI(previous_spin_temp, this_spin_temp, astro_params, cosmo_params, x_e_ave / (double)HII_TOT_NUM_PIXELS, zpp_Rct0);
                     SFRD_EoR_MINI = 0.0; // Delibrately setting to 0, will do this later because for now I need to go to sleep
-                    
+
                     SFRD_MINI_ave = Phi_2_SFRD(Phi_ave_mini, zpp_Rct0, H_Rct0, astro_params, cosmo_params, 1);
                     SFRD_MINI_ave = SFRD_MINI_ave > 1e-200 ? SFRD_MINI_ave : 1e-200; // avoid nan in divide
 

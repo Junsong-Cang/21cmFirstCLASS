@@ -501,8 +501,8 @@ double Get_EoR_Radio_mini_v2(struct TsBox *this_spin_temp, struct AstroParams *a
 				mt = this_spin_temp->History_box[head + 6];
 				if (mt < 1.0e2)
 				{
-					fprintf(stderr, "Error @ Get_EoR_Radio_mini: mturn is smaller than 100, this is not supposed to happen. mturn = %.3E, z = %.2E\n", mt, redshift);
-					// Throw(ValueError);
+					fprintf(stderr, "Error @ Get_EoR_Radio_mini (p21f): mturn is smaller than 100. mturn = %.3E, redshift = %.3f, z = %.3f\n", mt, redshift, z);
+					Throw(ValueError);
 				}
 				nion_axis[idx] = Nion_General_MINI(z, global_params.M_MIN_INTEGRAL, mt, mc, astro_params->ALPHA_STAR_MINI, 0., astro_params->F_STAR7_MINI, 1., Mlim_Fstar_MINI, 0.);
 
