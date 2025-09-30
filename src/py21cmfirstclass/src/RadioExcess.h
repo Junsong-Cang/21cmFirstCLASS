@@ -370,6 +370,11 @@ double Get_Radio_Temp_HMG(struct TsBox *previous_spin_temp, struct TsBox *this_s
 			}
 		}
 	}
+	if (isfinite(Radio_Temp) == 0)
+	{
+		fprintf(stderr, "Error @ Get_Radio_Temp_HMG :  Radio_Temp is NaN! Crash imminent\n");
+		Throw(ValueError);
+	}
 	return Radio_Temp;
 }
 

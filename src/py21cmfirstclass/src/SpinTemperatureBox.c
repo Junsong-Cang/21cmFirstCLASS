@@ -4415,6 +4415,11 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                         //                Throw(ParameterError);
                         Throw(InfinityorNaNError);
                     }
+                    if (isfinite(this_spin_temp->Trad_box[box_ct]) == 0)
+                    {
+                        LOG_ERROR("Estimated Radio temperature is either infinite of NaN!");
+                        Throw(InfinityorNaNError);
+                    }
                 }
 
                 // ---- Computing averaged quantities ----
@@ -4463,7 +4468,14 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                         this_spin_temp->History_box[box_ct] = previous_spin_temp->History_box[box_ct];
                     }
                 }
+                printf("SP.c====, Radio_Temp_ave = %4f, z = %4f\n", Radio_Temp_ave, redshift);
 
+                if (isfinite(T_IGM_ave) == 0)
+                {
+                    printf("T_IGM_ave = %E\n which is NaN or infinite!", T_IGM_ave);
+                    Throw(InfinityorNaNError);
+                }
+                
                 // Caching averaged quantities
                 if (this_spin_temp->first_box)
                 {

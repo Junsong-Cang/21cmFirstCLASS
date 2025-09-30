@@ -6,7 +6,6 @@ int ComputeBrightnessTemp(float redshift, struct UserParams *user_params, struct
                           struct TsBox *spin_temp, struct IonizedBox *ionized_box,
                           struct PerturbedField *perturb_field, struct BrightnessTemp *box)
 {
-
     int status;
     Try
     { // Try block around whole function.
@@ -20,6 +19,22 @@ int ComputeBrightnessTemp(float redshift, struct UserParams *user_params, struct
         int i, ii, j, k, n_x, n_y, n_z;
         float k_x, k_y, k_z;
         double ave;
+
+        for (i = 0; i < user_params->HII_DIM; i++)
+            {
+                for (j = 0; j < user_params->HII_DIM; j++)
+                {
+                    for (k = 0; k < user_params->HII_DIM; k++)
+                    {
+                        if (isfinite(spin_temp->Trad_box[HII_R_INDEX(i, j, k)]) == 0)
+                        {
+                            printf("====IO.c====, TR = %4E, z = %4f\n", spin_temp->Trad_box[HII_R_INDEX(i, j, k)], redshift);
+                        }
+                    }
+                }
+            }
+
+
 
         ave = 0.;
 
@@ -55,6 +70,7 @@ int ComputeBrightnessTemp(float redshift, struct UserParams *user_params, struct
         float RSD_pos_new, RSD_pos_new_boundary_low, RSD_pos_new_boundary_high, fraction_within, fraction_outside, cell_distance;
 
         double dvdx, max_v_deriv;
+        double junsong_debug_var_tmp;
         float const_factor, T_rad, pixel_Ts_factor, pixel_x_HI, pixel_deltax, H;
         // JordanFlitter: new variables for low temperature corrections
         double xi_factor, xi_correction;
@@ -112,12 +128,21 @@ int ComputeBrightnessTemp(float redshift, struct UserParams *user_params, struct
                                 // box->brightness_temp[HII_R_INDEX(i,j,k)] *= pixel_Ts_factor;
                                 // Converting the prefactors into the optical depth, tau. Factor of 1000 is the conversion of spin temperature from K to mK
                                 box->brightness_temp[HII_R_INDEX(i, j, k)] *= (1. + redshift) / (1000. * spin_temp->Ts_box[HII_R_INDEX(i, j, k)]);
+                                junsong_debug_var_tmp = box->brightness_temp[HII_R_INDEX(i, j, k)];
                                 box->brightness_temp[HII_R_INDEX(i, j, k)] = (1. - exp(-box->brightness_temp[HII_R_INDEX(i, j, k)])) *
                                                                              1000. * (spin_temp->Ts_box[HII_R_INDEX(i, j, k)] - T_rad - spin_temp->Trad_box[HII_R_INDEX(i, j, k)]) / (1. + redshift);
+                                if (isfinite(box->brightness_temp[HII_R_INDEX(i, j, k)]) == 0)
+                                {
+                                    // printf("tb0 = %3E, Ts = %3E, Trad = %3E, TR = %3E\n", junsong_debug_var_tmp, spin_temp->Ts_box[HII_R_INDEX(i, j, k)], T_rad, spin_temp->Trad_box[HII_R_INDEX(i, j, k)]);
+                                    // printf("TB.c:   TRadio = %4f, z = %4f\n", spin_temp->Trad_box[HII_R_INDEX(i, j, k)], redshift);
+                                }
                             }
                         }
-
                         ave += box->brightness_temp[HII_R_INDEX(i, j, k)];
+                        if (isfinite(box->brightness_temp[HII_R_INDEX(i, j, k)]) == 0)
+                        {
+                            // printf("debug MSG: === Found NaN, T21 = %3f, Ts = %3E, const_factor = %4E, pixel_x_HI = %4E, pixel_deltax = %4E\n", box->brightness_temp[HII_R_INDEX(i, j, k)], spin_temp->Ts_box[HII_R_INDEX(i, j, k)], const_factor, pixel_x_HI, pixel_deltax);
+                        }
                     }
                 }
             }
