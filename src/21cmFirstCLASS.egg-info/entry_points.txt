@@ -1,2 +1,0 @@
-[console_scripts]
-21cmfirstclass = py21cmfirstclass.cli:main
