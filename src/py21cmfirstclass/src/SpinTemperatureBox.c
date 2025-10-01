@@ -51,8 +51,6 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                  struct InitialConditions *ini_boxes, struct TsBox *this_spin_temp)
 {
 
-    printf("====SPIN.c: first_box = %d, z = %3f, zheat = %3f\n", this_spin_temp->first_box, redshift, global_params.Z_HEAT_MAX);
-
     int status;
     Try
     { // This Try{} wraps the whole function.
@@ -280,6 +278,8 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
             LOG_ERROR("Need to use Refine_T_Radio for this feature, which has not been tested for mpi.");
             Throw(ValueError);
         }
+
+        this_spin_temp->mturns_EoR[2] = 0.0;
 
         // JordanFlitter: We don't need these during the dark ages
         if (redshift <= global_params.Z_HEAT_MAX)
@@ -2663,7 +2663,6 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                 zpp_max = zpp_for_evolve_list[global_params.NUM_FILTER_STEPS_FOR_Ts - 1];
                 // Correcting for the radio temp from sources > R_XLy_MAX
                 Radio_Temp_HMG = Get_Radio_Temp_HMG(previous_spin_temp, this_spin_temp, astro_params, cosmo_params, flag_options, zpp_max, redshift, global_params.Z_HEAT_MAX);
-                printf("==== Get_Radio_Temp_HMG : set to 0 if running with high z or history box is smaller than 3!");
 
                 // JordanFlitter: if we evolve the baryons density field, we need to have delta_b(z) and its redshift derivative
                 if (user_params->EVOLVE_BARYONS)
@@ -4474,10 +4473,13 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                         this_spin_temp->History_box[box_ct] = previous_spin_temp->History_box[box_ct];
                     }
                 }
-
+                this_spin_temp->mturns_EoR[2]  = 1.0;
+                
                 // Caching averaged quantities
-                if (this_spin_temp->first_box)
+                //if (this_spin_temp->first_box)
+                if (previous_spin_temp->mturns_EoR[2] < 1.0)
                 {
+                    // Astro module has never been called in Spin.c before
                     this_spin_temp->History_box[0] = 1.0;                    // ArchiveSize
                     this_spin_temp->History_box[1] = redshift;               // redshift
                     this_spin_temp->History_box[2] = 0.0;                    // Phi
@@ -4502,9 +4504,10 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                     this_spin_temp->History_box[head + 2] = T_IGM_ave;
                     this_spin_temp->History_box[head + 3] = Phi_ave_mini;
                     this_spin_temp->History_box[head + 4] = zpp_for_evolve_list[0];
-                    if (redshift > global_params.Z_HEAT_MAX - 0.2)
+                    // if (redshift > global_params.Z_HEAT_MAX - 0.2)
+                    if (previous_spin_temp->mturns_EoR[3] < 1.0)
                     {
-                        // P21f sometimes skip IO.c call?
+                        // MNIHALO hasn't been called yet in Ion.c and mturn is unassigned
                         this_spin_temp->History_box[head + 5] = 1.0E20;
                         this_spin_temp->History_box[head + 6] = 1.0E20;
                     }
@@ -4512,10 +4515,6 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                     {
                         this_spin_temp->History_box[head + 5] = previous_spin_temp->mturns_EoR[0];
                         this_spin_temp->History_box[head + 6] = previous_spin_temp->mturns_EoR[1];
-                        if (previous_spin_temp->mturns_EoR[1] < 1.0E2)
-                        {
-                            printf("mturn_mini is smaller than 100? mturn = %3E, z = %3f, zheat_max = %3E====\n", previous_spin_temp->mturns_EoR[1], redshift, global_params.Z_HEAT_MAX);
-                        }
                     }
                 }
 

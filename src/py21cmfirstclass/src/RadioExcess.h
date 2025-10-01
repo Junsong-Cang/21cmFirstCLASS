@@ -481,17 +481,17 @@ void Calibrate_Phi_mini(struct TsBox *previous_spin_temp, struct TsBox *this_spi
 
 double Get_EoR_Radio_mini_v2(struct TsBox *this_spin_temp, struct AstroParams *astro_params, struct CosmoParams *cosmo_params, float redshift)
 {
-	int idx, nz, ArchiveSize, head;
+	int idx, nz, ArchiveSize, head, terminate;
 	double nion, dz, fun, dT, T, Prefix, Phi, z, z_prev, mt, mc, Mlim_Fstar_MINI, z_axis[400], nion_axis[400], zmin, zmax;
 	nz = 400;
-
+	terminate = 0; // sometimes in mpi or parralel loops python might proceed even with error, use this to give NaN which will terminate the simulation by various NaN checkpoints
+	
 	if ((this_spin_temp->first_box) || (redshift > 33.0))
 	{
 		T = 0;
 	}
 	else
 	{
-		// printf("---- Using V2----\n");
 		ArchiveSize = (int)round(this_spin_temp->History_box[0]);
 		if (ArchiveSize > 3)
 		{
@@ -514,6 +514,7 @@ double Get_EoR_Radio_mini_v2(struct TsBox *this_spin_temp, struct AstroParams *a
 				{
 					fprintf(stderr, "Error @ Get_EoR_Radio_mini (p21f): mturn is smaller than 100. mturn = %.3E, redshift = %.3f, contaminated z = %.3f\n", mt, redshift, z);
 					Throw(ValueError);
+					terminate = 1;
 				}
 				nion_axis[idx] = Nion_General_MINI(z, global_params.M_MIN_INTEGRAL, mt, mc, astro_params->ALPHA_STAR_MINI, 0., astro_params->F_STAR7_MINI, 1., Mlim_Fstar_MINI, 0.);
 			}
@@ -535,7 +536,14 @@ double Get_EoR_Radio_mini_v2(struct TsBox *this_spin_temp, struct AstroParams *a
 		}
 		else
 		{
-			T = 0;
+			if (terminate == 1)
+			{
+				T = 0.0/0.0;
+			}
+			else
+			{
+				T = 0;
+			}
 		}
 	}
 	return T;
