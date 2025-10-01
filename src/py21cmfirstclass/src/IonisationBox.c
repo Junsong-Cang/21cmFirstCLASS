@@ -27,7 +27,7 @@ int ComputeIonizedBox(float redshift, float prev_redshift, struct UserParams *us
                       struct InitialConditions *ini_boxes,
                       struct IonizedBox *box)
 {
-
+    printf("====ION.c: first_box = %d, z = %3f\n", spin_temp->first_box, redshift);
     int status;
 
     Try
@@ -579,10 +579,14 @@ int ComputeIonizedBox(float redshift, float prev_redshift, struct UserParams *us
                     Mturnover = pow(10., box->log10_Mturnover_ave);
                     Mturnover_MINI = pow(10., box->log10_Mturnover_MINI_ave);
                     // Saving m_turns, this spin_box is then passed to spin.c as prev_box
-                    if (flag_options->Calibrate_EoR_feedback && (!spin_temp->first_box))
+                    //if (flag_options->Calibrate_EoR_feedback && (!spin_temp->first_box))
+                    if (flag_options->Calibrate_EoR_feedback)
                     {
                         spin_temp->mturns_EoR[0] = Mturnover;
                         spin_temp->mturns_EoR[1] = Mturnover_MINI;
+
+                        printf("=== Mturnover_MINI = %3E, z = %3f\n", Mturnover_MINI, redshift);
+
                     }
 
                     M_MIN = global_params.M_MIN_INTEGRAL;

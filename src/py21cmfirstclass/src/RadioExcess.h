@@ -300,7 +300,7 @@ double History_box_Interp(struct TsBox *previous_spin_temp, double z, int Type, 
 	return r;
 }
 
-double Get_Radio_Temp_HMG(struct TsBox *previous_spin_temp, struct TsBox *this_spin_temp, struct AstroParams *astro_params, struct CosmoParams *cosmo_params, struct FlagOptions *flag_options, double zpp_max, double redshift)
+double Get_Radio_Temp_HMG(struct TsBox *previous_spin_temp, struct TsBox *this_spin_temp, struct AstroParams *astro_params, struct CosmoParams *cosmo_params, struct FlagOptions *flag_options, double zpp_max, double redshift, double Z_HEAT_MAX)
 {
 
 	/* Find Radio Temp from sources in redshifts [zpp_max, Z_Heat_max]
@@ -313,12 +313,10 @@ double Get_Radio_Temp_HMG(struct TsBox *previous_spin_temp, struct TsBox *this_s
 	int nz, zid, RadioSilent;
 
 	nz = 1000;
-	RadioSilent = 1;
 
 	if (flag_options->USE_RADIO_ACG)
 	{
 		Radio_Prefix_ACG = 113.6161 * astro_params->fR * cosmo_params->OMb * (pow(cosmo_params->hlittle, 2)) * (astro_params->F_STAR10) * pow(astro_nu0 / 1.4276, astro_params->aR) * pow(1 + redshift, 3 + astro_params->aR);
-		RadioSilent = 0;
 	}
 	else
 	{
@@ -328,14 +326,22 @@ double Get_Radio_Temp_HMG(struct TsBox *previous_spin_temp, struct TsBox *this_s
 	if (flag_options->USE_RADIO_MCG)
 	{
 		Radio_Prefix_MCG = 113.6161 * astro_params->fR_mini * cosmo_params->OMb * (pow(cosmo_params->hlittle, 2)) * (astro_params->F_STAR7_MINI) * pow(astro_nu0 / 1.4276, astro_params->aR_mini) * pow(1 + redshift, 3 + astro_params->aR_mini);
-		RadioSilent = 0;
 	}
 	else
 	{
 		Radio_Prefix_MCG = 0.0;
 	}
 
-	if ((RadioSilent || redshift > 50.0) || this_spin_temp->first_box)
+	if (flag_options->USE_RADIO_ACG || flag_options->USE_RADIO_MCG)
+	{
+		RadioSilent = 0;
+	}
+	else
+	{
+		RadioSilent = 1;
+	}
+
+	if ((RadioSilent || redshift > Z_HEAT_MAX - 0.8) || this_spin_temp->first_box)
 	{
 		Radio_Temp = 0.0;
 	}
@@ -478,7 +484,7 @@ double Get_EoR_Radio_mini_v2(struct TsBox *this_spin_temp, struct AstroParams *a
 	int idx, nz, ArchiveSize, head;
 	double nion, dz, fun, dT, T, Prefix, Phi, z, z_prev, mt, mc, Mlim_Fstar_MINI, z_axis[400], nion_axis[400], zmin, zmax;
 	nz = 400;
-	
+
 	if ((this_spin_temp->first_box) || (redshift > 33.0))
 	{
 		T = 0;
@@ -506,11 +512,10 @@ double Get_EoR_Radio_mini_v2(struct TsBox *this_spin_temp, struct AstroParams *a
 				mt = this_spin_temp->History_box[head + 6];
 				if (mt < 1.0e2)
 				{
-					fprintf(stderr, "Error @ Get_EoR_Radio_mini (p21f): mturn is smaller than 100. mturn = %.3E, redshift = %.3f, z = %.3f\n", mt, redshift, z);
+					fprintf(stderr, "Error @ Get_EoR_Radio_mini (p21f): mturn is smaller than 100. mturn = %.3E, redshift = %.3f, contaminated z = %.3f\n", mt, redshift, z);
 					Throw(ValueError);
 				}
 				nion_axis[idx] = Nion_General_MINI(z, global_params.M_MIN_INTEGRAL, mt, mc, astro_params->ALPHA_STAR_MINI, 0., astro_params->F_STAR7_MINI, 1., Mlim_Fstar_MINI, 0.);
-
 			}
 
 			// Now interpolate for finer z

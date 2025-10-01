@@ -50,6 +50,9 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                  struct PerturbedField *perturbed_field, struct TsBox *previous_spin_temp,
                  struct InitialConditions *ini_boxes, struct TsBox *this_spin_temp)
 {
+
+    printf("====SPIN.c: first_box = %d, z = %3f, zheat = %3f\n", this_spin_temp->first_box, redshift, global_params.Z_HEAT_MAX);
+
     int status;
     Try
     { // This Try{} wraps the whole function.
@@ -633,6 +636,27 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
         {
             EPSILON_THRES = global_params.EPSILON_THRESH_LOW_Z;
         }
+
+        // Setting Initial conditions for Trad & SFRD, it's best to do them all here rather than doing multiple times in e.g., high z, first_box, etc. boxes will be updated if needed anyway
+#pragma omp parallel shared(this_spin_temp) \
+    private(i, j, k, curr_xalpha)           \
+    num_threads(user_params -> N_THREADS)
+        {
+#pragma omp for
+            for (i = 0; i < user_params->HII_DIM; i++)
+            {
+                for (j = 0; j < user_params->HII_DIM; j++)
+                {
+                    for (k = 0; k < user_params->HII_DIM; k++)
+                    {
+                        this_spin_temp->Trad_box[HII_R_INDEX(i, j, k)] = 0.0;
+                        this_spin_temp->SFRD_box[HII_R_INDEX(i, j, k)] = 0.0;
+                        this_spin_temp->SFRD_MINI_box[HII_R_INDEX(i, j, k)] = 0.0;
+                    }
+                }
+            }
+        }
+
         // JordanFlitter: Changed the following logic for "high redshifts"
         if ((redshift > global_params.Z_HEAT_MAX && !user_params->START_AT_RECOMBINATION) ||
             (redshift > user_params->Z_HIGH_MAX && user_params->START_AT_RECOMBINATION))
@@ -701,10 +725,6 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                                 this_spin_temp->T_chi_box[HII_R_INDEX(i, j, k)] = T_chi_BC;     // K
                                 this_spin_temp->V_chi_b_box[HII_R_INDEX(i, j, k)] = V_chi_b_BC; // km/sec
                             }
-                            // Junsong: added radio excess & SFRD boxes, might need to remove this to reduce memory overloads
-                            this_spin_temp->Trad_box[HII_R_INDEX(i, j, k)] = 0.0;
-                            this_spin_temp->SFRD_box[HII_R_INDEX(i, j, k)] = 0.0;
-                            this_spin_temp->SFRD_MINI_box[HII_R_INDEX(i, j, k)] = 0.0;
                         }
                     }
                 }
@@ -2642,7 +2662,8 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
 
                 zpp_max = zpp_for_evolve_list[global_params.NUM_FILTER_STEPS_FOR_Ts - 1];
                 // Correcting for the radio temp from sources > R_XLy_MAX
-                Radio_Temp_HMG = Get_Radio_Temp_HMG(previous_spin_temp, this_spin_temp, astro_params, cosmo_params, flag_options, zpp_max, redshift);
+                Radio_Temp_HMG = Get_Radio_Temp_HMG(previous_spin_temp, this_spin_temp, astro_params, cosmo_params, flag_options, zpp_max, redshift, global_params.Z_HEAT_MAX);
+                printf("==== Get_Radio_Temp_HMG : set to 0 if running with high z or history box is smaller than 3!");
 
                 // JordanFlitter: if we evolve the baryons density field, we need to have delta_b(z) and its redshift derivative
                 if (user_params->EVOLVE_BARYONS)
@@ -4407,21 +4428,6 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                     }
                 }
 
-                for (box_ct = 0; box_ct < HII_TOT_NUM_PIXELS; box_ct++)
-                {
-                    if (isfinite(this_spin_temp->Ts_box[box_ct]) == 0)
-                    {
-                        LOG_ERROR("Estimated spin temperature is either infinite of NaN!");
-                        //                Throw(ParameterError);
-                        Throw(InfinityorNaNError);
-                    }
-                    if (isfinite(this_spin_temp->Trad_box[box_ct]) == 0)
-                    {
-                        LOG_ERROR("Estimated Radio temperature is either infinite of NaN!");
-                        Throw(InfinityorNaNError);
-                    }
-                }
-
                 // ---- Computing averaged quantities ----
                 T_IGM_ave = 0.0;
                 Radio_Temp_ave = 0.0;
@@ -4468,14 +4474,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                         this_spin_temp->History_box[box_ct] = previous_spin_temp->History_box[box_ct];
                     }
                 }
-                printf("SP.c====, Radio_Temp_ave = %4f, z = %4f\n", Radio_Temp_ave, redshift);
 
-                if (isfinite(T_IGM_ave) == 0)
-                {
-                    printf("T_IGM_ave = %E\n which is NaN or infinite!", T_IGM_ave);
-                    Throw(InfinityorNaNError);
-                }
-                
                 // Caching averaged quantities
                 if (this_spin_temp->first_box)
                 {
@@ -4505,7 +4504,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                     this_spin_temp->History_box[head + 4] = zpp_for_evolve_list[0];
                     if (redshift > global_params.Z_HEAT_MAX - 0.2)
                     {
-                        // P21f sometimes skip IO.c call
+                        // P21f sometimes skip IO.c call?
                         this_spin_temp->History_box[head + 5] = 1.0E20;
                         this_spin_temp->History_box[head + 6] = 1.0E20;
                     }
@@ -4513,11 +4512,14 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                     {
                         this_spin_temp->History_box[head + 5] = previous_spin_temp->mturns_EoR[0];
                         this_spin_temp->History_box[head + 6] = previous_spin_temp->mturns_EoR[1];
+                        if (previous_spin_temp->mturns_EoR[1] < 1.0E2)
+                        {
+                            printf("mturn_mini is smaller than 100? mturn = %3E, z = %3f, zheat_max = %3E====\n", previous_spin_temp->mturns_EoR[1], redshift, global_params.Z_HEAT_MAX);
+                        }
                     }
                 }
 
-                // if (flag_options->Calibrate_EoR_feedback && !Radio_Silent)
-                if (flag_options->Calibrate_EoR_feedback)
+                if (flag_options->Calibrate_EoR_feedback && !Radio_Silent)
                 {
                     // Calibrating EoR feedback, coupling to Ts should be negligible by now since T21 would be dominated by xH
                     // Tr_EoR = Get_EoR_Radio_mini(this_spin_temp, astro_params, cosmo_params, flag_options, redshift, Radio_Temp_ave, x_e_ave / (double)HII_TOT_NUM_PIXELS);
@@ -4532,6 +4534,29 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                     {
                         this_spin_temp->Trad_box[box_ct] = Tr_EoR * this_spin_temp->Trad_box[box_ct] / Radio_Temp_ave;
                         this_spin_temp->SFRD_MINI_box[box_ct] = SFRD_EoR_MINI * this_spin_temp->SFRD_MINI_box[box_ct] / SFRD_MINI_ave;
+                    }
+                }
+
+                // Final Check: Ensure that is no NaN
+                for (box_ct = 0; box_ct < HII_TOT_NUM_PIXELS; box_ct++)
+                {
+                    if (isfinite(this_spin_temp->Ts_box[box_ct]) == 0)
+                    {
+                        LOG_ERROR("Estimated spin temperature is either infinite of NaN!");
+                        //                Throw(ParameterError);
+                        Throw(InfinityorNaNError);
+                    }
+
+                    if (isfinite(this_spin_temp->Tk_box[box_ct]) == 0)
+                    {
+                        LOG_ERROR("Estimated kinetic temperature is either infinite of NaN!");
+                        Throw(InfinityorNaNError);
+                    }
+
+                    if (isfinite(this_spin_temp->Trad_box[box_ct]) == 0)
+                    {
+                        LOG_ERROR("Estimated Radio temperature is either infinite of NaN!");
+                        Throw(InfinityorNaNError);
                     }
                 }
 

@@ -20,22 +20,6 @@ int ComputeBrightnessTemp(float redshift, struct UserParams *user_params, struct
         float k_x, k_y, k_z;
         double ave;
 
-        for (i = 0; i < user_params->HII_DIM; i++)
-            {
-                for (j = 0; j < user_params->HII_DIM; j++)
-                {
-                    for (k = 0; k < user_params->HII_DIM; k++)
-                    {
-                        if (isfinite(spin_temp->Trad_box[HII_R_INDEX(i, j, k)]) == 0)
-                        {
-                            printf("====IO.c====, TR = %4E, z = %4f\n", spin_temp->Trad_box[HII_R_INDEX(i, j, k)], redshift);
-                        }
-                    }
-                }
-            }
-
-
-
         ave = 0.;
 
         omp_set_num_threads(user_params->N_THREADS);
@@ -131,18 +115,9 @@ int ComputeBrightnessTemp(float redshift, struct UserParams *user_params, struct
                                 junsong_debug_var_tmp = box->brightness_temp[HII_R_INDEX(i, j, k)];
                                 box->brightness_temp[HII_R_INDEX(i, j, k)] = (1. - exp(-box->brightness_temp[HII_R_INDEX(i, j, k)])) *
                                                                              1000. * (spin_temp->Ts_box[HII_R_INDEX(i, j, k)] - T_rad - spin_temp->Trad_box[HII_R_INDEX(i, j, k)]) / (1. + redshift);
-                                if (isfinite(box->brightness_temp[HII_R_INDEX(i, j, k)]) == 0)
-                                {
-                                    // printf("tb0 = %3E, Ts = %3E, Trad = %3E, TR = %3E\n", junsong_debug_var_tmp, spin_temp->Ts_box[HII_R_INDEX(i, j, k)], T_rad, spin_temp->Trad_box[HII_R_INDEX(i, j, k)]);
-                                    // printf("TB.c:   TRadio = %4f, z = %4f\n", spin_temp->Trad_box[HII_R_INDEX(i, j, k)], redshift);
-                                }
                             }
                         }
                         ave += box->brightness_temp[HII_R_INDEX(i, j, k)];
-                        if (isfinite(box->brightness_temp[HII_R_INDEX(i, j, k)]) == 0)
-                        {
-                            // printf("debug MSG: === Found NaN, T21 = %3f, Ts = %3E, const_factor = %4E, pixel_x_HI = %4E, pixel_deltax = %4E\n", box->brightness_temp[HII_R_INDEX(i, j, k)], spin_temp->Ts_box[HII_R_INDEX(i, j, k)], const_factor, pixel_x_HI, pixel_deltax);
-                        }
                     }
                 }
             }
