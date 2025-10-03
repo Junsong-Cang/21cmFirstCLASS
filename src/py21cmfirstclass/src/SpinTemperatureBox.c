@@ -60,6 +60,11 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
         {
             writeAstroParams(flag_options, astro_params);
         }
+        /*
+        TODO: Junsong
+        Dont forget this SFRD_EoR_MINI
+        */
+        printf("Check TODO above ====\n");
         // printf("Spin.c: redshift = %.2f, first_box = %d\n", redshift, this_spin_temp->first_box);
         // Makes the parameter structs visible to a variety of functions/macros
         // Do each time to avoid Python garbage collection issues
@@ -2054,6 +2059,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                     if (R_ct == 0)
                     {
                         dzpp_for_evolve = zp - zpp_edge[0];
+                        dzpp_Rct0 = fabs(dzpp_for_evolve);
                     }
                     else
                     {
@@ -4449,7 +4455,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                     // at this stage R_ct woube be 0 anyway
                     if (flag_options->USE_MASS_DEPENDENT_ZETA)
                     {
-                        Phi = dfcoll_dz_val * (double)del_fcoll_Rct[box_ct] / dzpp_Rct0;
+                        Phi = dfcoll_dz_val * (double)del_fcoll_Rct[box_ct] / dzpp_Rct0; // TODO: in a bugged version in which dzpp_Rct0 is undefined, Phi_ave is ~1E-15, how? shouldn't it be inf?
                         Phi_ave += Phi / ((double)HII_TOT_NUM_PIXELS);
 
                         if (flag_options->USE_MINI_HALOS)
@@ -4468,16 +4474,17 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                     this_spin_temp->SFRD_MINI_box[box_ct] = Phi_2_SFRD(Phi_mini, zpp_Rct0, H_Rct0, astro_params, cosmo_params, 1);
 
                     // copying entire History_box
-                    if (!this_spin_temp->first_box)
+                    if (previous_spin_temp->mturns_EoR[2] >= 0.5) // Astro called previously
                     {
                         this_spin_temp->History_box[box_ct] = previous_spin_temp->History_box[box_ct];
                     }
                 }
-                this_spin_temp->mturns_EoR[2]  = 1.0;
-                
+
+                this_spin_temp->mturns_EoR[2] = 1.0;
+
                 // Caching averaged quantities
-                //if (this_spin_temp->first_box)
-                if (previous_spin_temp->mturns_EoR[2] < 1.0)
+                // if (this_spin_temp->first_box)
+                if (previous_spin_temp->mturns_EoR[2] < 0.5)
                 {
                     // Astro module has never been called in Spin.c before
                     this_spin_temp->History_box[0] = 1.0;                    // ArchiveSize
@@ -4518,11 +4525,10 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                     }
                 }
 
-                if (flag_options->Calibrate_EoR_feedback && !Radio_Silent)
+                if (flag_options->Calibrate_EoR_feedback && flag_options->USE_RADIO_MCG)
                 {
                     // Calibrating EoR feedback, coupling to Ts should be negligible by now since T21 would be dominated by xH
-                    // Tr_EoR = Get_EoR_Radio_mini(this_spin_temp, astro_params, cosmo_params, flag_options, redshift, Radio_Temp_ave, x_e_ave / (double)HII_TOT_NUM_PIXELS);
-                    Tr_EoR = Get_EoR_Radio_mini_v2(this_spin_temp, astro_params, cosmo_params, redshift);
+                    Tr_EoR = Get_EoR_Radio_mini(this_spin_temp, astro_params, cosmo_params, redshift);
                     // SFRD_EoR_MINI = Get_SFRD_EoR_MINI(previous_spin_temp, this_spin_temp, astro_params, cosmo_params, x_e_ave / (double)HII_TOT_NUM_PIXELS, zpp_Rct0);
                     SFRD_EoR_MINI = 0.0; // Delibrately setting to 0, will do this later because for now I need to go to sleep
 

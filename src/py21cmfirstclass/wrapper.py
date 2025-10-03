@@ -3806,7 +3806,7 @@ def run_lightcone(
 
         # JordanFlitter: I added tqdm waiting bars
         for iz, z in tqdm.tqdm(enumerate(scrollz_cosmic_dawn),
-                             desc="21cmFAST (cosmic dawn)",
+                             desc="21cmFirstCLASS (cosmic dawn)",
                              unit="redshift",
                              disable=False,
                              total=len(scrollz_cosmic_dawn)):
