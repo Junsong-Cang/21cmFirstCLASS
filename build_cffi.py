@@ -10,17 +10,12 @@ include_dirs = [CLOC]
 # =================================================================
 # Set compilation arguments dependent on environment... a bit buggy
 # =================================================================
-if not platform.system() == 'Darwin':
-    if "DEBUG" in os.environ:
-        extra_compile_args = ["-fopenmp", "-w", "-g", "-O0"]
-    else:
-        extra_compile_args = ["-fopenmp", "-Ofast", "-w"]
+if "DEBUG" in os.environ:
+    extra_compile_args = ["-w", "-g", "-O0"]
 else:
-    if "DEBUG" in os.environ:
-        extra_compile_args = ["-w", "-g", "-O0"]
-    else:
-        extra_compile_args = ["-Ofast", "-w"]
-
+    extra_compile_args = ["-Ofast", "-w"]
+if not platform.system() == 'Darwin':
+    extra_compile_args.append("-fopenmp")
 
 # Set the C-code logging level.
 # If DEBUG is set, we default to the highest level, but if not,
