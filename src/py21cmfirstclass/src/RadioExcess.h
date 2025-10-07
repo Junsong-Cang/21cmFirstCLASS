@@ -524,7 +524,14 @@ double Get_EoR_Radio_mini(struct TsBox *this_spin_temp, struct AstroParams *astr
 					Throw(ValueError);
 					terminate = 1;
 				}
-				nion_axis[idx] = Nion_General_MINI(z, global_params.M_MIN_INTEGRAL, mt, mc, astro_params->ALPHA_STAR_MINI, 0., astro_params->F_STAR7_MINI, 1., Mlim_Fstar_MINI, 0.);
+				if (mt > 1.0E15)
+				{
+					nion_axis[idx] = 0.0;
+				}
+				else
+				{
+					nion_axis[idx] = Nion_General_MINI(z, global_params.M_MIN_INTEGRAL, mt, mc, astro_params->ALPHA_STAR_MINI, 0., astro_params->F_STAR7_MINI, 1., Mlim_Fstar_MINI, 0.);
+				}
 			}
 
 			// Now interpolate for finer z
@@ -581,7 +588,7 @@ double Get_SFRD_EoR_MINI(struct TsBox *previous_spin_temp, struct AstroParams *a
 	}
 	mc = atomic_cooling_threshold(redshift);
 	Mlim_Fstar_MINI = Mass_limit_bisection(global_params.M_MIN_INTEGRAL, global_params.M_MAX_INTEGRAL, astro_params->ALPHA_STAR_MINI, astro_params->F_STAR7_MINI * pow(1e3, astro_params->ALPHA_STAR_MINI));
-	if (mturn > 1E18)
+	if (mturn > 1.0E18)
 	{
 		Phi_EoR = 0.0;
 	}
