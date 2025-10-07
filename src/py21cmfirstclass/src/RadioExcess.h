@@ -341,7 +341,6 @@ double Get_Radio_Temp_HMG(struct TsBox *previous_spin_temp, struct TsBox *this_s
 	if ((RadioSilent || redshift > Z_HEAT_MAX - 0.8) || this_spin_temp->first_box)
 	{
 		Radio_Temp = 0.0;
-		// printf("==== Setting to 0 because RadioSilent\n");
 	}
 	else
 	{
@@ -349,7 +348,6 @@ double Get_Radio_Temp_HMG(struct TsBox *previous_spin_temp, struct TsBox *this_s
 		z1 = zpp_max;
 		if (z1 > z2)
 		{
-			// printf("==== Setting to 0 because z too high, zpp_max = %3f, first_zpp_min = %3f\n", z1, z2);
 			Radio_Temp = 0.0;
 		}
 		else
@@ -478,14 +476,24 @@ void Calibrate_Phi_mini(struct TsBox *previous_spin_temp, struct TsBox *this_spi
 	}
 }
 
-double Get_EoR_Radio_mini(struct TsBox *this_spin_temp, struct AstroParams *astro_params, struct CosmoParams *cosmo_params, float redshift, float Z_HEAT_MAX)
+float find_redshift_step(int idx)
+{
+	float dx, x1, x, z;
+	dx = log(global_params.ZPRIME_STEP_FACTOR);
+	x1 = log(1.0 + global_params.Z_HEAT_MAX);
+	x = x1 - ((float) idx - 1.0) * dx;
+	z = exp(x) - 1.0;
+	return z;
+}
+
+double Get_EoR_Radio_mini(struct TsBox *this_spin_temp, struct AstroParams *astro_params, struct CosmoParams *cosmo_params, float redshift)
 {
 	int idx, nz, ArchiveSize, head, terminate;
 	double nion, dz, fun, dT, T, Prefix, Phi, z, z_prev, mt, mc, Mlim_Fstar_MINI, z_axis[400], nion_axis[400], zmin, zmax;
 	nz = 400;
 	terminate = 0; // sometimes in mpi or parralel loops python might proceed even with error, use this to give NaN which will terminate the simulation by various NaN checkpoints
 	
-	if ((this_spin_temp->first_box) || (redshift > Z_HEAT_MAX - 0.8))
+	if ((this_spin_temp->first_box) || (redshift > find_redshift_step(2) - 0.5))
 	{
 		T = 0;
 	}
@@ -555,13 +563,32 @@ double Get_SFRD_EoR_MINI(struct TsBox *previous_spin_temp, struct AstroParams *a
 	// However at lowz the z timestep is small enough so that prev box gives good enough results
 	
 	double Phi_EoR, H, SFRD, mturn, mc, Mlim_Fstar_MINI;
-	int ArchiveSize, head;
-	ArchiveSize = (int)round(previous_spin_temp->History_box[0]);
-	head = (ArchiveSize - 1) * History_box_DIM + 1;
-	mturn = previous_spin_temp->History_box[head + 6]; // abit buggy but this is the best we have
+	if (redshift > find_redshift_step(2) - 0.5)
+	{
+		mturn = 1.0E20;
+	}
+	else
+	{
+		if (fabs(previous_spin_temp->mturns_EoR[3] - 1.0) > 1E-2)
+		{
+			printf("mturn is unset, setting now to inf\n");
+			mturn = 1.0E20;
+		}
+		else
+		{
+			mturn = previous_spin_temp->mturns_EoR[1];
+		}
+	}
 	mc = atomic_cooling_threshold(redshift);
 	Mlim_Fstar_MINI = Mass_limit_bisection(global_params.M_MIN_INTEGRAL, global_params.M_MAX_INTEGRAL, astro_params->ALPHA_STAR_MINI, astro_params->F_STAR7_MINI * pow(1e3, astro_params->ALPHA_STAR_MINI));
-	Phi_EoR = Nion_General_MINI(redshift, global_params.M_MIN_INTEGRAL, mturn, mc, astro_params->ALPHA_STAR_MINI, 0., astro_params->F_STAR7_MINI, 1., Mlim_Fstar_MINI, 0.);
+	if (mturn > 1E18)
+	{
+		Phi_EoR = 0.0;
+	}
+	else
+	{
+		Phi_EoR = Nion_General_MINI(redshift, global_params.M_MIN_INTEGRAL, mturn, mc, astro_params->ALPHA_STAR_MINI, 0., astro_params->F_STAR7_MINI, 1., Mlim_Fstar_MINI, 0.);
+	}
 	Phi_EoR = Phi_EoR / (astro_params->t_STAR * pow(1. + redshift, astro_params->X_RAY_SPEC_INDEX + 1.0));
 	H = hubble(redshift);
 	SFRD = Phi_2_SFRD(Phi_EoR, redshift, H, astro_params, cosmo_params, 1);

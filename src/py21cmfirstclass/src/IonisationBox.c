@@ -582,6 +582,7 @@ int ComputeIonizedBox(float redshift, float prev_redshift, struct UserParams *us
                     spin_temp->mturns_EoR[1] = Mturnover_MINI;
                     spin_temp->mturns_EoR[3] = 1.0; // MINIHALO is called
                     
+                    
                     M_MIN = global_params.M_MIN_INTEGRAL;
                     Mlim_Fstar_MINI = Mass_limit_bisection(M_MIN, 1e16, astro_params->ALPHA_STAR_MINI, astro_params->F_STAR7_MINI * pow(1e3, astro_params->ALPHA_STAR_MINI));
                     Mlim_Fesc_MINI = Mass_limit_bisection(M_MIN, 1e16, astro_params->ALPHA_ESC, astro_params->F_ESC7_MINI * pow(1e3, astro_params->ALPHA_ESC));

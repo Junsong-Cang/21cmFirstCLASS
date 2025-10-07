@@ -11,9 +11,10 @@ include_dirs = [CLOC]
 # Set compilation arguments dependent on environment... a bit buggy
 # =================================================================
 if "DEBUG" in os.environ:
-    extra_compile_args = ["-w", "-g", "-O0"]
+    extra_compile_args = ["-w", "-g", "-O0", "-Wall", "-Wuninitialized"]
 else:
-    extra_compile_args = ["-Ofast", "-w"]
+    # extra_compile_args = ["-Ofast", "-w", "-Wall", "-Wuninitialized"]
+    extra_compile_args = ["-Ofast", "-w", "-Wall", "-Wuninitialized"]
 if not platform.system() == 'Darwin':
     extra_compile_args.append("-fopenmp")
 
