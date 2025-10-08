@@ -431,11 +431,11 @@ def _configure_user_params(user_params,user_params_dic):
                 if not user_params_dic["RUN_CLASS"] and not user_params_dic["START_AT_RECOMBINATION"] and not user_params_dic["USE_ADIABATIC_FLUCTUATIONS"]:
                     logger.warning("You have set RUN_CLASS to False but START_AT_RECOMBINATION and USE_ADIABATIC_FLUCTUATIONS are also False!")
                     logger.warning("This means that the code starts with homogeneous temperature box, which would lead to inconsistencies in the 21cm power spectrum.")
-                    logger.warning("Automatically setting USE_ADIABATIC_FLUCTUATIONS to True.\n")
-                    # logger.warning("Please consider setting USE_ADIABATIC_FLUCTUATIONS to True!\n")
+                    # logger.warning("Automatically setting USE_ADIABATIC_FLUCTUATIONS to True.\n")
+                    logger.warning("Please consider setting USE_ADIABATIC_FLUCTUATIONS to True!\n")
             except KeyError:
                 pass
-            user_params.USE_ADIABATIC_FLUCTUATIONS = True
+            # user_params.USE_ADIABATIC_FLUCTUATIONS = True
 
 # JordanFlitterTODO: Remove all the following variables to a new structure and get rid of this function.
 def _set_default_globals():
