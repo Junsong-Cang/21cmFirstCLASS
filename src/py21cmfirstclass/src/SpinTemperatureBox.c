@@ -63,9 +63,9 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
         /*
         TODO: Junsong
         double check: can i use ACG Radio? - check this in full debug notebook, don't remove this from here unless test passed
-        Cannot run with SIGMA_8 with SDM?
-        Why did I use prev_spin_box in Get_SFRD_EoR_MINI? Can I change it to this_spin_box?
-        Why do I get dif results for ACG & Radio ACG?
+        Why do I get dif results between p21c/p21f for ACG & Radio ACG?
+        Park18 Fiducial: we get very good match with HII_DIM 25 but relatively bad match with HII_DIM 50, why?
+        不要自动设置USE_ADIABATIC_FLUCTUATIONS为True
         Finally check that i can get TR by integrating over SFRD?
         */
         printf("Check TODO above ====\n");
