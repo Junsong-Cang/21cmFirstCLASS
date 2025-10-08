@@ -444,38 +444,6 @@ float Phi_2_SFRD(double Phi, double z, double H, struct AstroParams *astro_param
 	return SFRD;
 }
 
-void Calibrate_Phi_mini(struct TsBox *previous_spin_temp, struct TsBox *this_spin_temp, struct FlagOptions *flag_options, struct AstroParams *astro_params, double redshift)
-{
-	// Get globally averaged (not the box-averaged) Phi with reionisation feedback
-	// x_e_ave
-	// don't need to update if not using radio MCG or flag->calibrate == 0
-
-	int ArchiveSize, head;
-	double mt, mc, Mlim_Fstar_MINI, Phi, z;
-	// Do nothing if this_spin_temp is first_box
-	if ((!this_spin_temp->first_box) && flag_options->Calibrate_EoR_feedback)
-	{
-		ArchiveSize = (int)round(previous_spin_temp->History_box[0]);
-		head = (ArchiveSize - 1) * History_box_DIM + 1;
-		if (ArchiveSize > 2 && (redshift < 33.0 && redshift > 4.0))
-		{
-			z = previous_spin_temp->History_box[head];
-			mt = previous_spin_temp->History_box[head + 6];
-			mc = atomic_cooling_threshold(z);
-			Mlim_Fstar_MINI = Mass_limit_bisection(global_params.M_MIN_INTEGRAL, global_params.M_MAX_INTEGRAL, astro_params->ALPHA_STAR_MINI,
-												   astro_params->F_STAR7_MINI * pow(1e3, astro_params->ALPHA_STAR_MINI));
-			Phi = Nion_General_MINI(z, global_params.M_MIN_INTEGRAL, mt, mc, astro_params->ALPHA_STAR_MINI, 0., astro_params->F_STAR7_MINI, 1., Mlim_Fstar_MINI, 0.);
-
-			Phi = Phi / (astro_params->t_STAR * pow(1. + z, astro_params->X_RAY_SPEC_INDEX + 1.0));
-		}
-		else
-		{
-			Phi = 0.;
-		}
-		previous_spin_temp->History_box[head + 7] = Phi;
-	}
-}
-
 float find_redshift_step(int idx)
 {
 	float dx, x1, x, z;

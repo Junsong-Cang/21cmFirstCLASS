@@ -62,15 +62,12 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
         }
         /*
         TODO: Junsong
-        Calibrate_Phi_mini also require z < 33?
-        We have Calibrate_Phi_mini but not used? if we do not calibrate Phi_MINI how are we computing TR_HMG?
-        SFRD_MINI looks unphysical: nonzero and then zero at high z? - 1st and 3rd are 0?
-        PLS add debug compilation flags to check uninitialized var: "Wall", "Wuninitialized", or just use "Werror" flag to turn warnings to errors
         double check: can i use ACG Radio? - check this in full debug notebook, don't remove this from here unless test passed
         Cannot run with SIGMA_8 with SDM?
-        Set Z_HEAT_MAX deterministics by z_prime_step_factor
         Why did I use prev_spin_box in Get_SFRD_EoR_MINI? Can I change it to this_spin_box?
         Why do I get dif results for ACG & Radio ACG?
+        Do i need to initialize history_box & mturn_EoR?
+        Finally check that i can get TR by integrating over SFRD?
         */
         printf("Check TODO above ====\n");
         // Makes the parameter structs visible to a variety of functions/macros
@@ -4479,7 +4476,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                     this_spin_temp->SFRD_MINI_box[box_ct] = Phi_2_SFRD(Phi_mini, zpp_Rct0, H_Rct0, astro_params, cosmo_params, 1);
 
                     // copying entire History_box
-                    if (previous_spin_temp->mturns_EoR[2] >= 0.5) // Astro called previously
+                    if (fabs(previous_spin_temp->mturns_EoR[2] - 1.0) < 1.0E-2) // Astro called previously
                     {
                         this_spin_temp->History_box[box_ct] = previous_spin_temp->History_box[box_ct];
                     }
@@ -4488,8 +4485,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                 this_spin_temp->mturns_EoR[2] = 1.0;
 
                 // Caching averaged quantities
-                // if (this_spin_temp->first_box)
-                if (previous_spin_temp->mturns_EoR[2] < 0.5)
+                if (fabs(previous_spin_temp->mturns_EoR[2]) < 1E-10)
                 {
                     // Astro module has never been called in Spin.c before
                     this_spin_temp->History_box[0] = 1.0;                    // ArchiveSize
@@ -4500,11 +4496,11 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                     this_spin_temp->History_box[5] = zpp_for_evolve_list[0]; // zpp0
                     this_spin_temp->History_box[6] = 1.0e20;                 // mturn_II
                     this_spin_temp->History_box[7] = 1.0e20;                 // mturn_III
-                    this_spin_temp->History_box[8] = 0.0;                    // Phi_mini_calibrated
+                    this_spin_temp->History_box[8] = 0.0;                    // Phi_mini_calibrated - not actually used
                     this_spin_temp->mturns_EoR[0] = 1.0e20;                  // mturn_II
                     this_spin_temp->mturns_EoR[1] = 1.0e20;                  // mturn_III
                 }
-                else
+                else if (fabs(previous_spin_temp->mturns_EoR[2] - 1.0) < 1E-10)
                 {
                     this_spin_temp->History_box[0] = previous_spin_temp->History_box[0] + 1.0; // updating archive size
                     ArchiveSize = (int)round(this_spin_temp->History_box[0]);                  // remember that this is for current box, at least 2 by now
@@ -4516,18 +4512,27 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                     this_spin_temp->History_box[head + 2] = T_IGM_ave;
                     this_spin_temp->History_box[head + 3] = Phi_ave_mini;
                     this_spin_temp->History_box[head + 4] = zpp_for_evolve_list[0];
-                    // if (redshift > global_params.Z_HEAT_MAX - 0.2)
-                    if (previous_spin_temp->mturns_EoR[3] < 0.5)
+                    if (fabs(previous_spin_temp->mturns_EoR[3]) < 1E-10)
                     {
                         // MNIHALO hasn't been called yet in Ion.c and mturn is unassigned
                         this_spin_temp->History_box[head + 5] = 1.0E20;
                         this_spin_temp->History_box[head + 6] = 1.0E20;
                     }
-                    else
+                    else if (fabs(previous_spin_temp->mturns_EoR[3] - 1.0) < 1E-10)
                     {
                         this_spin_temp->History_box[head + 5] = previous_spin_temp->mturns_EoR[0];
                         this_spin_temp->History_box[head + 6] = previous_spin_temp->mturns_EoR[1];
                     }
+                    else
+                    {
+                	    fprintf(stderr, "previous_spin_temp->mturns_EoR[3] must be either 0 or 1, something must have gone wrong\n");
+                        Throw(InfinityorNaNError);
+                    }
+                }
+                else
+                {
+                	fprintf(stderr, "previous_spin_temp->mturns_EoR[2] must be either 0 or 1, something must have gone wrong\n");
+                    Throw(InfinityorNaNError);
                 }
                 
                 if (flag_options->Calibrate_EoR_feedback && flag_options->USE_MINI_HALOS)
