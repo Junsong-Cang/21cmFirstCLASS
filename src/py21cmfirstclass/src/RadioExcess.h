@@ -569,3 +569,20 @@ double Get_SFRD_EoR_MINI(struct TsBox *previous_spin_temp, struct AstroParams *a
 	SFRD = Phi_2_SFRD(Phi_EoR, redshift, H, astro_params, cosmo_params, 1);
 	return SFRD;
 }
+/*
+void Initialize_History_Box(struct TsBox *spin_temp, int HII_DIM)
+{
+	// unsigned long long HII_TOT_NUM_PIXELS, idx;
+	int HII_TOT_NUM_PIXELS, idx;
+	HII_TOT_NUM_PIXELS = HII_DIM * HII_DIM * HII_DIM;
+	for (idx = 0;  idx< HII_TOT_NUM_PIXELS; idx++)
+	{
+		spin_temp->History_box[idx] = 0.0;
+	}
+	for (idx = 0;  idx< 4; idx++)
+	{
+		spin_temp->mturns_EoR[idx] = 0.0;
+	}
+
+}
+*/
