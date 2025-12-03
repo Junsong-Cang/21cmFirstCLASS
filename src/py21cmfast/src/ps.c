@@ -5050,7 +5050,7 @@ float sigma_linear_2D_interpolation(float M, float z)
     }
     else if (z > global_params.Z_ARRAY_FOR_SIGMA[SIGMA_Z_NPTS - 1])
     {
-        LOG_ERROR("Attempted to compute sigma(M,z) for z=%f, but maximum z in the interpolation table is", z, global_params.Z_ARRAY_FOR_SIGMA[SIGMA_Z_NPTS - 1]);
+        LOG_ERROR("Attempted to compute sigma(M,z) for z=%f, but maximum z in the interpolation table is %f", z, global_params.Z_ARRAY_FOR_SIGMA[SIGMA_Z_NPTS - 1]);
         Throw(ValueError);
         return -1;
     }
