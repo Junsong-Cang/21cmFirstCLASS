@@ -3,6 +3,7 @@
 // nu0 is degenerate with fR so no reason to leave this as a param
 #define astro_nu0 0.15	   // in GHz
 #define History_box_DIM 20 // number of quantities to be saved in History_box
+#define zax_len_FF 1000 // axis length for soft-photon heating
 
 int Find_Index(double *x_axis, double x, int nx)
 {
@@ -835,27 +836,22 @@ double Build_dTffdz_Kernel(double z, double xe, double Tk, double H, double *x, 
     return dTkdz;
 }
 
-double Compute_dTffdz(double *zax, double *dTdz, double *Hax, double *xe_ax, double *Tkax, double *SFRD_II_ax, double *SFRD_III_ax, double fR_II, double fR_III, int nz)
+double Compute_dTffdz(double *zax, double *dTdz, double *Hax, double *xe_ax, double *Tkax, double *SFRD_II_ax, double *SFRD_III_ax, double fR_II, double fR_III, double aR_II, double aR_III, double OmBh2, int nz)
 {
     /*
     Compute Soft-Photon heating rate dT/dz for an array of z, many inputs must be passed externally, such that the code can be easily tested outside of 21cmFAST (e.g., with python) and it can 
     merge streamelessly to 21cmFAST. Code computes dT/dz at all redshifts, which can be used by e.g. python for testing. Time used for Python to initialize input arrays seems subdominant compared 
     to the min solver
-    TODO: need to update n_inj
     -- inputs --
     zax: z axis
     dTdz: axis for dT/dz output
     */
     double xax[xax_len], LBR_ax[xax_len], DeltaN_ax[xax_len], DST_ax[xax_len], n_inj[xax_len];
-    double z, xe, Tk, dz, dtff, xi, Tcmb, SFRD_II, SFRD_III, aR_II, aR_III, exp_dtff_inv, H, dninj_dtff, S_inj, YHe, OmBh2;
+    double z, xe, Tk, dz, dtff, xi, Tcmb, SFRD_II, SFRD_III, exp_dtff_inv, H, dninj_dtff, S_inj, YHe;
     int xid, zid;
 
     // Setting params
-    aR_II = 0.62;
-    aR_III = 0.62;
     YHe = 0.245;
-    OmBh2 = 0.0242;
-
 
     // Initializing
     logspace(-8.0, 2.0, xax, xax_len);
@@ -904,4 +900,13 @@ double Compute_dTffdz(double *zax, double *dTdz, double *Hax, double *xe_ax, dou
     }
 
     return dTdz[nz-1];
+}
+
+double Find_dTff_dz(struct TsBox *previous_spin_temp, struct AstroParams *astro_params, struct CosmoParams *cosmo_params)
+{
+	// TODO:
+	// 1 - do Pop II radio
+	// 2 - need to do last step?
+	double zax[zax_len_FF], dTdz_ax[zax_len_FF], Hax[zax_len_FF], xe_ax[zax_len_FF], Tk_ax[zax_len_FF], SFRD_II_ax[zax_len_FF], SFRD_III_ax[zax_len_FF];
+
 }
