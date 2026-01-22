@@ -4516,8 +4516,9 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                     this_spin_temp->History_box[6] = 1.0e20;                 // mturn_II
                     this_spin_temp->History_box[7] = 1.0e20;                 // mturn_III
                     this_spin_temp->History_box[8] = 0.0;                    // SFRD_MINI, EoR calibrated
-                    this_spin_temp->IonBox_cache[0] = 1.0e20;                  // mturn_II
-                    this_spin_temp->IonBox_cache[1] = 1.0e20;                  // mturn_III, this is in fact for previous redshift
+                    this_spin_temp->History_box[9] = 1.0;                    // xH from Ion.c, xe in Spin.c is for neutral region?
+                    this_spin_temp->IonBox_cache[0] = 1.0e20;                // mturn_II
+                    this_spin_temp->IonBox_cache[1] = 1.0e20;                // mturn_III, this is in fact for previous redshift
                 }
                 else if (fabs(previous_spin_temp->IonBox_cache[2] - 1.0) < 1E-10)
                 {
@@ -4548,6 +4549,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                         Throw(InfinityorNaNError);
                     }
                     this_spin_temp->History_box[head + 7] = SFRD_EoR_MINI;
+                    this_spin_temp->History_box[head + 8] = previous_spin_temp->IonBox_cache[4];
                 }
                 else
                 {

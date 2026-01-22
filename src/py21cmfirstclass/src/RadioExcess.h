@@ -211,17 +211,19 @@ double History_box_Interp(struct TsBox *previous_spin_temp, double z, int Type, 
 		3 - Tk
 		4 - mturn_II
 		5 - mturn_III
-		6 - Phi_III_EoR
+		6 - SFRD_EoR_MINI
+		7 - xH
 	*/
 	int ArchiveSize, idx, head, zid, fid;
-	// Very generous with memory, nobody is gonna run lightcones with 1000 timesteps (?)
+	// Very generous with memory, nobody is gonna run lightcones with 1000 timesteps (right?)
 	double z_axis[1000], f_axis[1000], r;
 
 	ArchiveSize = (int)round(previous_spin_temp->History_box[0]);
 	if (previous_spin_temp->first_box || ArchiveSize < 2)
 	{
+		// Too early to get reliable results?
 		if ((Type == 1 || Type == 2) || Type == 6)
-		{
+		{// Set Phi_II, Phi_III, SFRD_EoR_MINI to 0
 			return 0.0;
 		}
 		else if (Type == 3)
@@ -278,21 +280,30 @@ double History_box_Interp(struct TsBox *previous_spin_temp, double z, int Type, 
 			fid = head + 6;
 		}
 		else if (Type == 6)
-		{ // Phi3_EoR
+		{ // SFRD_MINI_EoR
 			fid = head + 7;
+		}
+		else if (Type == 7)
+		{ // xH
+			fid = head + 8;
 		}
 		else
 		{
-			LOG_ERROR("Wrong Type setting, must be in [1, 6].\n");
+			LOG_ERROR("Wrong Type setting, must be in [1, 7].\n");
 			Throw(ValueError);
 		}
 		z_axis[idx] = previous_spin_temp->History_box[zid];
 		f_axis[idx] = previous_spin_temp->History_box[fid];
 	}
-	// Use_LogY for all
-	r = Interp_1D(z, z_axis, f_axis, ArchiveSize, 0, 1, Overflow_Handle);
-
-	// actually let's not use mturn interp for SFRD
+	// Use_LogY for all except xH, Interp_1D already sets a floor for very small Y
+	if (Type == 7)
+	{
+		r = Interp_1D(z, z_axis, f_axis, ArchiveSize, 0, 0, Overflow_Handle);
+	}
+	else
+	{
+		r = Interp_1D(z, z_axis, f_axis, ArchiveSize, 0, 1, Overflow_Handle);
+	}
 
 	return r;
 }
