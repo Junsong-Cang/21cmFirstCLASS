@@ -33,7 +33,8 @@ int ComputeIonizedBox(float redshift, float prev_redshift, struct UserParams *us
     { // This Try brackets the whole function, so we don't indent.
 
         unsigned long long ct;
-        spin_temp->mturns_EoR[3] = 0.0; // MINIHALO hasn't been called yet
+
+        spin_temp->IonBox_cache[3] = 0.0; // MINIHALO hasn't been called yet
 
         if (redshift > global_params.Z_HEAT_MAX)
         { // JordanFlitter: I made that condition since we don't want to calculate f_mean_coll at redshifts at the dark ages
@@ -578,10 +579,9 @@ int ComputeIonizedBox(float redshift, float prev_redshift, struct UserParams *us
                     box->log10_Mturnover_MINI_ave = ave_log10_Mturnover_MINI / (double)HII_TOT_NUM_PIXELS;
                     Mturnover = pow(10., box->log10_Mturnover_ave);
                     Mturnover_MINI = pow(10., box->log10_Mturnover_MINI_ave);
-                    spin_temp->mturns_EoR[0] = Mturnover;
-                    spin_temp->mturns_EoR[1] = Mturnover_MINI;
-                    spin_temp->mturns_EoR[3] = 1.0; // MINIHALO is called
-                    
+                    spin_temp->IonBox_cache[0] = Mturnover;
+                    spin_temp->IonBox_cache[1] = Mturnover_MINI;
+                    spin_temp->IonBox_cache[3] = 1.0; // MINIHALO is called
                     
                     M_MIN = global_params.M_MIN_INTEGRAL;
                     Mlim_Fstar_MINI = Mass_limit_bisection(M_MIN, 1e16, astro_params->ALPHA_STAR_MINI, astro_params->F_STAR7_MINI * pow(1e3, astro_params->ALPHA_STAR_MINI));

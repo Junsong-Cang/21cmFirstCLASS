@@ -183,7 +183,7 @@ struct TsBox
     
     // Boxes for Inhomogeneous Radio Background
     float *Trad_box;
-    float mturns_EoR[4];
+    float IonBox_cache[5];
     float *History_box;
     /*
     History_box saves averaged quantities from previous boxes, to be updated at every z step
@@ -191,7 +191,7 @@ struct TsBox
     Most conveniently managed in History_box_Interp
     contents: 
         History_box[0]: ArchiveSize
-        Data structure: [z, Phi_II, Tk, Phi_III, zpp[0], mturn_II, mturn_III, Phi_mini_calibrated] ==> Used 8 of 20 fields so far
+        Data structure: [z, Phi_II, Tk, Phi_III, zpp[0], mturn_II, mturn_III, SFRD_EoR_MINI] ==> Used 8 of 20 fields so far
     */
     float *SFRD_box;
     float *SFRD_MINI_box;

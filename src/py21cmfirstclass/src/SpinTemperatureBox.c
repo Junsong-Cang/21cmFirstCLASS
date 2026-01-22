@@ -1,5 +1,4 @@
 #include "RadioExcess.h"
-// #include "SoftPhoton.h"
 
 // Re-write of find_HII_bubbles.c for being accessible within the MCMC
 
@@ -294,11 +293,11 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
 	    {
 		    this_spin_temp->History_box[box_ct] = NAN;
 	    }
-	    for (box_ct = 0;  box_ct< 4; box_ct++)
+	    for (box_ct = 0;  box_ct< 5; box_ct++)
 	    {
-		    this_spin_temp->mturns_EoR[box_ct] = NAN;
+		    this_spin_temp->IonBox_cache[box_ct] = NAN;
         }
-        this_spin_temp->mturns_EoR[2] = 0.0;
+        this_spin_temp->IonBox_cache[2] = 0.0;
 
         // JordanFlitter: We don't need these during the dark ages
         if (redshift <= global_params.Z_HEAT_MAX)
@@ -4486,16 +4485,26 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                     this_spin_temp->SFRD_MINI_box[box_ct] = Phi_2_SFRD(Phi_mini, zpp_Rct0, H_Rct0, astro_params, cosmo_params, 1);
 
                     // copying entire History_box
-                    if (fabs(previous_spin_temp->mturns_EoR[2] - 1.0) < 1.0E-2) // Astro called previously
+                    if (fabs(previous_spin_temp->IonBox_cache[2] - 1.0) < 1.0E-2) // Astro called previously
                     {
                         this_spin_temp->History_box[box_ct] = previous_spin_temp->History_box[box_ct];
                     }
                 }
                 
-                this_spin_temp->mturns_EoR[2] = 1.0;
+                this_spin_temp->IonBox_cache[2] = 1.0;
+                
+                if (flag_options->Calibrate_EoR_feedback && flag_options->USE_MINI_HALOS)
+                {
+                    // Computing Pop III SFRD, to be saved into history_box
+                    SFRD_EoR_MINI = Get_SFRD_EoR_MINI(previous_spin_temp, astro_params, cosmo_params, redshift);
+                }
+                else
+                {
+                    SFRD_EoR_MINI = NAN;
+                }
 
                 // Caching averaged quantities
-                if (fabs(previous_spin_temp->mturns_EoR[2]) < 1E-10)
+                if (fabs(previous_spin_temp->IonBox_cache[2]) < 1E-10)
                 {
                     // Astro module has never been called in Spin.c before
                     this_spin_temp->History_box[0] = 1.0;                    // ArchiveSize
@@ -4506,11 +4515,11 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                     this_spin_temp->History_box[5] = zpp_for_evolve_list[0]; // zpp0
                     this_spin_temp->History_box[6] = 1.0e20;                 // mturn_II
                     this_spin_temp->History_box[7] = 1.0e20;                 // mturn_III
-                    this_spin_temp->History_box[8] = 0.0;                    // Phi_mini_calibrated - not actually used
-                    this_spin_temp->mturns_EoR[0] = 1.0e20;                  // mturn_II
-                    this_spin_temp->mturns_EoR[1] = 1.0e20;                  // mturn_III
+                    this_spin_temp->History_box[8] = 0.0;                    // SFRD_MINI, EoR calibrated
+                    this_spin_temp->IonBox_cache[0] = 1.0e20;                  // mturn_II
+                    this_spin_temp->IonBox_cache[1] = 1.0e20;                  // mturn_III, this is in fact for previous redshift
                 }
-                else if (fabs(previous_spin_temp->mturns_EoR[2] - 1.0) < 1E-10)
+                else if (fabs(previous_spin_temp->IonBox_cache[2] - 1.0) < 1E-10)
                 {
                     this_spin_temp->History_box[0] = previous_spin_temp->History_box[0] + 1.0; // updating archive size
                     ArchiveSize = (int)round(this_spin_temp->History_box[0]);                  // remember that this is for current box, at least 2 by now
@@ -4522,26 +4531,27 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                     this_spin_temp->History_box[head + 2] = T_IGM_ave;
                     this_spin_temp->History_box[head + 3] = Phi_ave_mini;
                     this_spin_temp->History_box[head + 4] = zpp_for_evolve_list[0];
-                    if (fabs(previous_spin_temp->mturns_EoR[3]) < 1E-10)
+                    if (fabs(previous_spin_temp->IonBox_cache[3]) < 1E-10)
                     {
                         // MNIHALO hasn't been called yet in Ion.c and mturn is unassigned
                         this_spin_temp->History_box[head + 5] = 1.0E20;
                         this_spin_temp->History_box[head + 6] = 1.0E20;
                     }
-                    else if (fabs(previous_spin_temp->mturns_EoR[3] - 1.0) < 1E-10)
+                    else if (fabs(previous_spin_temp->IonBox_cache[3] - 1.0) < 1E-10)
                     {
-                        this_spin_temp->History_box[head + 5] = previous_spin_temp->mturns_EoR[0];
-                        this_spin_temp->History_box[head + 6] = previous_spin_temp->mturns_EoR[1]; // Mturn_MINI
+                        this_spin_temp->History_box[head + 5] = previous_spin_temp->IonBox_cache[0];
+                        this_spin_temp->History_box[head + 6] = previous_spin_temp->IonBox_cache[1]; // Mturn_MINI
                     }
                     else
                     {
-                	    fprintf(stderr, "previous_spin_temp->mturns_EoR[3] must be either 0 or 1, something must have gone wrong\n");
+                	    fprintf(stderr, "previous_spin_temp->IonBox_cache[3] must be either 0 or 1, something must have gone wrong\n");
                         Throw(InfinityorNaNError);
                     }
+                    this_spin_temp->History_box[head + 7] = SFRD_EoR_MINI;
                 }
                 else
                 {
-                	fprintf(stderr, "previous_spin_temp->mturns_EoR[2] must be either 0 or 1, something must have gone wrong\n");
+                	fprintf(stderr, "previous_spin_temp->IonBox_cache[2] must be either 0 or 1, something must have gone wrong\n");
                     Throw(InfinityorNaNError);
                 }
                 
@@ -4549,7 +4559,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                 {
                     // Calibrating EoR feedback, coupling to Ts should be negligible by now since T21 would be dominated by xH
                     Tr_EoR = Get_EoR_Radio_mini(this_spin_temp, astro_params, cosmo_params, redshift);
-                    SFRD_EoR_MINI = Get_SFRD_EoR_MINI(previous_spin_temp, astro_params, cosmo_params, redshift);
+                    // SFRD_EoR_MINI = Get_SFRD_EoR_MINI(previous_spin_temp, astro_params, cosmo_params, redshift);
                     SFRD_MINI_ave = Phi_2_SFRD(Phi_ave_mini, zpp_Rct0, H_Rct0, astro_params, cosmo_params, 1);
                     SFRD_MINI_ave = SFRD_MINI_ave > 1e-200 ? SFRD_MINI_ave : 1e-200; // avoid nan in divide
 

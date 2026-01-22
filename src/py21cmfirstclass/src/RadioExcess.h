@@ -544,14 +544,14 @@ double Get_SFRD_EoR_MINI(struct TsBox *previous_spin_temp, struct AstroParams *a
 	}
 	else
 	{
-		if (fabs(previous_spin_temp->mturns_EoR[3] - 1.0) > 1E-2)
+		if (fabs(previous_spin_temp->IonBox_cache[3] - 1.0) > 1E-2)
 		{
 			printf("mturn is unset, setting now to inf\n");
 			mturn = 1.0E20;
 		}
 		else
 		{
-			mturn = previous_spin_temp->mturns_EoR[1];
+			mturn = previous_spin_temp->IonBox_cache[1];
 		}
 	}
 	mc = atomic_cooling_threshold(redshift);
@@ -569,26 +569,6 @@ double Get_SFRD_EoR_MINI(struct TsBox *previous_spin_temp, struct AstroParams *a
 	SFRD = Phi_2_SFRD(Phi_EoR, redshift, H, astro_params, cosmo_params, 1);
 	return SFRD;
 }
-
-
-/*
-void Initialize_History_Box(struct TsBox *spin_temp, int HII_DIM)
-{
-	// unsigned long long HII_TOT_NUM_PIXELS, idx;
-	int HII_TOT_NUM_PIXELS, idx;
-	HII_TOT_NUM_PIXELS = HII_DIM * HII_DIM * HII_DIM;
-	for (idx = 0;  idx< HII_TOT_NUM_PIXELS; idx++)
-	{
-		spin_temp->History_box[idx] = 0.0;
-	}
-	for (idx = 0;  idx< 4; idx++)
-	{
-		spin_temp->mturns_EoR[idx] = 0.0;
-	}
-
-}
-*/
-
 
 /*---- Soft Photon Heating Module ----
 To test this module, copy entire following codes to another file, define SOFT_PHOTON_TEST_MODE and then include the file
