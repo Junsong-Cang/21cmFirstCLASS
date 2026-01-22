@@ -33,6 +33,7 @@ int ComputeIonizedBox(float redshift, float prev_redshift, struct UserParams *us
     { // This Try brackets the whole function, so we don't indent.
 
         unsigned long long ct;
+        double xH_ave;
 
         spin_temp->IonBox_cache[3] = 0.0; // MINIHALO hasn't been called yet
 
@@ -2010,7 +2011,14 @@ int ComputeIonizedBox(float redshift, float prev_redshift, struct UserParams *us
 
             LOG_DEBUG("finished!\n");
         } // JordanFlitter: end of cosmic dawn condition
-
+        // Junsong: Computing averaged xH
+        xH_ave = 0.0;
+        for (ct = 0; ct < HII_TOT_NUM_PIXELS; ct++)
+        {
+            xH_ave += box->xH_box[ct];
+        }
+        xH_ave = xH_ave/((double) HII_TOT_NUM_PIXELS);
+        spin_temp->IonBox_cache[4] = xH_ave;
     } // End of Try()
 
     Catch(status)
