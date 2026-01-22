@@ -127,6 +127,7 @@ struct FlagOptions
     bool USE_RADIO_ACG;
     bool USE_RADIO_MCG;
     bool Calibrate_EoR_feedback;
+    bool USE_RADIO_HEATING;
 };
 
 struct InitialConditions

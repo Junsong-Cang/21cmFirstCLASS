@@ -1070,6 +1070,8 @@ class FlagOptions(StructWithDefaults):
         Determines whether to use radio excess background from MCG, if True then AstroParams.fR_mini is used
     Calibrate_EoR_feedback: bool
         Whether to calibrate EoR/photo-heating feedback for Pop II/III radio excess, used only when MINIHALO is activated
+    USE_RADIO_HEATING: bool
+        whether to use soft photon heating from excess radio background
     """
 
     _ffi = ffi
@@ -1089,6 +1091,7 @@ class FlagOptions(StructWithDefaults):
         "USE_RADIO_ACG": False,
         "USE_RADIO_MCG": False,
         "Calibrate_EoR_feedback": True,
+        "USE_RADIO_HEATING": False
     }
 
     # This checks if relative velocities are off to complain if minihaloes are on

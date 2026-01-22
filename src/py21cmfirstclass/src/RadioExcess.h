@@ -902,11 +902,55 @@ double Compute_dTffdz(double *zax, double *dTdz, double *Hax, double *xe_ax, dou
     return dTdz[nz-1];
 }
 
-double Find_dTff_dz(struct TsBox *previous_spin_temp, struct AstroParams *astro_params, struct CosmoParams *cosmo_params)
+double Find_dTff_dz(struct TsBox *previous_spin_temp, struct AstroParams *astro_params, struct CosmoParams *cosmo_params, struct FlagOptions *flag_options)
 {
 	// TODO:
 	// 1 - do Pop II radio
 	// 2 - need to do last step?
 	double zax[zax_len_FF], dTdz_ax[zax_len_FF], Hax[zax_len_FF], xe_ax[zax_len_FF], Tk_ax[zax_len_FF], SFRD_II_ax[zax_len_FF], SFRD_III_ax[zax_len_FF];
+	double OmBh2, YHe, z1, z2, z, r;
+	int idx, ArchiveSize, head;
+	if (!flag_options->USE_RADIO_HEATING)
+	{
+		return 0.0;
+	}
+	else
+	{
+		// Do some checks, can be done outside in python
+		if (!flag_options->USE_RADIO_MCG)
+		{
+			fprintf(stderr, "Error: You must set USE_RADIO_MCG to True if USE_RADIO_HEATING.\n");
+            Throw(ValueError);
+		}
+		
+	}	
+
+	OmBh2 = cosmo_params->OMb * (pow(cosmo_params->hlittle, 2));
+	YHe = 0.245;
+	
+	ArchiveSize = (int)round(previous_spin_temp->History_box[0]);
+	if (ArchiveSize < 3)
+	{
+		return 0.0;
+	}
+	head = 3 * History_box_DIM + 1;
+	z1 = previous_spin_temp->History_box[head];
+	z2 = previous_spin_temp->History_box[(ArchiveSize - 1) * History_box_DIM + 1]+1.0E-3;
+
+	logspace(log10(1.0+z1), log10(1.0+z2), zax, zax_len_FF);
+	for (idx=0; idx<zax_len_FF; idx++)
+	{
+		zax[idx] = zax[idx] - 1; // logspace gives 1+z
+		z = zax[idx];
+		Hax[idx] = hubble(z);
+		xe_ax[idx] = 1.0 - History_box_Interp(previous_spin_temp, z, 7, 1);
+		Tk_ax[idx] = History_box_Interp(previous_spin_temp, z, 3, 1);
+		SFRD_II_ax[idx] = 0.0;
+		SFRD_III_ax[idx] = History_box_Interp(previous_spin_temp, z, 6, 1);
+	}
+	
+	r = Compute_dTffdz(zax, dTdz_ax, Hax, xe_ax, Tk_ax, SFRD_II_ax, SFRD_III_ax, astro_params->fR, astro_params->fR_mini, astro_params->aR, astro_params->aR_mini, OmBh2, zax_len_FF);
+	
+	return r;
 
 }

@@ -194,7 +194,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
         float delta_SDM_local, delta_SDM_derivative_local;
 
         // Junsong: added variables for radio excess
-        double Radio_Temp, Radio_Temp_HMG, Trad_inv, zpp_max, Phi, Phi_mini, Radio_zpp, Phi_ave, Phi_ave_mini, T_IGM_ave, dT_Radio;
+        double Radio_Temp, Radio_Temp_HMG, Trad_inv, zpp_max, Phi, Phi_mini, Radio_zpp, Phi_ave, Phi_ave_mini, T_IGM_ave, dT_Radio, dTdz_FF;
         double Radio_Prefix_ACG, Radio_Prefix_MCG, Fill_Fraction, Radio_Temp_ave, dzpp_Rct0, zpp_Rct0, H_Rct0, Tr_EoR, SFRD_EoR_MINI, SFRD_MINI_ave, Radio_Prefix_ACG_Rct, Radio_Prefix_MCG_Rct;
         int ArchiveSize, head, phi_idx, tk_idx, phi3_idx, zpp_idx, Radio_Silent;
         FILE *OutputFile;
@@ -2793,6 +2793,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                 // Main loop over the entire box for the IGM spin temperature and relevant quantities.
                 if (flag_options->USE_MASS_DEPENDENT_ZETA)
                 {
+                    dTdz_FF = Find_dTff_dz(previous_spin_temp, astro_params, cosmo_params, flag_options);
 // JordanFlitter: I added more shared variables
 #pragma omp parallel shared(del_fcoll_Rct, dxheat_dt_box, dxion_source_dt_box, dxlya_dt_box, dstarlya_dt_box, previous_spin_temp, this_spin_temp, \
                                 x_int_XHII, m_xHII_low_box, inverse_val_box, inverse_diff, dstarlyLW_dt_box, dstarlyLW_dt_box_MINI,               \
@@ -3655,11 +3656,11 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                                         {
                                             if (flag_options->USE_MINI_HALOS)
                                             {
-                                                T += (dxheat_dzp + dxheat_dzp_MINI + dcomp_dzp + dspec_dzp + dadia_dzp + dCMBheat_dzp + eps_Lya_cont + eps_Lya_inj + eps_Lya_cont_MINI + eps_Lya_inj_MINI + dSDM_b_heat_dzp) * dzp;
+                                                T += (dxheat_dzp + dxheat_dzp_MINI + dcomp_dzp + dspec_dzp + dadia_dzp + dCMBheat_dzp + eps_Lya_cont + eps_Lya_inj + eps_Lya_cont_MINI + eps_Lya_inj_MINI + dSDM_b_heat_dzp + dTdz_FF) * dzp;
                                             }
                                             else
                                             {
-                                                T += (dxheat_dzp + dcomp_dzp + dspec_dzp + dadia_dzp + dCMBheat_dzp + eps_Lya_cont + eps_Lya_inj + dSDM_b_heat_dzp) * dzp;
+                                                T += (dxheat_dzp + dcomp_dzp + dspec_dzp + dadia_dzp + dCMBheat_dzp + eps_Lya_cont + eps_Lya_inj + dSDM_b_heat_dzp + dTdz_FF) * dzp;
                                             }
                                         }
                                     }
