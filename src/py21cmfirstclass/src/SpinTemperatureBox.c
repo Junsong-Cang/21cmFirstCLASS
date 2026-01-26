@@ -68,6 +68,8 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
         Finally check that i can get TR by integrating over SFRD?
         WHy cannot I run with parralel?
         Cannot run SDM with SIGMA_8? - most likely an issue with dmeff_classy, code terminates before it can reach teh stage of printing out "Now running CLASS..."
+        Double check Radio Heating
+        For a template run, print SFRD & EoR, use it to compute dTff/dz externally and check with p21f
         */
         printf("Check TODO above ====\n");
         // Makes the parameter structs visible to a variety of functions/macros
@@ -4549,8 +4551,8 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                 	    fprintf(stderr, "previous_spin_temp->IonBox_cache[3] must be either 0 or 1, something must have gone wrong\n");
                         Throw(InfinityorNaNError);
                     }
-                    this_spin_temp->History_box[head + 7] = SFRD_EoR_MINI;
-                    this_spin_temp->History_box[head + 8] = previous_spin_temp->IonBox_cache[4];
+                    this_spin_temp->History_box[head + 7] = SFRD_EoR_MINI; // SFRD_MINI_EOR
+                    this_spin_temp->History_box[head + 8] = previous_spin_temp->IonBox_cache[4]; // xH
                 }
                 else
                 {

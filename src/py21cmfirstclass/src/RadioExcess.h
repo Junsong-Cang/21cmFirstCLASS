@@ -3,7 +3,8 @@
 // nu0 is degenerate with fR so no reason to leave this as a param
 #define astro_nu0 0.15	   // in GHz
 #define History_box_DIM 20 // number of quantities to be saved in History_box
-#define zax_len_FF 1000 // axis length for soft-photon heating
+#define zax_len_FF 1000	   // axis length for soft-photon heating
+#define print_debug_info 1
 
 int Find_Index(double *x_axis, double x, int nx)
 {
@@ -224,7 +225,7 @@ double History_box_Interp(struct TsBox *previous_spin_temp, double z, int Type, 
 	{
 		// Too early to get reliable results?
 		if ((Type == 1 || Type == 2) || Type == 6)
-		{// Set Phi_II, Phi_III, SFRD_EoR_MINI to 0
+		{ // Set Phi_II, Phi_III, SFRD_EoR_MINI to 0
 			return 0.0;
 		}
 		else if (Type == 3)
@@ -461,7 +462,7 @@ float find_redshift_step(int idx)
 	float dx, x1, x, z;
 	dx = log(global_params.ZPRIME_STEP_FACTOR);
 	x1 = log(1.0 + global_params.Z_HEAT_MAX);
-	x = x1 - ((float) idx - 1.0) * dx;
+	x = x1 - ((float)idx - 1.0) * dx;
 	z = exp(x) - 1.0;
 	return z;
 }
@@ -472,7 +473,7 @@ double Get_EoR_Radio_mini(struct TsBox *this_spin_temp, struct AstroParams *astr
 	double nion, dz, fun, dT, T, Prefix, Phi, z, z_prev, mt, mc, Mlim_Fstar_MINI, z_axis[400], nion_axis[400], zmin, zmax;
 	nz = 400;
 	terminate = 0; // sometimes in mpi or parralel loops python might proceed even with error, use this to give NaN which will terminate the simulation by various NaN checkpoints
-	
+
 	if ((this_spin_temp->first_box) || (redshift > find_redshift_step(2) - 0.5))
 	{
 		T = 0;
@@ -533,7 +534,7 @@ double Get_EoR_Radio_mini(struct TsBox *this_spin_temp, struct AstroParams *astr
 		{
 			if (terminate == 1)
 			{
-				T = 0.0/0.0;
+				T = 0.0 / 0.0;
 			}
 			else
 			{
@@ -548,7 +549,7 @@ double Get_SFRD_EoR_MINI(struct TsBox *previous_spin_temp, struct AstroParams *a
 {
 	// This is abit buggy cause we are actually using the mturn info from the previous box
 	// However at lowz the z timestep is small enough so that prev box gives good enough results
-	
+
 	double Phi_EoR, H, SFRD, mturn, mc, Mlim_Fstar_MINI;
 	if (redshift > find_redshift_step(2) - 0.5)
 	{
@@ -582,324 +583,27 @@ double Get_SFRD_EoR_MINI(struct TsBox *previous_spin_temp, struct AstroParams *a
 	return SFRD;
 }
 
-/*---- Soft Photon Heating Module ----
-To test this module, copy entire following codes to another file, define SOFT_PHOTON_TEST_MODE and then include the file
-Some functions are already defined in RadioExcess.h, though in 21cmFAST this file has to be wrtten inside RadioExcess.h to avoid repeated includes
-*/
+#include "SoftPhoton.h"
 
-#define xax_len 5000
-#ifdef SOFT_PHOTON_TEST_MODE
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-#include "RadioExcess.h"
-#endif
-
-// First some useful general-purpose functions
-void linspace(double xmin, double xmax, double *x, int nx)
+void Print_debug_info_HistoryBox(struct TsBox *this_spin_temp)
 {
-    /*
-    Create a linspace array
-    -- inputs --
-    xmin: minimum of x
-    xmax: maximum of x
-    x: pointer of pre-created x array
-    nx: array size
-    */
-    int idx;
-    double dx;
-    dx = (xmax - xmin) / ((double)nx - 1.0);
-    for (idx = 0; idx < nx; idx++)
-    {
-        x[idx] = xmin + ((double)idx * dx);
-    }
-}
+	FILE *OutputFile;
+	int ArchiveSize, head, idx;
+	// Yell to ensure that the user does not forget this, e.g. when running mcmc
+	printf("------------------------------------------------ print_debug_info activated------------------------------------------------\n");
 
-void logspace(double lgx_min, double lgx_max, double *x, int nx)
-{
-    /*
-    Create a logspace array
-    -- inputs --
-    lgx_min: minimum of log10(x)
-    lgx_max: maximum of log10(x)
-    x: pointer of pre-created x array
-    nx: array size
-    */
-    int idx;
-    double dlx;
-    dlx = (lgx_max - lgx_min) / ((double)nx - 1.0);
-    for (idx = 0; idx < nx; idx++)
-    {
-        x[idx] = pow(10.0, lgx_min + ((double)idx * dlx));
-    }
-}
-
-double Integrate(double *x, double *fx, int nx, int method)
-{
-    /*
-    Integrate fx over x: \int dx f(x)
-    -- inputs --
-    method: integration method. For equally spaced x methods 0 and 1 are pretty much the same, but trapz generally outperforms for non-equally spaced x
-        0 - summation, simplest method
-            \int dx f(x) = \sum_{i=0}^{n-1}f_idx_i
-        1 - trapz
-    */
-    double dx, result, f;
-    int idx;
-    result = 0.0;
-    if (method == 0)
-    {
-        for (idx = 0; idx < nx - 1; idx++)
-        {
-            dx = x[idx + 1] - x[idx];
-            f = fx[idx];
-            result += f * dx;
-        }
-    }
-    else if (method == 1)
-    {
-        for (idx = 0; idx < nx - 1; idx++)
-        {
-            dx = x[idx + 1] - x[idx];
-            f = (fx[idx] + fx[idx + 1]) / 2.0;
-            result += f * dx;
-        }
-    }
-    return result;
-}
-
-
-double Lambda_BR(double z, double xe, double x, double Tk, double OmBh2, double YHe)
-{
-    /*
-    Bremsstrahlung emissivity coefﬁcient (dimensionless) following Chluba's paper: 10.1093/mnras/stae2113
-    Note: Gaunt factor in Chluba's codes is bugged!!! But equation in the paper should be correct.
-    ---- inputs ----
-    xe: ionization fraction
-    x: h*f/(kB * Tcmb)
-    */
-    double kB, mec2, theta, alpha, c, h, lambda_e, gaunt, Np, r, Nb, vGHz, T4;
-    c = 2.99792458E8;
-    kB = 1.38064852E-23;
-    h = 6.626070040818181818E-34;
-    alpha = 1.0/137.03599976;
-    
-    // Gaunt factor following 10.1093/mnras/stad1539 (or 10.1051/0004-6361/201424643), mathematically identical to Chluba's paper
-    vGHz = x * kB * 2.728 * (1.0+z)/(h * 1.0E9);
-    T4 = Tk/1.0E4;
-    gaunt = 5.9598540023339722 - sqrt(3.0)/M_PI * log(vGHz * pow(T4, -1.5));
-    gaunt = log(exp(gaunt) + exp(1.0));
-
-    mec2 = 510998.9461 * 1.602176634E-19;
-    theta = Tk*kB/mec2;
-    Nb = 0.25186318588882056 * OmBh2/0.02242 * pow(1.0+z, 3.0); // rho_cr*OmB/mp, number density of protons assuming baryons are made entirely of Hydrogen
-    Np = xe * (1.0 - YHe) * Nb;
-    lambda_e = h*c/mec2;
-    r = alpha * pow(lambda_e, 3.0) / (2.0 * M_PI * sqrt(6.0*M_PI)) * pow(theta, -3.5) * Np * gaunt;
-    return r;
-}
-
-double SoftPhoton_inj(double x, double xe, double z, double SFRD_II, double SFRD_III, double fR_II, double fR_III, double aR_II, double aR_III, double n_inj, double H, double YHe, double OmBh2)
-{
-    /*
-    The injection term dn_inj/dtau
-    -- inputs --
-    x: h*f/(kB * Tcmb)
-    xe: ionization fraction
-    z: z
-    SFRD_II: Pop II SFRD (comoving), in Msun/yr/Mpc^-3
-    SFRD_III: Pop III SFRD (comoving), in Msun/yr/Mpc^-3
-    fR_II: Pop II radio efficiency
-    fR_III: Pop III radio efficiency
-    aR_II: Pop II radio emission power index
-    aR_III: Pop III radio emission power index
-    n_inj: occupation number of injected radio photons
-    H: Hubble
-    YHe: Helium mass fraction, default should be 0.245
-    OmBh2: Omega bh2
-    */
-    double c, sigmaT, ne, nH0, nH, Tcmb, h, kB, f, sII, sIII, src, r1, r2, r, fHe;
-    c = 2.99792458E8;
-    sigmaT = 0.665245854E-28;
-    kB = 1.38064852E-23;
-    h = 6.626070040818181818E-34;
-    
-    Tcmb = 2.728 * (1.0+z);
-    fHe = YHe/(4.0* (1.0 - YHe));
-    nH0 = 0.1901567053460595 * OmBh2/0.02242; // Number density of H neclei today, in m^-3
-    ne = nH0 * (1.0+fHe) * xe * pow(1.0+z, 3.0); // electron number density
-    f = kB * Tcmb * x / h; // Photon frequency in Hz
-    sII = fR_II * pow(f/0.15E9, -aR_II) * SFRD_II;
-    sIII = fR_III * pow(f/0.15E9, -aR_III) * SFRD_III;
-    src = sII + sIII;
-    r1 = 5.507E11 * src / pow(f * (1.0+z), 3.0);
-    r2 = 4.0 * n_inj * H;
-    r = (r1 + r2) / (sigmaT * ne * c);
-    return r;
-    // return 0.0;
-}
-
-double DeltaS_tilte(double x, double xe, double z, double SFRD_II, double SFRD_III, double fR_II, double fR_III, double aR_II, double aR_III, double n_inj, double H, double YHe, double OmBh2, double Tk, double LBR)
-{
-    /* 
-    DeltaS in Eq(8)
-    -- inputs --
-    Tk: matter temperature (K)
-    LBR: Lambda_BR, can be computed by Lambda_BR function, used as input here to avoid repeated call to Lambda_BR
-    *others*: see SoftPhoton_inj
-    */
-    double Sinj, Tcmb, Y, ex, Smid, Sff, mec2, kB, xi, exi, f1, f2, DeltaS, r;
-    mec2 = 510998.9461 * 1.602176634E-19;
-    kB = 1.38064852E-23;
-
-    // Soft Photon Injection
-    Sinj = SoftPhoton_inj(x, xe, z, SFRD_II, SFRD_III, fR_II, fR_III, aR_II, aR_III, n_inj, H, YHe, OmBh2);
-
-    // Mid-term, whatever that is
-    Tcmb = 2.728 * (1.0+z);
-    ex = exp(x);
-    Y = x * ex / pow(ex - 1.0, 2.0) * (x * (ex+1.0)/(ex-1.0) - 4.0);
-    Smid = kB / mec2 * (Tk - Tcmb) * Y;
-
-    // Sff term, Eq(9)
-    // LBR = Lambda_BR(z, xe, x, Tk, OmBh2, YHe);
-    xi = x*Tcmb/Tk;
-    exi = exp(xi);
-    f1 = LBR * (1.0-1.0/exi)/pow(xi, 3.0);
-    f2 = 1.0/(exi - 1.0) - 1.0/(ex - 1.0);
-    Sff = f1 * f2;
-
-    //DeltaS
-    DeltaS = Sinj + Smid + Sff;
-    
-    r = DeltaS * pow(xi, 3.0) / (LBR * (1.0 - 1.0/exi));
-    return r;
-}
-
-double dtauff_dz(double z, double H, double xe, double LBR, double xi, double OmBh2, double YHe)
-{
-    //\frac{d \tau_{ff}}{dz} = - \frac{\sigma_T N_e c \Lambda_{BR} (1 - e^{-x_i})}{(1+z) H x_i^3}
-    double sigmaT, ne, c, nH0, fHe, r;
-    c = 2.99792458E8;
-    sigmaT = 0.665245854E-28;
-    nH0 = 0.1901567053460595 * OmBh2/0.02242; // Number density of H neclei today, in m^-3
-    fHe = YHe/(4.0* (1.0 - YHe));
-    ne = nH0 * xe * (1.0+fHe) * pow(1.0+z, 3.0); // electron number density
-    r = - sigmaT * ne * c * LBR * (1 - exp(-xi)) / ((1.0+z) * H * pow(xi, 3.0));
-    return r;
-}
-
-double Build_dTffdz_Kernel(double z, double xe, double Tk, double H, double *x, double *LBR, double *DeltaN, int nx)
-{
-    /*
-    Compute Heating Rate dTk/dz
-    -- inputs --
-    z: z
-    xe: ionization fraction
-    H: Hubble (s^-1)
-    Tk: Tk (K)
-    x: pointer for hf/(kB Tcmb)
-    LBR: pointer for Lambda_BR
-    DeltaN: pointer for DeltaN
-    nx: size of pointers x, LBR, DeltaN
-    */
-    double rho_cmb, Tcmb, kB, hb, c, dtdz, ne_ntot, Prefix, sigmaT, Integrand[xax_len], xi, ex, exi, dTkdz;
-    int idx;
-
-    if (fabs((double)xax_len - (double)nx) > 1E-10)
-    {
-       fprintf(stderr, "Error: unexpected x length nx\n");
-	    exit(1);
-    }
-
-    kB = 1.38064852E-23;
-    hb = 6.626070040818181818E-34/(2.0*M_PI);
-    c = 2.99792458E8;
-    sigmaT = 0.665245854E-28;
-
-    Tcmb = 2.728*(1.0+z);
-    rho_cmb = pow(M_PI, 2.0) * pow(kB*Tcmb, 4.0)/(15.0*pow(hb*c, 3.0));
-    dtdz = -1/((1+z)*H);
-    ne_ntot = xe/(1.0+xe); // This is ne/(nH(1+xe+fHe+xe*fHe))
-    Prefix = 2 * dtdz*ne_ntot/(3*kB);
-    Prefix = Prefix * 15 * rho_cmb * sigmaT * c * pow(Tk/Tcmb, 3.0)/pow(M_PI, 4.0); // Part not dependent on x integrand
-
-    // Defining the integrand
-    for (idx=0; idx<nx; idx++)
-    {
-        ex = exp(x[idx]);
-        xi = x[idx] * Tcmb/Tk;
-        exi = exp(xi);
-        Integrand[idx] = LBR[idx] * (1.0 - 1.0/exi) * (DeltaN[idx] + 1.0/(ex - 1.0) - 1.0/(exi - 1));
-    }
-    dTkdz = Prefix * Integrate(x, Integrand, nx, 1);
-    return dTkdz;
-}
-
-double Compute_dTffdz(double *zax, double *dTdz, double *Hax, double *xe_ax, double *Tkax, double *SFRD_II_ax, double *SFRD_III_ax, double fR_II, double fR_III, double aR_II, double aR_III, double OmBh2, int nz)
-{
-    /*
-    Compute Soft-Photon heating rate dT/dz for an array of z, many inputs must be passed externally, such that the code can be easily tested outside of 21cmFAST (e.g., with python) and it can 
-    merge streamelessly to 21cmFAST. Code computes dT/dz at all redshifts, which can be used by e.g. python for testing. Time used for Python to initialize input arrays seems subdominant compared 
-    to the min solver
-    -- inputs --
-    zax: z axis
-    dTdz: axis for dT/dz output
-    */
-    double xax[xax_len], LBR_ax[xax_len], DeltaN_ax[xax_len], DST_ax[xax_len], n_inj[xax_len];
-    double z, xe, Tk, dz, dtff, xi, Tcmb, SFRD_II, SFRD_III, exp_dtff_inv, H, dninj_dtff, S_inj, YHe;
-    int xid, zid;
-
-    // Setting params
-    YHe = 0.245;
-
-    // Initializing
-    logspace(-8.0, 2.0, xax, xax_len);
-    z = zax[0];
-    if (zax[0] < zax[nz-1])
-    {
-        fprintf(stderr, "Error: z needs to be descending\n");
-	    exit(1);
-    }
-    dTdz[0] = 0.0;
-    for (xid=0; xid<xax_len; xid++)
-    {
-        DeltaN_ax[xid] = 0.0;
-        n_inj[xid] = 0.0;
-    }
-    
-    // Start Evolving
-    for (zid=1; zid<nz; zid++)
-    {
-        z = zax[zid];
-        dz = zax[zid] - zax[zid-1];
-        H = Hax[zid];
-        xe = xe_ax[zid];
-        Tk = Tkax[zid];
-        Tcmb = 2.728 * (1.0+z);
-        SFRD_II = SFRD_II_ax[zid];
-        SFRD_III = SFRD_III_ax[zid];
-        for (xid=0; xid<xax_len; xid++)
-        {
-            xi = xax[xid]*Tcmb/Tk;
-            LBR_ax[xid] = Lambda_BR(z, xe, xax[xid], Tk, OmBh2, YHe);
-            dtff = dtauff_dz(z, H, xe, LBR_ax[xid], xi, OmBh2, YHe)*dz;
-            
-            // Updating n_inj, not very efficient because this needs to call SoftPhoton_inj which has already been called in DeltaS_tilte, can be optimized if this adds too much time
-            S_inj = SoftPhoton_inj(xax[xid], xe, z, SFRD_II, SFRD_III, fR_II, fR_III, aR_II, aR_III, n_inj[xid], H, YHe, OmBh2);
-            dninj_dtff = S_inj * pow(xi, 3.0)/(LBR_ax[xid]*(1.0 - exp(-xi)));
-            n_inj[xid] = n_inj[xid] + dninj_dtff * dtff;
-            // Finished updating n_inj
-
-            exp_dtff_inv = exp(-dtff);
-            DST_ax[xid] = DeltaS_tilte(xax[xid], xe, z, SFRD_II, SFRD_III, fR_II, fR_III, aR_II, aR_III, n_inj[xid], H, YHe, OmBh2, Tk, LBR_ax[xid]);
-            DeltaN_ax[xid] = DeltaN_ax[xid]*exp_dtff_inv + DST_ax[xid]*(1.0 - exp_dtff_inv);
-            // DeltaN_ax[xid] = DeltaN_ax[xid]*(exp_dtff_inv) + DST_ax[xid]*dtff;
-        }
-        dTdz[zid] = Build_dTffdz_Kernel(z, xe, Tk, H, xax, LBR_ax, DeltaN_ax, xax_len);
-    }
-
-    return dTdz[nz-1];
+	OutputFile = fopen("/Users/cangtao/Desktop/History_box_tmp.txt", "w");
+	ArchiveSize = (int)round(this_spin_temp->History_box[0]);
+	fprintf(OutputFile, "   z       Tk        xH       SFRD3\n");
+	for (idx = 1; idx <= ArchiveSize; idx++)
+	{
+		head = (idx - 1) * History_box_DIM + 1;
+		fprintf(OutputFile, "%.7f   ", this_spin_temp->History_box[head]);
+		fprintf(OutputFile, "%.7E   ", this_spin_temp->History_box[head + 2]);
+		fprintf(OutputFile, "%.7E   ", this_spin_temp->History_box[head + 8]);
+		fprintf(OutputFile, "%.7E\n", this_spin_temp->History_box[head + 7]);
+	}
+	fclose(OutputFile);
 }
 
 double Find_dTff_dz(struct TsBox *previous_spin_temp, struct AstroParams *astro_params, struct CosmoParams *cosmo_params, struct FlagOptions *flag_options)
@@ -909,6 +613,7 @@ double Find_dTff_dz(struct TsBox *previous_spin_temp, struct AstroParams *astro_
 	// 2 - need to do last step?
 	double zax[zax_len_FF], dTdz_ax[zax_len_FF], Hax[zax_len_FF], xe_ax[zax_len_FF], Tk_ax[zax_len_FF], SFRD_II_ax[zax_len_FF], SFRD_III_ax[zax_len_FF];
 	double OmBh2, YHe, z1, z2, z, r;
+	FILE *OutputFile;
 	int idx, ArchiveSize, head;
 	if (!flag_options->USE_RADIO_HEATING)
 	{
@@ -920,25 +625,35 @@ double Find_dTff_dz(struct TsBox *previous_spin_temp, struct AstroParams *astro_
 		if (!flag_options->USE_RADIO_MCG)
 		{
 			fprintf(stderr, "Error: You must set USE_RADIO_MCG to True if USE_RADIO_HEATING.\n");
-            Throw(ValueError);
+			Throw(ValueError);
 		}
-		
-	}	
+	}
 
 	OmBh2 = cosmo_params->OMb * (pow(cosmo_params->hlittle, 2));
 	YHe = 0.245;
-	
+
 	ArchiveSize = (int)round(previous_spin_temp->History_box[0]);
+	if ((ArchiveSize > 1) && print_debug_info)
+	{
+		Print_debug_info_HistoryBox(previous_spin_temp);
+	}
+	
 	if (ArchiveSize < 3)
 	{
 		return 0.0;
 	}
-	head = 3 * History_box_DIM + 1;
-	z1 = previous_spin_temp->History_box[head];
-	z2 = previous_spin_temp->History_box[(ArchiveSize - 1) * History_box_DIM + 1]+1.0E-3;
+	z1 = previous_spin_temp->History_box[1];
+	z2 = previous_spin_temp->History_box[(ArchiveSize - 1) * History_box_DIM + 1] + 1.0E-3;
+	if (print_debug_info)
+	{
+		printf("Running Radio heating, ArchiveSize = %d, z1 = %7f, z2 = %7f\n", ArchiveSize, z1, z2);
+		OutputFile = fopen("/Users/cangtao/Desktop/Radio_Heating.txt", "w");
+		fprintf(OutputFile, "   z       Tk        xe       SFRD3\n");
+	}
 
-	logspace(log10(1.0+z1), log10(1.0+z2), zax, zax_len_FF);
-	for (idx=0; idx<zax_len_FF; idx++)
+	logspace(log10(1.0 + z1), log10(1.0 + z2), zax, zax_len_FF);
+	
+	for (idx = 0; idx < zax_len_FF; idx++)
 	{
 		zax[idx] = zax[idx] - 1; // logspace gives 1+z
 		z = zax[idx];
@@ -947,10 +662,17 @@ double Find_dTff_dz(struct TsBox *previous_spin_temp, struct AstroParams *astro_
 		Tk_ax[idx] = History_box_Interp(previous_spin_temp, z, 3, 1);
 		SFRD_II_ax[idx] = 0.0;
 		SFRD_III_ax[idx] = History_box_Interp(previous_spin_temp, z, 6, 1);
+		if (print_debug_info)
+		{
+			fprintf(OutputFile, "%7f	%7E    %7E    %7E\n", z, Tk_ax[idx], xe_ax[idx], SFRD_III_ax[idx]);
+		}
 	}
-	
-	r = Compute_dTffdz(zax, dTdz_ax, Hax, xe_ax, Tk_ax, SFRD_II_ax, SFRD_III_ax, astro_params->fR, astro_params->fR_mini, astro_params->aR, astro_params->aR_mini, OmBh2, zax_len_FF);
-	
-	return r;
+	if (print_debug_info)
+	{
+		fclose(OutputFile);
+	}
 
+	r = Compute_dTffdz(zax, dTdz_ax, Hax, xe_ax, Tk_ax, SFRD_II_ax, SFRD_III_ax, astro_params->fR, astro_params->fR_mini, astro_params->aR, astro_params->aR_mini, OmBh2, YHe, zax_len_FF);
+
+	return r;
 }
