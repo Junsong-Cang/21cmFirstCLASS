@@ -70,6 +70,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
         Cannot run SDM with SIGMA_8? - most likely an issue with dmeff_classy, code terminates before it can reach teh stage of printing out "Now running CLASS..."
         Double check Radio Heating
         For a template run, print SFRD & EoR, use it to compute dTff/dz externally and check with p21f
+        Add additional soft photon variables to pragma thing!!!! -> dT_Radio_FF
         */
         printf("Check TODO above ====\n");
         // Makes the parameter structs visible to a variety of functions/macros
@@ -196,7 +197,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
         float delta_SDM_local, delta_SDM_derivative_local;
 
         // Junsong: added variables for radio excess
-        double Radio_Temp, Radio_Temp_HMG, Trad_inv, zpp_max, Phi, Phi_mini, Radio_zpp, Phi_ave, Phi_ave_mini, T_IGM_ave, dT_Radio, dTdz_FF;
+        double Radio_Temp, Radio_Temp_HMG, Trad_inv, zpp_max, Phi, Phi_mini, Radio_zpp, Phi_ave, Phi_ave_mini, T_IGM_ave, dT_Radio, dTdz_FF, dT_Radio_FF;
         double Radio_Prefix_ACG, Radio_Prefix_MCG, Fill_Fraction, Radio_Temp_ave, dzpp_Rct0, zpp_Rct0, H_Rct0, Tr_EoR, SFRD_EoR_MINI, SFRD_MINI_ave, Radio_Prefix_ACG_Rct, Radio_Prefix_MCG_Rct;
         int ArchiveSize, head, phi_idx, tk_idx, phi3_idx, zpp_idx, Radio_Silent;
         FILE *OutputFile;
@@ -2795,7 +2796,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                 // Main loop over the entire box for the IGM spin temperature and relevant quantities.
                 if (flag_options->USE_MASS_DEPENDENT_ZETA)
                 {
-                    dTdz_FF = Find_dTff_dz(previous_spin_temp, astro_params, cosmo_params, flag_options);
+                    dTdz_FF = Find_dTff_dz(previous_spin_temp, astro_params, cosmo_params, flag_options, &dT_Radio_FF, redshift);
 // JordanFlitter: I added more shared variables
 #pragma omp parallel shared(del_fcoll_Rct, dxheat_dt_box, dxion_source_dt_box, dxlya_dt_box, dstarlya_dt_box, previous_spin_temp, this_spin_temp, \
                                 x_int_XHII, m_xHII_low_box, inverse_val_box, inverse_diff, dstarlyLW_dt_box, dstarlyLW_dt_box_MINI,               \
@@ -3269,9 +3270,9 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                                 xc_inverse, Trad_fast_inv, dstarlyLW_dt_box, dstarlyLW_dt_prefactor, dxheat_dt_box_MINI, dxion_source_dt_box_MINI,              \
                                 dxlya_dt_box_MINI, dstarlya_dt_box_MINI, dstarlyLW_dt_box_MINI, dfcoll_dz_val_MINI, del_fcoll_Rct_MINI,                         \
                                 dstarlya_dt_prefactor_MINI, dstarlyLW_dt_prefactor_MINI, prefactor_2_MINI, const_zp_prefactor_MINI,                             \
-                                dstarlya_cont_dt_box, dstarlya_inj_dt_box, dstarlya_cont_dt_prefactor, dstarlya_inj_dt_prefactor,                               \
+                                dstarlya_cont_dt_box, dstarlya_inj_dt_box, dstarlya_cont_dt_prefactor, dstarlya_inj_dt_prefactor, delta_baryons,                \
                                 dstarlya_cont_dt_box_MINI, dstarlya_inj_dt_box_MINI, dstarlya_cont_dt_prefactor_MINI, dstarlya_inj_dt_prefactor_MINI, rec_data, \
-                                delta_baryons, delta_baryons_derivative, delta_SDM, delta_SDM_derivative, Radio_Prefix_MCG_Rct, Radio_Prefix_ACG_Rct)           \
+                                delta_baryons_derivative, delta_SDM, delta_SDM_derivative, Radio_Prefix_MCG_Rct, Radio_Prefix_ACG_Rct, dT_Radio_FF, dTdz_FF)    \
     private(box_ct, x_e, T, dxion_sink_dt, dxe_dzp, dadia_dzp, dspec_dzp, dcomp_dzp, dxheat_dzp, J_alpha_tot, T_inv, T_inv_sq,                                  \
                 xc_fast, xi_power, xa_tilde_fast_arg, TS_fast, TSold_fast, xa_tilde_fast, dxheat_dzp_MINI, J_alpha_tot_MINI, curr_delNL0,                       \
                 prev_Ts, tau21, xCMB, eps_CMB, dCMBheat_dzp, E_continuum, E_injected, Ndot_alpha_cont, Ndot_alpha_inj,                                          \
@@ -3359,6 +3360,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                                 // If R_ct == 0, as this is the final smoothing scale (i.e. it is reversed)
                                 if (R_ct == 0)
                                 {
+                                    this_spin_temp->Trad_box[box_ct] -= dT_Radio_FF; // Accounting for attenuation of radio background by FF heating
 
                                     // Note here, that by construction it doesn't matter if using MINIMIZE_MEMORY as only need the R_ct = 0 box
                                     curr_delNL0 = delNL0[0][box_ct];

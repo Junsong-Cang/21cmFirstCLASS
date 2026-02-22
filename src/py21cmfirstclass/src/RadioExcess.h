@@ -592,7 +592,7 @@ void Print_debug_info_HistoryBox(struct TsBox *this_spin_temp)
 	// Yell to ensure that the user does not forget this, e.g. when running mcmc
 	printf("------------------------------------------------ print_debug_info activated------------------------------------------------\n");
 
-	OutputFile = fopen("/Users/cangtao/Desktop/History_box_tmp.txt", "w");
+	OutputFile = fopen("/Users/cangtao/Desktop/tmp/tmp_test_Radio_Heating/History_box_tmp.txt", "w");
 	ArchiveSize = (int)round(this_spin_temp->History_box[0]);
 	fprintf(OutputFile, "   z       Tk        xH       SFRD3\n");
 	for (idx = 1; idx <= ArchiveSize; idx++)
@@ -606,17 +606,19 @@ void Print_debug_info_HistoryBox(struct TsBox *this_spin_temp)
 	fclose(OutputFile);
 }
 
-double Find_dTff_dz(struct TsBox *previous_spin_temp, struct AstroParams *astro_params, struct CosmoParams *cosmo_params, struct FlagOptions *flag_options)
+double Find_dTff_dz(struct TsBox *previous_spin_temp, struct AstroParams *astro_params, struct CosmoParams *cosmo_params, struct FlagOptions *flag_options, double *dT_Radio, double redshift)
 {
 	// TODO:
 	// 1 - do Pop II radio
 	// 2 - need to do last step?
 	double zax[zax_len_FF], dTdz_ax[zax_len_FF], Hax[zax_len_FF], xe_ax[zax_len_FF], Tk_ax[zax_len_FF], SFRD_II_ax[zax_len_FF], SFRD_III_ax[zax_len_FF];
 	double OmBh2, YHe, z1, z2, z, r;
+	// printf("This is not ready, dT_Radio needs to be passed from Spin.c!!!!\n");
 	FILE *OutputFile;
 	int idx, ArchiveSize, head;
 	if (!flag_options->USE_RADIO_HEATING)
 	{
+		*dT_Radio = 0.0;
 		return 0.0;
 	}
 	else
@@ -647,7 +649,7 @@ double Find_dTff_dz(struct TsBox *previous_spin_temp, struct AstroParams *astro_
 	if (print_debug_info)
 	{
 		printf("Running Radio heating, ArchiveSize = %d, z1 = %7f, z2 = %7f\n", ArchiveSize, z1, z2);
-		OutputFile = fopen("/Users/cangtao/Desktop/Radio_Heating.txt", "w");
+		OutputFile = fopen("/Users/cangtao/Desktop/tmp/tmp_test_Radio_Heating/Radio_Heating.txt", "w");
 		fprintf(OutputFile, "   z       Tk        xe       SFRD3\n");
 	}
 
@@ -672,7 +674,12 @@ double Find_dTff_dz(struct TsBox *previous_spin_temp, struct AstroParams *astro_
 		fclose(OutputFile);
 	}
 
-	r = Compute_dTffdz(zax, dTdz_ax, Hax, xe_ax, Tk_ax, SFRD_II_ax, SFRD_III_ax, astro_params->fR, astro_params->fR_mini, astro_params->aR, astro_params->aR_mini, OmBh2, YHe, zax_len_FF);
-
+	r = Compute_dTffdz(zax, dTdz_ax, Hax, xe_ax, Tk_ax, SFRD_II_ax, SFRD_III_ax, dT_Radio, astro_params->fR, astro_params->fR_mini, astro_params->aR, astro_params->aR_mini, OmBh2, YHe, redshift, 1.0E10, zax_len_FF);
+	if (print_debug_info)
+	{
+		OutputFile = fopen("/Users/cangtao/Desktop/tmp/tmp_test_Radio_Heating/dT_Radio.txt", "a");
+		fprintf(OutputFile, "%7f	%7E\n", redshift, *dT_Radio);
+		fclose(OutputFile);
+	}
 	return r;
 }
