@@ -138,7 +138,6 @@ double SoftPhoton_inj(double x, double xe, double z, double SFRD_II, double SFRD
 	sigmaT = 0.665245854E-28;
 	kB = 1.38064852E-23;
 	h = 6.626070040818181818E-34;
-
 	Tcmb = 2.728 * (1.0 + z);
 	fHe = YHe / (4.0 * (1.0 - YHe));
 	nH0 = 0.1901567053460595 * OmBh2 / 0.02242;		 // Number density of H neclei today, in m^-3
