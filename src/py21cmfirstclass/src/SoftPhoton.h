@@ -114,7 +114,8 @@ double Lambda_BR(double z, double xe, double x, double Tk, double OmBh2, double 
 	return r;
 }
 
-double SoftPhoton_inj(double x, double xe, double z, double SFRD_II, double SFRD_III, double fR_II, double fR_III, double aR_II, double aR_III, double n_inj, double H, double YHe, double OmBh2)
+// double SoftPhoton_inj(double x, double xe, double z, double SFRD_II, double SFRD_III, double fR_II, double fR_III, double aR_II, double aR_III, double n_inj, double H, double YHe, double OmBh2)
+double SoftPhoton_inj(double x, double xe, double z, double SFRD_II, double SFRD_III, double fR_II, double fR_III, double aR_II, double aR_III, double YHe, double OmBh2)
 {
 	/*
 	The injection term dn_inj/dtau
@@ -128,14 +129,10 @@ double SoftPhoton_inj(double x, double xe, double z, double SFRD_II, double SFRD
 	fR_III: Pop III radio efficiency
 	aR_II: Pop II radio emission power index
 	aR_III: Pop III radio emission power index
-	n_inj: occupation number of injected radio photons
-	H: Hubble
 	YHe: Helium mass fraction, default should be 0.245
 	OmBh2: Omega bh2
 	*/
-	double c, sigmaT, ne, nH0, nH, Tcmb, h, kB, f, sII, sIII, src, r1, r2, r, fHe;
-	c = 2.99792458E8;
-	sigmaT = 0.665245854E-28;
+	double ne, nH0, Tcmb, h, kB, f, sII, sIII, src, r, fHe;
 	kB = 1.38064852E-23;
 	h = 6.626070040818181818E-34;
 	Tcmb = 2.728 * (1.0 + z);
@@ -146,13 +143,13 @@ double SoftPhoton_inj(double x, double xe, double z, double SFRD_II, double SFRD
 	sII = fR_II * pow(f / 0.15E9, -aR_II) * SFRD_II;
 	sIII = fR_III * pow(f / 0.15E9, -aR_III) * SFRD_III;
 	src = sII + sIII;
-	r1 = 5.507E11 * src * pow((1.0+z)/f, 3.0);
-	r2 = 4.0 * n_inj * H;
-	r = (r1 + r2) / (sigmaT * ne * c);
+	r = 2.758304858210983E31 * pow((1.0+z)/f, 3.0) * src / ne;
+
 	return r;
 }
 
-double DeltaS_tilte(double x, double xe, double z, double SFRD_II, double SFRD_III, double fR_II, double fR_III, double aR_II, double aR_III, double n_inj, double H, double YHe, double OmBh2, double Tk, double LBR)
+// double DeltaS_tilte(double x, double xe, double z, double SFRD_II, double SFRD_III, double fR_II, double fR_III, double aR_II, double aR_III, double n_inj, double H, double YHe, double OmBh2, double Tk, double LBR)
+double DeltaS_tilte(double x, double xe, double z, double SFRD_II, double SFRD_III, double fR_II, double fR_III, double aR_II, double aR_III, double YHe, double OmBh2, double Tk, double LBR)
 {
 	/*
 	DeltaS in Eq(8)
@@ -166,7 +163,7 @@ double DeltaS_tilte(double x, double xe, double z, double SFRD_II, double SFRD_I
 	kB = 1.38064852E-23;
 
 	// Soft Photon Injection
-	Sinj = SoftPhoton_inj(x, xe, z, SFRD_II, SFRD_III, fR_II, fR_III, aR_II, aR_III, n_inj, H, YHe, OmBh2);
+	Sinj = SoftPhoton_inj(x, xe, z, SFRD_II, SFRD_III, fR_II, fR_III, aR_II, aR_III, YHe, OmBh2);
 
 	// Mid-term, whatever that is
 	Tcmb = 2.728 * (1.0 + z);
@@ -191,7 +188,7 @@ double DeltaS_tilte(double x, double xe, double z, double SFRD_II, double SFRD_I
 
 double dtauff_dz(double z, double H, double xe, double LBR, double xi, double OmBh2, double YHe)
 {
-	//\frac{d \tau_{ff}}{dz} = - \frac{\sigma_T N_e c \Lambda_{BR} (1 - e^{-x_i})}{(1+z) H x_i^3}
+	//\frac{d \tau_{ff}}{dz} = - \frac{\sigma_T n_e c \Lambda_{BR} (1 - e^{-x_i})}{(1+z) H x_i^3}
 	double sigmaT, ne, c, nH0, fHe, r;
 	c = 2.99792458E8;
 	sigmaT = 0.665245854E-28;
@@ -202,7 +199,7 @@ double dtauff_dz(double z, double H, double xe, double LBR, double xi, double Om
 	return r;
 }
 
-double Build_dTffdz_Kernel(double z, double xe, double Tk, double H, double YHe, double OmBh2, double *x, double *LBR, double *DeltaN, double *DeltaN_inj, double *EMS_inj, int nx)
+double Build_dTffdz_Kernel(double z, double xe, double Tk, double H, double YHe, double OmBh2, double *x, double *LBR, double *DeltaN, double *DeltaN_inj, double *EMS_inj)
 {
 	/*
 	Compute Heating Rate dTk/dz
@@ -221,12 +218,6 @@ double Build_dTffdz_Kernel(double z, double xe, double Tk, double H, double YHe,
 	double rho_cmb, Tcmb, kB, hb, c, dtdz, ne_ntot, Prefix, sigmaT, Integrand[xax_len], xi, ex, exi, dTkdz, EMS_Preix, fHe, nH0, ne;
 	int idx;
 
-	if (fabs((double)xax_len - (double)nx) > 1E-10)
-	{
-		fprintf(stderr, "Error: unexpected x length nx\n");
-		exit(1);
-	}
-
 	kB = 1.38064852E-23;
 	hb = 6.626070040818181818E-34 / (2.0 * M_PI);
 	c = 2.99792458E8;
@@ -242,25 +233,18 @@ double Build_dTffdz_Kernel(double z, double xe, double Tk, double H, double YHe,
 	fHe = YHe / (4.0 * (1.0 - YHe));
 	nH0 = 0.1901567053460595 * OmBh2 / 0.02242;		 // Number density of H neclei today, in m^-3
 	ne = nH0 * (1.0 + fHe) * xe * pow(1.0 + z, 3.0); // electron number density
-	// EMS_Preix = 30.0 * rho_cmb * sigmaT * ne * c * hb * pow(Tk*(1.0+z), 3.0)/(kB * pow(M_PI*Tcmb, 3.0) * Tcmb);
 	EMS_Preix = 30.0 * rho_cmb * sigmaT * ne * c * hb * pow(Tk/(1.0+z), 3.0)/(kB * pow(M_PI*Tcmb, 3.0) * Tcmb);
 	
 	// Defining the integrand
-	for (idx = 0; idx < nx; idx++)
+	for (idx = 0; idx < xax_len; idx++)
 	{
 		ex = exp(x[idx]);
 		xi = x[idx] * Tcmb / Tk;
 		exi = exp(xi);
 		Integrand[idx] = LBR[idx] * (1.0 - 1.0 / exi) * (DeltaN[idx] + 1.0 / (ex - 1.0) - 1.0 / (exi - 1));
 		EMS_inj[idx] = EMS_Preix * LBR[idx] * (1.0 - 1.0/exi) * DeltaN_inj[idx];
-		/*
-		if (isnan(EMS_inj[idx]))
-		{
-			printf("VarX = %15E		%15E\n", DeltaN_inj[idx], xe);
-		}
-		*/
 	}
-	dTkdz = Prefix * Integrate(x, Integrand, nx, 1);
+	dTkdz = Prefix * Integrate(x, Integrand, xax_len, 1);
 	return dTkdz;
 }
 
@@ -269,13 +253,13 @@ double Compute_dTffdz(double *zax, double *dTdz, double *Hax, double *xe_ax, dou
 	/*
 	Compute Soft-Photon heating rate dT/dz for an array of z, many inputs must be passed externally, such that the code can be easily tested outside of 21cmFAST (e.g., with python) and it can
 	merge streamelessly to 21cmFAST. Code computes dT/dz at all redshifts, which can be used by e.g. python for testing. Time used for Python to initialize input arrays seems subdominant compared
-	to the min solver
+	to the main solver
 	-- inputs --
 	zax: z axis
 	dTdz: axis for dT/dz output
 	delta_z_TRadio: how instantaneous is the deposition, integrate in this z length when computing dT_Radio. To turn off this feature, set delta_z_TRadio to a large value, e.g., 1.0E10
 	*/
-	double xax[xax_len], LBR_ax[xax_len], DeltaN_ax[xax_len], DST_ax[xax_len], n_inj[xax_len], DeltaN_inj[xax_len], EMS_inj[xax_len];
+	double xax[xax_len], LBR_ax[xax_len], DeltaN_ax[xax_len], DST_ax[xax_len], DeltaN_inj[xax_len], EMS_inj[xax_len];
 	double z, xe, Tk, dz, dtff, xi, Tcmb, SFRD_II, SFRD_III, exp_dtff_inv, H, dninj_dtff, S_inj, lgx_min, lgx_max, f21;
 	double x21, hb, kB, dT_Radio, EMS21, dT_Radio_PreFix, c;
 
@@ -289,10 +273,17 @@ double Compute_dTffdz(double *zax, double *dTdz, double *Hax, double *xe_ax, dou
 	f21 = 1.42E9; // 21cm frequency in Hz
 	lgx_min = -8.0;
 	lgx_max = 2.0;
-	x21 = f21 * 2.0 * M_PI * hb / (kB * 2.728 * (1.0 + redshift)); //log10(x21) is in [-4.78, -1.60] for redshift in [0, 1500], no need to worry about interpolation range overflow
 	logspace(lgx_min, lgx_max, xax, xax_len);
+	x21 = f21 * 2.0 * M_PI * hb / (kB * 2.728 * (1.0 + redshift)); //log10(x21) is in [-4.78, -1.60] for redshift in [0, 1500], no need to worry about interpolation range overflow
 	dT_Radio_PreFix = pow((1.0 + redshift)*c, 3.0) / (8.0 * M_PI * kB * f21 * f21);
-	z = zax[0];
+	dTdz[0] = 0.0;
+	for (xid = 0; xid < xax_len; xid++)
+	{
+		DeltaN_ax[xid] = 0.0;
+		DeltaN_inj[xid] = 0.0;
+	}
+
+	// Pre-flight checks
 	if (zax[0] < zax[nz - 1])
 	{
 		fprintf(stderr, "Error: z needs to be descending, z0 = %7f, z_end = %7f\n", zax[0], zax[nz - 1]);
@@ -303,13 +294,6 @@ double Compute_dTffdz(double *zax, double *dTdz, double *Hax, double *xe_ax, dou
 		// This can happen in test
 		fprintf(stderr, "Your redshift is larger than smallest zax.\n");
 		exit(1);
-	}
-	dTdz[0] = 0.0;
-	for (xid = 0; xid < xax_len; xid++)
-	{
-		DeltaN_ax[xid] = 0.0;
-		n_inj[xid] = 0.0;
-		DeltaN_inj[xid] = 0.0;
 	}
 
 	if (print_debug_info)
@@ -335,25 +319,17 @@ double Compute_dTffdz(double *zax, double *dTdz, double *Hax, double *xe_ax, dou
 			LBR_ax[xid] = Lambda_BR(z, xe, xax[xid], Tk, OmBh2, YHe);
 			dtff = dtauff_dz(z, H, xe, LBR_ax[xid], xi, OmBh2, YHe) * dz;
 
-			// Updating n_inj and DeltaN_inj, not very efficient because this needs to call SoftPhoton_inj which has already been called in DeltaS_tilte, can be optimized if this adds too much time
-			S_inj = SoftPhoton_inj(xax[xid], xe, z, SFRD_II, SFRD_III, fR_II, fR_III, aR_II, aR_III, n_inj[xid], H, YHe, OmBh2);
+			// Updating DeltaN_inj, not very efficient because this needs to call SoftPhoton_inj which has already been called in DeltaS_tilte, can be optimized if this adds too much time
+			S_inj = SoftPhoton_inj(xax[xid], xe, z, SFRD_II, SFRD_III, fR_II, fR_III, aR_II, aR_III, YHe, OmBh2);
 			dninj_dtff = S_inj * pow(xi, 3.0) / (LBR_ax[xid] * (1.0 - exp(-xi)));
-			n_inj[xid] = n_inj[xid] + dninj_dtff * dtff;
-			// Finished updating n_inj
 
 			exp_dtff_inv = exp(-dtff);
-			DST_ax[xid] = DeltaS_tilte(xax[xid], xe, z, SFRD_II, SFRD_III, fR_II, fR_III, aR_II, aR_III, n_inj[xid], H, YHe, OmBh2, Tk, LBR_ax[xid]);
+			DST_ax[xid] = DeltaS_tilte(xax[xid], xe, z, SFRD_II, SFRD_III, fR_II, fR_III, aR_II, aR_III, YHe, OmBh2, Tk, LBR_ax[xid]);
 			DeltaN_ax[xid] = DeltaN_ax[xid] * exp_dtff_inv + DST_ax[xid] * (1.0 - exp_dtff_inv);
 			DeltaN_inj[xid] = DeltaN_inj[xid] * exp_dtff_inv + dninj_dtff * (1.0 - exp_dtff_inv);
 			// DeltaN_ax[xid] = DeltaN_ax[xid]*(exp_dtff_inv) + DST_ax[xid]*dtff;
-			/*
-			if (isnan(DeltaN_inj[xid]))
-			{
-				printf("Var3 = %15E\n", S_inj);
-			}
-			*/
 		}
-		dTdz[zid] = Build_dTffdz_Kernel(z, xe, Tk, H, YHe, OmBh2, xax, LBR_ax, DeltaN_ax, DeltaN_inj, EMS_inj, xax_len);
+		dTdz[zid] = Build_dTffdz_Kernel(z, xe, Tk, H, YHe, OmBh2, xax, LBR_ax, DeltaN_ax, DeltaN_inj, EMS_inj);
 		
 		// ======== Computing Radio attenuation ========
 		if (fabs(z - zax[nz-1]) > delta_z_TRadio)
@@ -362,15 +338,9 @@ double Compute_dTffdz(double *zax, double *dTdz, double *Hax, double *xe_ax, dou
 		}
 		else
 		{
-			EMS21 = Interp_1D(x21, xax, EMS_inj, xax_len, 1, 0, 0);
+			EMS21 = Interp_1D(x21, xax, EMS_inj, xax_len, 1, 0, 0); // Don't worry about x21, 1+z' factor is canceled by CMB temperature
 		}
-		dT_Radio -= dT_Radio_PreFix * EMS21 * dz /(H * (1.0+z));// remember that dz is negative!
-		/*
-		if (isnan(dT_Radio))
-		{
-			printf("Var = %15E	%15E\n", EMS21, z);
-		}
-		*/
+		dT_Radio -= dT_Radio_PreFix * EMS21 * dz /(H * (1.0+z));// Remember that dz is negative!
 		if (print_debug_info)
 		{
 			fprintf(OutputFile, "%7f   %7E\n", z, dTdz[zid]);

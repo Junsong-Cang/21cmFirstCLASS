@@ -127,7 +127,7 @@ logger = logging.getLogger(__name__)
 
 # JordanFlitter: I added some logics to prevent conflict between inputs
 # I'm not sure if that's the best place for these logics, but it works...
-def _configure_user_params(user_params,user_params_dic):
+def _configure_user_params(user_params,user_params_dic,verbose):
     # First, let's have some SDM logics
     if user_params.SCATTERING_DM:
         if not user_params.RUN_CLASS:
@@ -429,10 +429,11 @@ def _configure_user_params(user_params,user_params_dic):
         if not user_params.START_AT_RECOMBINATION and not user_params.USE_ADIABATIC_FLUCTUATIONS:
             try:
                 if not user_params_dic["RUN_CLASS"] and not user_params_dic["START_AT_RECOMBINATION"] and not user_params_dic["USE_ADIABATIC_FLUCTUATIONS"]:
-                    logger.warning("You have set RUN_CLASS to False but START_AT_RECOMBINATION and USE_ADIABATIC_FLUCTUATIONS are also False!")
-                    logger.warning("This means that the code starts with homogeneous temperature box, which would lead to inconsistencies in the 21cm power spectrum.")
-                    # logger.warning("Automatically setting USE_ADIABATIC_FLUCTUATIONS to True.\n")
-                    logger.warning("Please consider setting USE_ADIABATIC_FLUCTUATIONS to True!\n")
+                    if verbose:
+                        logger.warning("You have set RUN_CLASS to False but START_AT_RECOMBINATION and USE_ADIABATIC_FLUCTUATIONS are also False!")
+                        logger.warning("This means that the code starts with homogeneous temperature box, which would lead to inconsistencies in the 21cm power spectrum.")
+                        # logger.warning("Automatically setting USE_ADIABATIC_FLUCTUATIONS to True.\n")
+                        logger.warning("Please consider setting USE_ADIABATIC_FLUCTUATIONS to True!\n")
             except KeyError:
                 pass
             # user_params.USE_ADIABATIC_FLUCTUATIONS = True
@@ -3006,6 +3007,7 @@ def run_lightcone(
     save_coeval_redshifts=None, # JordanFlitter: added save_coeval_redshifts to run_lightcone()
     save_coeval_quantities=None, # JordanFlitter: added save_coeval_quantities to run_lightcone()
     always_purge: bool = False,
+    verbose = True,
     **global_kwargs,
 ):
     r"""
@@ -3149,8 +3151,7 @@ def run_lightcone(
 
         # JordanFlitter: I added some logics to prevent conflict between inputs
         # I'm not sure if that's the best place for these logics, but it works...
-        _configure_user_params(user_params,user_params_dic)
-
+        _configure_user_params(user_params,user_params_dic, verbose)
         # JordanFlitter: I added compatibility with A_s. This piece of code is required to pass 21cmFAST sigma8 in case RUN_CLASS is False
         # or alternatively, if the user wants to run CLASS with sigma8 (strange choice...) we find A_s
         if ((A_s_FLAG and (not user_params.RUN_CLASS))
@@ -3393,7 +3394,8 @@ def run_lightcone(
                 scrollz_save_coevals.append(scrollz_all_output[scrollz_save_coevals_indices[-1]])
 
         # JordanFlitter: print the following message
-        print("Now generating initial boxes...")
+        if verbose:
+            print("Now generating initial boxes...")
         time.sleep(0.1) # we pause the program for a short time just to print the above message before running CLASS
         if init_box is None:  # no need to get cosmo, user params out of it.
             init_box = initial_conditions(
@@ -3430,7 +3432,7 @@ def run_lightcone(
             for z in tqdm.tqdm(zz,
                                desc="Perturbations",
                                unit="redshift",
-                               disable=False,
+                               disable= not verbose,
                                total=len(zz)):
                 p = perturb_field(
                     redshift=z,
@@ -3808,7 +3810,7 @@ def run_lightcone(
         for iz, z in tqdm.tqdm(enumerate(scrollz_cosmic_dawn),
                              desc="21cmFirstCLASS (cosmic dawn)",
                              unit="redshift",
-                             disable=False,
+                             disable=not verbose,
                              total=len(scrollz_cosmic_dawn)):
             # JordanFlitter: Added the following condition
             if not user_params.DO_PERTURBS_WITH_TS:

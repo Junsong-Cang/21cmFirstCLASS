@@ -4,7 +4,7 @@
 #define astro_nu0 0.15	   // in GHz
 #define History_box_DIM 20 // number of quantities to be saved in History_box
 #define zax_len_FF 1000	   // axis length for soft-photon heating
-#define print_debug_info 1
+#define print_debug_info 0
 
 int Find_Index(double *x_axis, double x, int nx)
 {
