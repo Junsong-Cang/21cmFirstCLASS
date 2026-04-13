@@ -683,3 +683,5 @@ double Find_dTff_dz(struct TsBox *previous_spin_temp, struct AstroParams *astro_
 	}
 	return r;
 }
+
+double Collisional_Ionization_Rate

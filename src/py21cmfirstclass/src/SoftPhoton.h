@@ -148,7 +148,6 @@ double SoftPhoton_inj(double x, double xe, double z, double SFRD_II, double SFRD
 	return r;
 }
 
-// double DeltaS_tilte(double x, double xe, double z, double SFRD_II, double SFRD_III, double fR_II, double fR_III, double aR_II, double aR_III, double n_inj, double H, double YHe, double OmBh2, double Tk, double LBR)
 double DeltaS_tilte(double x, double xe, double z, double SFRD_II, double SFRD_III, double fR_II, double fR_III, double aR_II, double aR_III, double YHe, double OmBh2, double Tk, double LBR)
 {
 	/*
@@ -217,6 +216,8 @@ double Build_dTffdz_Kernel(double z, double xe, double Tk, double H, double YHe,
 	*/
 	double rho_cmb, Tcmb, kB, hb, c, dtdz, ne_ntot, Prefix, sigmaT, Integrand[xax_len], xi, ex, exi, dTkdz, EMS_Preix, fHe, nH0, ne;
 	int idx;
+	FILE *File_dFdt_BR;
+	double G_tmp, dTdzdx_tmp, dFdt_tmp;
 
 	kB = 1.38064852E-23;
 	hb = 6.626070040818181818E-34 / (2.0 * M_PI);
@@ -234,7 +235,12 @@ double Build_dTffdz_Kernel(double z, double xe, double Tk, double H, double YHe,
 	nH0 = 0.1901567053460595 * OmBh2 / 0.02242;		 // Number density of H neclei today, in m^-3
 	ne = nH0 * (1.0 + fHe) * xe * pow(1.0 + z, 3.0); // electron number density
 	EMS_Preix = 30.0 * rho_cmb * sigmaT * ne * c * hb * pow(Tk/(1.0+z), 3.0)/(kB * pow(M_PI*Tcmb, 3.0) * Tcmb);
+	if (SOFT_PHOTON_TEST_MODE)
+	{
+		File_dFdt_BR = fopen("/Users/cangtao/Desktop/tmp/tmp_test_Radio_Heating/File_dFdt_BR.txt", "a");
+	}
 	
+	G_tmp = -30.0 * rho_cmb *dtdz /(kB * (ne/ne_ntot) * pow(M_PI, 4.0));
 	// Defining the integrand
 	for (idx = 0; idx < xax_len; idx++)
 	{
@@ -243,8 +249,16 @@ double Build_dTffdz_Kernel(double z, double xe, double Tk, double H, double YHe,
 		exi = exp(xi);
 		Integrand[idx] = LBR[idx] * (1.0 - 1.0 / exi) * (DeltaN[idx] + 1.0 / (ex - 1.0) - 1.0 / (exi - 1));
 		EMS_inj[idx] = EMS_Preix * LBR[idx] * (1.0 - 1.0/exi) * DeltaN_inj[idx];
+		dTdzdx_tmp = Prefix * Integrand[idx];
+		dFdt_tmp = dTdzdx_tmp/(G_tmp*pow(x[idx], 3.0));
+		fprintf(File_dFdt_BR, "%10E  ", dFdt_tmp);
 	}
+	fprintf(File_dFdt_BR, "\n");
 	dTkdz = Prefix * Integrate(x, Integrand, xax_len, 1);
+	if (SOFT_PHOTON_TEST_MODE)
+	{
+		fclose(File_dFdt_BR);
+	}
 	return dTkdz;
 }
 
@@ -264,7 +278,18 @@ double Compute_dTffdz(double *zax, double *dTdz, double *Hax, double *xe_ax, dou
 	double x21, hb, kB, dT_Radio, EMS21, dT_Radio_PreFix, c;
 
 	int xid, zid;
-	FILE *OutputFile;
+	FILE *OutputFile, *File_sinj, *File_dtauff_dz, *File_DeltaS, *File_DeltaS_no_inj, *File_DeltaN, *File_Global, *File_dFdt_BR;
+
+	if (SOFT_PHOTON_TEST_MODE)
+	{
+		File_sinj = fopen("/Users/cangtao/Desktop/tmp/tmp_test_Radio_Heating/File_sinj.txt", "w");
+		File_dtauff_dz = fopen("/Users/cangtao/Desktop/tmp/tmp_test_Radio_Heating/File_dtauff_dz.txt", "w");
+		File_DeltaS = fopen("/Users/cangtao/Desktop/tmp/tmp_test_Radio_Heating/File_DeltaS.txt", "w");
+		File_DeltaS_no_inj = fopen("/Users/cangtao/Desktop/tmp/tmp_test_Radio_Heating/File_DeltaS_no_inj.txt", "w");
+		File_DeltaN = fopen("/Users/cangtao/Desktop/tmp/tmp_test_Radio_Heating/File_DeltaN.txt", "w");
+		File_Global = fopen("/Users/cangtao/Desktop/tmp/tmp_test_Radio_Heating/File_Global.txt", "w");
+		File_dFdt_BR = fopen("/Users/cangtao/Desktop/tmp/tmp_test_Radio_Heating/File_dFdt_BR.txt", "w");
+	}
 
 	// Initializing
 	hb = 6.626070040818181818E-34 / (2.0 * M_PI);
@@ -328,7 +353,26 @@ double Compute_dTffdz(double *zax, double *dTdz, double *Hax, double *xe_ax, dou
 			DeltaN_ax[xid] = DeltaN_ax[xid] * exp_dtff_inv + DST_ax[xid] * (1.0 - exp_dtff_inv);
 			DeltaN_inj[xid] = DeltaN_inj[xid] * exp_dtff_inv + dninj_dtff * (1.0 - exp_dtff_inv);
 			// DeltaN_ax[xid] = DeltaN_ax[xid]*(exp_dtff_inv) + DST_ax[xid]*dtff;
+			if (SOFT_PHOTON_TEST_MODE)
+			{
+				fprintf(File_sinj, "%10E  ", S_inj);
+				fprintf(File_dtauff_dz, "%10E  ", dtff/dz);
+				fprintf(File_DeltaS, "%10E  ", DST_ax[xid]);
+				fprintf(File_DeltaS_no_inj, "%10E  ", DeltaS_tilte(xax[xid], xe, z, 0.0, 0.0, 0.0, 0.0, aR_II, aR_III, YHe, OmBh2, Tk, LBR_ax[xid]));
+				fprintf(File_DeltaN, "%10E  ", DeltaN_ax[xid]);
+			}
+
 		}
+		if (SOFT_PHOTON_TEST_MODE)
+		{
+			fprintf(File_sinj, "\n");
+			fprintf(File_dtauff_dz, "\n");
+			fprintf(File_DeltaS, "\n");
+			fprintf(File_DeltaS_no_inj, "\n");
+			fprintf(File_DeltaN, "\n");
+			fprintf(File_Global, "%10E	%10E  %10E  %10E\n", z, xe, Tk, H);
+		}
+
 		dTdz[zid] = Build_dTffdz_Kernel(z, xe, Tk, H, YHe, OmBh2, xax, LBR_ax, DeltaN_ax, DeltaN_inj, EMS_inj);
 		
 		// ======== Computing Radio attenuation ========
@@ -350,6 +394,17 @@ double Compute_dTffdz(double *zax, double *dTdz, double *Hax, double *xe_ax, dou
 	{
 		fclose(OutputFile);
 	}
+	if (SOFT_PHOTON_TEST_MODE)
+	{
+		fclose(File_sinj);
+		fclose(File_dtauff_dz);
+		fclose(File_DeltaS);
+		fclose(File_DeltaS_no_inj);
+		fclose(File_DeltaN);
+		fclose(File_Global);
+		fclose(File_dFdt_BR);
+	}
+
 	// Still need to figure out how to pass dT_Radio outside
 	*dT_Radio_out = dT_Radio;
 	return dTdz[nz - 1];
