@@ -5,6 +5,7 @@
 #define History_box_DIM 20 // number of quantities to be saved in History_box
 #define zax_len_FF 1000	   // axis length for soft-photon heating
 #define print_debug_info 0
+#include "HaloProfile.c"
 
 int Find_Index(double *x_axis, double x, int nx)
 {
@@ -684,4 +685,112 @@ double Find_dTff_dz(struct TsBox *previous_spin_temp, struct AstroParams *astro_
 	return r;
 }
 
-double Collisional_Ionization_Rate
+double Find_Clumping_Factor(double z)
+{
+	/*
+	Currently using ArXiv v1 results from Cang25PRD, very optimistic and assumes rho_b \propto rho_c
+	*/
+	double Clumping_z_axis[128] = {60.829, 59.616, 58.428, 57.263, 56.120, 55.000, 53.902, 52.826, 51.770, 50.736, 49.721, 48.727, 47.752, 46.796, 45.859, 44.940, 44.039, 43.156, 42.290, 41.441, 40.609, 39.793, 38.993, 38.209, 37.440, 36.687, 35.948, 35.223, 34.513, 33.817, 33.134, 32.465, 31.808, 31.165, 30.534, 29.916, 29.310, 28.716, 28.133, 27.562, 27.002, 26.453, 25.914, 25.387, 24.869, 24.362, 23.865, 23.377, 22.899, 22.431, 21.971, 21.521, 21.079, 20.646, 20.222, 19.806, 19.398, 18.998, 18.606, 18.221, 17.844, 17.475, 17.113, 16.757, 16.409, 16.068, 15.733, 15.405, 15.083, 14.768, 14.459, 14.156, 13.859, 13.567, 13.282, 13.002, 12.727, 12.458, 12.194, 11.935, 11.682, 11.433, 11.189, 10.950, 10.716, 10.486, 10.261, 10.040, 9.824, 9.611, 9.403, 9.199, 8.999, 8.803, 8.611, 8.423, 8.238, 8.057, 7.879, 7.705, 7.534, 7.367, 7.203, 7.042, 6.884, 6.730, 6.578, 6.430, 6.284, 6.141, 6.001, 5.864, 5.729, 5.597, 5.468, 5.341, 5.217, 5.095, 4.975, 4.858, 4.743, 4.631, 4.520, 4.412, 4.306, 4.202, 4.100, 4.000};
+	double Clumping_C_axis[128] = {1.000E+00, 1.006E+00, 1.011E+00, 1.017E+00, 1.028E+00, 1.045E+00, 1.071E+00, 1.109E+00, 1.166E+00, 1.249E+00, 1.368E+00, 1.536E+00, 1.770E+00, 2.093E+00, 2.532E+00, 3.123E+00, 3.907E+00, 4.937E+00, 6.278E+00, 8.002E+00, 1.020E+01, 1.298E+01, 1.645E+01, 2.076E+01, 2.606E+01, 3.252E+01, 4.035E+01, 4.977E+01, 6.100E+01, 7.431E+01, 8.999E+01, 1.083E+02, 1.297E+02, 1.543E+02, 1.827E+02, 2.151E+02, 2.520E+02, 2.938E+02, 3.409E+02, 3.937E+02, 4.527E+02, 5.183E+02, 5.910E+02, 6.712E+02, 7.594E+02, 8.560E+02, 9.615E+02, 1.076E+03, 1.201E+03, 1.336E+03, 1.481E+03, 1.637E+03, 1.805E+03, 1.985E+03, 2.177E+03, 2.381E+03, 2.598E+03, 2.829E+03, 3.073E+03, 3.331E+03, 3.603E+03, 3.890E+03, 4.192E+03, 4.508E+03, 4.841E+03, 5.188E+03, 5.552E+03, 5.932E+03, 6.329E+03, 6.742E+03, 7.172E+03, 7.619E+03, 8.084E+03, 8.567E+03, 9.067E+03, 9.586E+03, 1.012E+04, 1.068E+04, 1.126E+04, 1.185E+04, 1.247E+04, 1.310E+04, 1.376E+04, 1.444E+04, 1.514E+04, 1.586E+04, 1.660E+04, 1.736E+04, 1.815E+04, 1.897E+04, 1.980E+04, 2.066E+04, 2.155E+04, 2.246E+04, 2.340E+04, 2.437E+04, 2.537E+04, 2.639E+04, 2.744E+04, 2.853E+04, 2.964E+04, 3.079E+04, 3.197E+04, 3.318E+04, 3.443E+04, 3.572E+04, 3.704E+04, 3.840E+04, 3.980E+04, 4.123E+04, 4.272E+04, 4.424E+04, 4.581E+04, 4.742E+04, 4.909E+04, 5.080E+04, 5.256E+04, 5.438E+04, 5.625E+04, 5.817E+04, 6.016E+04, 6.220E+04, 6.431E+04, 6.648E+04, 6.872E+04, 7.102E+04, 7.340E+04, 7.586E+04};
+	double r;
+	int nz = 128;
+
+    if (z > Clumping_z_axis[0])
+    {
+        r = 1.0;
+    }
+    else if (z < Clumping_z_axis[nz - 1])
+    {
+        r = Clumping_C_axis[nz - 1];
+    }
+    else
+    {
+        r = Interp_1D(z, Clumping_z_axis, Clumping_C_axis, nz, 0, 0, 0);
+    }
+    return r;
+}
+
+
+double Collisional_Ionization_SigmaV(double T)
+{
+    /*
+    Collisional ionization <sigma v> in m^3/s
+	Follows Scholz91_APJ & Voronov97
+	Scholz91_APJ fig1 data for log10(T) and Gamma axis are taken from their Fig.1, but their y axis was mislabeled: the unit
+	should be 1E-9 cm^3/s rather than 1E-19cm^3/s, otherwise the figure does not match their Table 1 or VORONOV results!
+    */
+	double a0, a1, a2, a3, a4, a5, a6, kB, r, y, Q, Gamma, U, A, P, X, K;
+	
+	a0 = -9.61443E1;
+	a1 = 3.79523E1;
+	a2 = -7.96885;
+	a3 = 8.83922E-1;
+	a4 = -5.34513E-2;
+	a5 = 1.66344E-3;
+	a6 = -2.08888E-5;
+	kB = 1.38064852E-23;
+	Q = 1.602176634E-19;
+
+	if (T<2000.0)
+	{
+		r = 0.0;
+	}
+	else if (T <= 1.0E8)
+	{
+		// Scholz91 fit
+		y = log(T);
+		Gamma = a0 + a1*y + a2*pow(y,2.0) + a3*pow(y,3.0) + a4*pow(y,4.0) + a5*pow(y,5.0) + a6*pow(y,6.0);
+        Gamma = exp(Gamma);
+		r = Gamma * exp(-13.6*Q/(kB*T)) * 1E-6;
+	}
+	else if (kB*T/Q <= 2E4)
+	{
+		// Voronov97 fit, valid for [2eV, 20KeV]
+		U = 13.6*Q/(T*kB);
+		P = 0.0;
+		A = 0.291E-7;
+		X = 0.232;
+		K = 0.39;
+		r = A * (1+P*pow(U, 0.5))*pow(U,K)*exp(-U)/(X+U) * 1E-6;
+	}
+	else
+	{
+		// I donno what to do at higher energy, return NaN
+		r = NAN;
+	}
+	return r;
+}
+
+
+double Find_dxe_dz_Collisional(double z, double xe, double T, double H, double delta, struct FlagOptions *flag_options)
+{
+	/*
+	Just a quick test, many things can be optimized, e.g., repeated calculations of C
+	*/
+	double CF, r, sigmav, nH0, nb, fHe, dtdz;
+	nH0 = 0.1901567053460595;
+	fHe = 0.08112582781456953;
+
+	if (!flag_options->USE_COLLISIONAL_IONIZATION)
+	{
+		r = 0.0;
+	}
+	else
+	{
+		sigmav = Collisional_Ionization_SigmaV(T);
+		nb = nH0 * pow(1.0 + z, 3.0) * (1.0 + fHe) * (1.0+delta);
+		if (flag_options->USE_DYNAMIC_CLUMP_COLL_ION)
+		{
+			CF = Find_Clumping_Factor(z);
+		}
+		else
+		{
+			CF = global_params.CLUMPING_FACTOR;
+			// CF = 1.0;
+		}
+		dtdz = -1.0/(H*(1.0+z));
+		
+		r = CF * nb * xe * sigmav * (1.0-xe)*dtdz/(1.0+fHe);
+	}
+	return r;
+}

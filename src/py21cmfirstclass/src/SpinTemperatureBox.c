@@ -197,7 +197,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
         float delta_SDM_local, delta_SDM_derivative_local;
 
         // Junsong: added variables for radio excess
-        double Radio_Temp, Radio_Temp_HMG, Trad_inv, zpp_max, Phi, Phi_mini, Radio_zpp, Phi_ave, Phi_ave_mini, T_IGM_ave, dT_Radio, dTdz_FF, dT_Radio_FF;
+        double Radio_Temp, Radio_Temp_HMG, Trad_inv, zpp_max, Phi, Phi_mini, Radio_zpp, Phi_ave, Phi_ave_mini, T_IGM_ave, dT_Radio, dTdz_FF, dT_Radio_FF, dxe_dz_collisional;
         double Radio_Prefix_ACG, Radio_Prefix_MCG, Fill_Fraction, Radio_Temp_ave, dzpp_Rct0, zpp_Rct0, H_Rct0, Tr_EoR, SFRD_EoR_MINI, SFRD_MINI_ave, Radio_Prefix_ACG_Rct, Radio_Prefix_MCG_Rct;
         int ArchiveSize, head, phi_idx, tk_idx, phi3_idx, zpp_idx, Radio_Silent;
         FILE *OutputFile;
@@ -3278,7 +3278,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                 prev_Ts, tau21, xCMB, eps_CMB, dCMBheat_dzp, E_continuum, E_injected, Ndot_alpha_cont, Ndot_alpha_inj,                                          \
                 eps_Lya_cont, eps_Lya_inj, Ndot_alpha_cont_MINI, Ndot_alpha_inj_MINI, eps_Lya_cont_MINI, eps_Lya_inj_MINI,                                      \
                 T_chi, V_chi_b, dSDM_b_heat_dzp, dSDM_chi_heat_dzp, D_V_chi_b_dzp, SDM_rates, dT_b_2_dt_ext, dT_chi_2_dt_ext, dadia_dzp_SDM,                    \
-                delta_baryons_local, delta_baryons_derivative_local, delta_SDM_local, delta_SDM_derivative_local, dT_Radio, Trad_inv)                           \
+                delta_baryons_local, delta_baryons_derivative_local, delta_SDM_local, delta_SDM_derivative_local, dT_Radio, Trad_inv, dxe_dz_collisional)       \
     num_threads(user_params -> N_THREADS)
                         {
 #pragma omp for reduction(+ : J_alpha_ave, xalpha_ave, Xheat_ave, Xion_ave, Ts_ave, Tk_ave, x_e_ave, J_alpha_ave_MINI, Xheat_ave_MINI, J_LW_ave, J_LW_ave_MINI)
@@ -3507,6 +3507,10 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                                     {
                                         dxe_dzp = dt_dzp * (dxion_source_dt_box[box_ct] - dxion_sink_dt);
                                     }
+                                    
+                                    // Junsong: adding a flash test for collisional ionization
+                                    dxe_dz_collisional = Find_dxe_dz_Collisional(prev_redshift, x_e, T, hubble(prev_redshift), curr_delNL0 * growth_factor_zp, flag_options);
+                                    dxe_dzp += dxe_dz_collisional;
 
                                     // Next, let's get the temperature components //
                                     // JordanFlitter: we can use the baryons density field
