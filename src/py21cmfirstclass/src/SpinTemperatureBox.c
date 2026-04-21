@@ -200,6 +200,8 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
         double Radio_Temp, Radio_Temp_HMG, Trad_inv, zpp_max, Phi, Phi_mini, Radio_zpp, Phi_ave, Phi_ave_mini, T_IGM_ave, dT_Radio, dTdz_FF, dT_Radio_FF, dxe_dz_collisional;
         double Radio_Prefix_ACG, Radio_Prefix_MCG, Fill_Fraction, Radio_Temp_ave, dzpp_Rct0, zpp_Rct0, H_Rct0, Tr_EoR, SFRD_EoR_MINI, SFRD_MINI_ave, Radio_Prefix_ACG_Rct, Radio_Prefix_MCG_Rct;
         int ArchiveSize, head, phi_idx, tk_idx, phi3_idx, zpp_idx, Radio_Silent;
+        double HaloTab_Mmin, ClumpingFactor, MAX_TK_Collisional_Ionization;
+
         FILE *OutputFile;
 
         Radio_Prefix_ACG = 113.6161 * astro_params->fR * cosmo_params->OMb * (pow(cosmo_params->hlittle, 2)) * (astro_params->F_STAR10) * pow(astro_nu0 / 1.4276, astro_params->aR) * pow(1 + redshift, 3 + astro_params->aR);
@@ -301,6 +303,17 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
 		    this_spin_temp->IonBox_cache[box_ct] = NAN;
         }
         this_spin_temp->IonBox_cache[2] = 0.0;
+
+        // Above certain temperature, collisional ionization will strongly ionize H and suppress 21cm signal. One can ignore heating above this threshold 
+        // (5E4 by default), which gives incorect 21cm signal, or we can do everything properly
+        if (flag_options->USE_COLLISIONAL_IONIZATION)
+        {
+            MAX_TK_Collisional_Ionization = 2.0E9;
+        }
+        else
+        {
+            MAX_TK_Collisional_Ionization = MAX_TK;
+        }
 
         // JordanFlitter: We don't need these during the dark ages
         if (redshift <= global_params.Z_HEAT_MAX)
@@ -628,6 +641,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                     if (user_params->FAST_FCOLL_TABLES)
                     {
                         initialiseSigmaMInterpTable(fmin(MMIN_FAST, M_MIN), 1e20);
+                        HaloTab_Mmin = fmin(MMIN_FAST, M_MIN);
                     }
                     else
                     {
@@ -636,10 +650,12 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                             if (flag_options->USE_MINI_HALOS)
                             {
                                 initialiseSigmaMInterpTable(global_params.M_MIN_INTEGRAL / 50., 1e20);
+                                HaloTab_Mmin = global_params.M_MIN_INTEGRAL / 50.0;
                             }
                             else
                             {
                                 initialiseSigmaMInterpTable(M_MIN, 1e20);
+                                HaloTab_Mmin = M_MIN;
                             }
                         }
                         LOG_SUPER_DEBUG("Initialised sigmaM interp table");
@@ -766,10 +782,12 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                         if (user_params->FAST_FCOLL_TABLES)
                         {
                             initialiseSigmaMInterpTable(fmin(MMIN_FAST, M_MIN), 1e20);
+                            HaloTab_Mmin = fmin(MMIN_FAST, M_MIN);
                         }
                         else
                         {
                             initialiseSigmaMInterpTable(M_MIN, 1e20);
+                            HaloTab_Mmin = M_MIN;
                         }
                     }
                 }
@@ -1289,7 +1307,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                                  (user_params->SCATTERING_DM && ((fabs(SDM_rates.epsilon_b) > EPSILON_THRES) || (fabs(dT_b_2_dt_ext * dtdz(zp)) > fabs(dSDM_b_heat_dzp))))))
                             {
                                 // JordanFlitter: I also added the SDM heating exchange
-                                if (T < MAX_TK)
+                                if (T < MAX_TK_Collisional_Ionization)
                                 {
                                     T += (dcomp_dzp + dspec_dzp + dadia_dzp + dSDM_b_heat_dzp) * dzp;
                                 }
@@ -1663,10 +1681,12 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                         if (user_params->FAST_FCOLL_TABLES)
                         {
                             initialiseSigmaMInterpTable(fmin(MMIN_FAST, M_MIN), 1e20);
+                            HaloTab_Mmin = fmin(MMIN_FAST, M_MIN);
                         }
                         else
                         {
                             initialiseSigmaMInterpTable(M_MIN, 1e20);
+                            HaloTab_Mmin = M_MIN;
                         }
                     }
                 }
@@ -2794,6 +2814,22 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                 }
 
                 // Main loop over the entire box for the IGM spin temperature and relevant quantities.
+                if (flag_options->USE_DYNAMIC_CLUMP_FACTOR)
+                {
+                    T_IGM_ave = 0.0;
+                    for (box_ct = 0; box_ct < HII_TOT_NUM_PIXELS; box_ct++)
+                    {
+                        // #1: Gas temperature
+                        T_IGM_ave += previous_spin_temp->Tk_box[box_ct];
+                    }
+                    T_IGM_ave /= (double) HII_TOT_NUM_PIXELS;
+                    ClumpingFactor = Find_Clumping_Factor(redshift, T_IGM_ave, HaloTab_Mmin, user_params->HMF, dicke(redshift), cosmo_params);
+                }
+                else
+                {
+                    ClumpingFactor = global_params.CLUMPING_FACTOR;
+                }
+
                 if (flag_options->USE_MASS_DEPENDENT_ZETA)
                 {
                     dTdz_FF = Find_dTff_dz(previous_spin_temp, astro_params, cosmo_params, flag_options, &dT_Radio_FF, redshift);
@@ -3273,7 +3309,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                                 dstarlya_cont_dt_box, dstarlya_inj_dt_box, dstarlya_cont_dt_prefactor, dstarlya_inj_dt_prefactor, delta_baryons,                \
                                 dstarlya_cont_dt_box_MINI, dstarlya_inj_dt_box_MINI, dstarlya_cont_dt_prefactor_MINI, dstarlya_inj_dt_prefactor_MINI, rec_data, \
                                 delta_baryons_derivative, delta_SDM, delta_SDM_derivative, Radio_Prefix_MCG_Rct, Radio_Prefix_ACG_Rct, dT_Radio_FF, dTdz_FF)    \
-    private(box_ct, x_e, T, dxion_sink_dt, dxe_dzp, dadia_dzp, dspec_dzp, dcomp_dzp, dxheat_dzp, J_alpha_tot, T_inv, T_inv_sq,                                  \
+    private(box_ct, x_e, T, dxion_sink_dt, dxe_dzp, dadia_dzp, dspec_dzp, dcomp_dzp, dxheat_dzp, J_alpha_tot, T_inv, T_inv_sq, ClumpingFactor,                  \
                 xc_fast, xi_power, xa_tilde_fast_arg, TS_fast, TSold_fast, xa_tilde_fast, dxheat_dzp_MINI, J_alpha_tot_MINI, curr_delNL0,                       \
                 prev_Ts, tau21, xCMB, eps_CMB, dCMBheat_dzp, E_continuum, E_injected, Ndot_alpha_cont, Ndot_alpha_inj,                                          \
                 eps_Lya_cont, eps_Lya_inj, Ndot_alpha_cont_MINI, Ndot_alpha_inj_MINI, eps_Lya_cont_MINI, eps_Lya_inj_MINI,                                      \
@@ -3490,13 +3526,13 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                                         // JordanFlitter: we can use the baryons density field
                                         if (user_params->EVOLVE_BARYONS)
                                         {
-                                            dxion_sink_dt = alpha_A(T) * global_params.CLUMPING_FACTOR * x_e * x_e * f_H * prefactor_1 *
-                                                            (1. + delta_baryons_local);
+                                            // dxion_sink_dt = alpha_A(T) * global_params.CLUMPING_FACTOR * x_e * x_e * f_H * prefactor_1 * (1. + delta_baryons_local);
+                                            dxion_sink_dt = alpha_A(T) * ClumpingFactor * x_e * x_e * f_H * prefactor_1 * (1. + delta_baryons_local);
                                         }
                                         else
                                         {
-                                            dxion_sink_dt = alpha_A(T) * global_params.CLUMPING_FACTOR * x_e * x_e * f_H * prefactor_1 *
-                                                            (1. + curr_delNL0 * growth_factor_zp);
+                                            // dxion_sink_dt = alpha_A(T) * global_params.CLUMPING_FACTOR * x_e * x_e * f_H * prefactor_1 * (1. + curr_delNL0 * growth_factor_zp);
+                                            dxion_sink_dt = alpha_A(T) * ClumpingFactor * x_e * x_e * f_H * prefactor_1 * (1. + curr_delNL0 * growth_factor_zp);
                                         }
                                     }
                                     if (flag_options->USE_MINI_HALOS)
@@ -3509,7 +3545,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                                     }
                                     
                                     // Junsong: adding a flash test for collisional ionization
-                                    dxe_dz_collisional = Find_dxe_dz_Collisional(prev_redshift, x_e, T, hubble(prev_redshift), curr_delNL0 * growth_factor_zp, flag_options);
+                                    dxe_dz_collisional = Find_dxe_dz_Collisional(prev_redshift, x_e, T, hubble(prev_redshift), curr_delNL0 * growth_factor_zp, ClumpingFactor, flag_options);
                                     dxe_dzp += dxe_dz_collisional;
 
                                     // Next, let's get the temperature components //
@@ -3660,7 +3696,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                                     if (!user_params->SCATTERING_DM ||
                                         (user_params->SCATTERING_DM && ((fabs(SDM_rates.epsilon_b) > EPSILON_THRES) || (fabs(dT_b_2_dt_ext * dtdz(zp)) > fabs(dSDM_b_heat_dzp)))))
                                     {
-                                        if (T < MAX_TK)
+                                        if (T < MAX_TK_Collisional_Ionization)
                                         {
                                             if (flag_options->USE_MINI_HALOS)
                                             {
@@ -4248,7 +4284,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                             if (!user_params->SCATTERING_DM ||
                                 (user_params->SCATTERING_DM && ((fabs(SDM_rates.epsilon_b) > EPSILON_THRES) || (fabs(dT_b_2_dt_ext * dtdz(zp)) > fabs(dSDM_b_heat_dzp)))))
                             {
-                                if (T < MAX_TK)
+                                if (T < MAX_TK_Collisional_Ionization)
                                 {
                                     T += (dxheat_dzp + dcomp_dzp + dspec_dzp + dadia_dzp + dCMBheat_dzp + eps_Lya_cont + eps_Lya_inj + dSDM_b_heat_dzp) * dzp;
                                 }

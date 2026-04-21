@@ -1091,7 +1091,9 @@ class FlagOptions(StructWithDefaults):
         "USE_RADIO_ACG": False,
         "USE_RADIO_MCG": False,
         "Calibrate_EoR_feedback": True,
-        "USE_RADIO_HEATING": False
+        "USE_RADIO_HEATING": False,
+        "USE_DYNAMIC_CLUMP_FACTOR": False,
+        "USE_COLLISIONAL_IONIZATION": False
     }
 
     # This checks if relative velocities are off to complain if minihaloes are on

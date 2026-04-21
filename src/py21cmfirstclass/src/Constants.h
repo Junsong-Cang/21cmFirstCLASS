@@ -46,8 +46,7 @@
 
 /* Maximum allowed value for the kinetic temperature. Useful to set to avoid some spurious behaviour
  when the code is run with redshift poor resolution and very high X-ray heating efficiency */
-// #define MAX_TK (float) 5e4
-#define MAX_TK (float) 2.0E9 // Junsong: lifted because we now have collisional ionizaiton
+#define MAX_TK (float) 5e4
 
 // ----------------------------------------------------------------------------------------- //
 

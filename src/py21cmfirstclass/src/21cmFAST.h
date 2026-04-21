@@ -130,8 +130,7 @@ struct FlagOptions
     bool USE_RADIO_HEATING;
     
     // Test features: collisional ionization and dynamic clumping factor
-    bool USE_DYNAMIC_CLUMP_REC;
-    bool USE_DYNAMIC_CLUMP_COLL_ION;
+    bool USE_DYNAMIC_CLUMP_FACTOR;
     bool USE_COLLISIONAL_IONIZATION;
 };
 
