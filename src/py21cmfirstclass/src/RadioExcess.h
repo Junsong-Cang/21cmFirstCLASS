@@ -737,7 +737,7 @@ double Collisional_Ionization_SigmaV(double T)
 	return r;
 }
 
-double Find_dxe_dz_Collisional(double z, double xe, double T, double H, double delta, double ClumpingFactor, struct FlagOptions *flag_options)
+double Find_dxe_dz_Collisional(double z, double xe, double T, double H, double delta, double ClumpingFactor)
 {
 	/*
 	Just a quick test, many things can be optimized, e.g., repeated calculations of C
@@ -746,18 +746,10 @@ double Find_dxe_dz_Collisional(double z, double xe, double T, double H, double d
 	nH0 = 0.1901567053460595;
 	fHe = 0.08112582781456953;
 
-	if (!flag_options->USE_COLLISIONAL_IONIZATION)
-	{
-		r = 0.0;
-	}
-	else
-	{
-		sigmav = Collisional_Ionization_SigmaV(T);
-		nb = nH0 * pow(1.0 + z, 3.0) * (1.0 + fHe) * (1.0 + delta);
-		dtdz = -1.0 / (H * (1.0 + z));
-
-		r = ClumpingFactor * nb * xe * sigmav * (1.0 - xe) * dtdz / (1.0 + fHe);
-	}
+	sigmav = Collisional_Ionization_SigmaV(T);
+	nb = nH0 * pow(1.0 + z, 3.0) * (1.0 + fHe) * (1.0 + delta);
+	dtdz = -1.0 / (H * (1.0 + z));
+	r = ClumpingFactor * nb * xe * sigmav * (1.0 - xe) * dtdz / (1.0 + fHe);
 	return r;
 }
 

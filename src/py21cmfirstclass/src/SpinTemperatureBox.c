@@ -3545,9 +3545,12 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                                     }
                                     
                                     // Junsong: adding a flash test for collisional ionization
-                                    dxe_dz_collisional = Find_dxe_dz_Collisional(prev_redshift, x_e, T, hubble(prev_redshift), curr_delNL0 * growth_factor_zp, ClumpingFactor, flag_options);
-                                    dxe_dzp += dxe_dz_collisional;
-
+                                    if (!flag_options->USE_COLLISIONAL_IONIZATION)
+                                    {
+	                                    dxe_dz_collisional = Find_dxe_dz_Collisional(prev_redshift, x_e, T, hubble(prev_redshift), curr_delNL0 * growth_factor_zp, ClumpingFactor);
+                                        dxe_dzp += dxe_dz_collisional;
+                                    }
+                                    
                                     // Next, let's get the temperature components //
                                     // JordanFlitter: we can use the baryons density field
                                     if (user_params->EVOLVE_BARYONS)
