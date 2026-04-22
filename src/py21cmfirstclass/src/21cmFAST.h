@@ -104,7 +104,6 @@ struct AstroParams
     float fR_mini; // Radio efficiency for mini halo
     float aR_mini; // Radio SED power index for minihalo
     float Radio_Zmin; // Kill radio emmisivity below this redshift, a phenomenological param motivated by ARCADE2 upper limit
-
 };
 
 struct FlagOptions

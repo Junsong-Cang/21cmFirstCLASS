@@ -312,7 +312,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
         }
         else
         {
-            MAX_TK_Collisional_Ionization = MAX_TK;
+            MAX_TK_Collisional_Ionization = MAX_TK; // Default=5E4, set in Constants.h
         }
 
         // JordanFlitter: We don't need these during the dark ages
@@ -1191,8 +1191,8 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                             {
                                 tau21 = (3 * hplank * A10_HYPERFINE * C * Lambda_21 * Lambda_21 / 32. / PI / k_B) * ((1 - x_e) * No * pow(1. + zp, 3.) * (1. + curr_delNL0 * growth_factor_zp)) / prev_Ts / hubble(zp);
                             }
-                            xCMB = (1. - exp(-tau21)) / tau21;
-
+                            xCMB = Compute_xCMB(tau21); // xCMB can be NaN for small tau21, let's use analytic result for this case
+                            
                             // First let's do dxe_dzp //
                             if (!user_params->USE_HYREC)
                             {
@@ -3483,7 +3483,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                                     {
                                         tau21 = (3 * hplank * A10_HYPERFINE * C * Lambda_21 * Lambda_21 / 32. / PI / k_B) * ((1 - x_e) * No * pow(1. + zp, 3.) * (1. + curr_delNL0 * growth_factor_zp)) / prev_Ts / hubble(zp);
                                     }
-                                    xCMB = (1. - exp(-tau21)) / tau21;
+                                    xCMB = Compute_xCMB(tau21);
 
                                     // First let's do dxe_dzp //
                                     if (user_params->USE_HYREC)
@@ -3874,6 +3874,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                                                 // Junsong: adding Radio Excess contribution to Ts
                                                 TS_fast = (xCMB + xc_fast + xa_tilde_fast * T / (T + 0.402)) * pow(xCMB * Trad_inv + xa_tilde_fast * pow(T + 0.402, -1.) + xc_fast * T_inv, -1.);
                                                 TSold_fast = TS_fast;
+                                            
                                             }
                                             else
                                             {
@@ -3883,7 +3884,17 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                                                 // JordanFlitter: modified spin temperature by xCMB
                                                 // TS_fast = (xCMB + xa_tilde_fast + xc_fast) * pow(xCMB * Trad_fast_inv + xa_tilde_fast * (T_inv + 0.405535 * T_inv * pow(TS_fast, -1.) - 0.405535 * T_inv_sq) + xc_fast * T_inv, -1.);
                                                 TS_fast = (xCMB + xa_tilde_fast + xc_fast) * pow(xCMB * Trad_inv + xa_tilde_fast * (T_inv + 0.405535 * T_inv * pow(TS_fast, -1.) - 0.405535 * T_inv_sq) + xc_fast * T_inv, -1.);
+                                                if (isfinite(TS_fast) == 0)
+                                                {
+                                                    printf("NaN found, %10E  %10E  %10E\n", xa_tilde_fast, xCMB, xc_fast);
+                                                }
                                             }
+                                        }
+                                        if (isfinite(TS_fast) == 0)
+                                        {
+                                            printf("Ts is odd, crash imminent: Ts = %15E, TSold_fast = %15E\n", TS_fast, TSold_fast);
+                                            LOG_ERROR("Estimated spin temperature is either infinite of NaN!");
+                                            Throw(InfinityorNaNError);
                                         }
                                     }
                                     else
@@ -4109,8 +4120,8 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                             {
                                 tau21 = (3 * hplank * A10_HYPERFINE * C * Lambda_21 * Lambda_21 / 32. / PI / k_B) * ((1 - x_e) * No * pow(1. + zp, 3.) * (1. + curr_delNL0 * growth_factor_zp)) / prev_Ts / hubble(zp);
                             }
-                            xCMB = (1. - exp(-tau21)) / tau21;
-
+                            xCMB = Compute_xCMB(tau21);
+                            
                             // First let's do dxe_dzp //
                             if (user_params->USE_HYREC)
                             {
@@ -4569,7 +4580,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                 {
                     this_spin_temp->History_box[0] = previous_spin_temp->History_box[0] + 1.0; // updating archive size
                     ArchiveSize = (int)round(this_spin_temp->History_box[0]);                  // remember that this is for current box, at least 2 by now
-
+                    
                     // Save results for this redshift
                     head = (ArchiveSize - 1) * History_box_DIM + 1;
                     this_spin_temp->History_box[head] = redshift;
@@ -4625,6 +4636,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                 {
                     if (isfinite(this_spin_temp->Ts_box[box_ct]) == 0)
                     {
+                        printf("This is odd, crash imminent: Ts = %15E,  Tk = %15E, xe = %15E, idx = %d\n", this_spin_temp->Ts_box[box_ct], this_spin_temp->Tk_box[box_ct], this_spin_temp->x_e_box[box_ct], box_ct);
                         LOG_ERROR("Estimated spin temperature is either infinite of NaN!");
                         //                Throw(ParameterError);
                         Throw(InfinityorNaNError);
@@ -4640,6 +4652,10 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                     {
                         LOG_ERROR("Estimated Radio temperature is either infinite of NaN!");
                         Throw(InfinityorNaNError);
+                    }
+                    if (this_spin_temp->Tk_box[box_ct] >= MAX_TK_Collisional_Ionization)
+                    {
+                        this_spin_temp->x_e_box[box_ct] = 1.0;
                     }
                 }
 

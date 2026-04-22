@@ -1318,7 +1318,7 @@ class AstroParams(StructWithDefaults):
         "aR": 0.7,
         "fR_mini": -10.0,
         "aR_mini": 0.7,
-        "Radio_Zmin": 0.0,
+        "Radio_Zmin": 0.0
     }
 
     def __init__(

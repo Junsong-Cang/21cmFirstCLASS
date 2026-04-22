@@ -5090,3 +5090,22 @@ float sigma_sq_numerical_derivative(float M, float z)
     dsigma_sq_dM = 2. * sigma / (log(10.) * M) * dsigma_2_dlog10_M;
     return dsigma_sq_dM;
 }
+
+double Compute_xCMB(double tau21)
+{
+    /*
+    Compute coupling between CMB and Ts, this needs to be done a bit carefully because xCMB might behave strange due to numerical precision at low tau21
+    */
+    double result, small;
+    small = 1.0E-10;
+    if (fabs(tau21) > small)
+    {
+        result = (1. - exp(-tau21)) / tau21;
+    }
+    else
+    {
+        // We expect this analytically, if doing as above one can get NaN for small tau
+        result = 1.0;
+    }
+    return result;
+}
