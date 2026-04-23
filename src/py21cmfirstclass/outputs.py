@@ -918,6 +918,10 @@ class _HighLevelOutput:
                 "astro_params",
                 "global_params",
             ]:
+                # These entries are array and might lead to save errors (specifically LOG_SDGF_BARYONS, LOG_SDGF_CDM, LOG_SDGF_SDM, SIGMA_MZ), for simplicity let's skip them
+                keys_to_skip = ['external_table_path', 'wisdoms_path', 'LOG_SDGF_BARYONS', 'LOG_SDGF_CDM', 'LOG_SDGF_SDM', 'SIGMA_MZ',
+                    'LOG_Z_ARR', 'LOG_T_k', 'LOG_x_e', 'LOG_SIGF', 'LOG_T_chi', 'LOG_V_chi_b', 'LOG_K_ARR_FOR_TRANSFERS', 'T_M0_TRANSFER',
+                    'T_VCB_KIN_TRANSFER', 'T_V_CHI_B_ZHIGH_TRANSFER', 'LOG_K_ARR_FOR_SDGF', 'LOG_M_ARR', 'Z_ARRAY_FOR_SIGMA']
                 q = getattr(self, k)
                 kfile = "_globals" if k == "global_params" else k
                 grp = f.create_group(kfile)
@@ -928,13 +932,14 @@ class _HighLevelOutput:
                     dct = q
 
                 for kk, v in dct.items():
-                    if v is None:
-                        continue
-                    try:
-                        grp.attrs[kk] = v
-                    except TypeError:
-                        # external_table_path is a cdata object and can't be written.
-                        pass
+                    if not kk in keys_to_skip:
+                        if v is None:
+                            continue
+                        try:
+                            grp.attrs[kk] = v
+                        except TypeError:
+                            # external_table_path is a cdata object and can't be written.
+                            pass
 
             if self.photon_nonconservation_data is not None:
                 photon_data = f.create_group("photon_nonconservation_data")
