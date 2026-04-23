@@ -216,6 +216,8 @@ struct IonizedBox
     float *temp_kinetic_all_gas;
     float *Fcoll;
     float *Fcoll_MINI;
+    float *Mturn_II;
+    float *Mturn_III;
 };
 
 struct BrightnessTemp

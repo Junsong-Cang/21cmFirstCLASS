@@ -586,9 +586,10 @@ class IonizedBox(_AllParamsBox):
 
         shape = (self.user_params.HII_DIM,) * 3
         filter_shape = (n_filtering,) + shape
-
         out = {
             "xH_box": {"init": np.ones, "shape": shape},
+            "Mturn_II": (1,),
+            "Mturn_III": (1,),
             "Gamma12_box": shape,
             "MFP_box": shape,
             "z_re_box": shape,
@@ -611,7 +612,7 @@ class IonizedBox(_AllParamsBox):
             )
         else:
             return np.mean(self.xH_box)
-
+    
     def get_required_input_arrays(self, input_box: _BaseOutputStruct) -> List[str]:
         """Return all input arrays required to compute this object."""
         required = []
@@ -673,7 +674,6 @@ class IonizedBox(_AllParamsBox):
             hooks=hooks,
         )
 
-
 class BrightnessTemp(_AllParamsBox):
     """A class containing the brightness temperature box."""
 
@@ -703,7 +703,7 @@ class BrightnessTemp(_AllParamsBox):
         elif isinstance(input_box, TsBox):
             required += ["Ts_box"]
         elif isinstance(input_box, IonizedBox):
-            required += ["xH_box"]
+            required += ["xH_box", "Mturn_II", "Mturn_III"]
         else:
             raise ValueError(
                 f"{type(input_box)} is not an input required for BrightnessTemp!"

@@ -34,6 +34,11 @@ int ComputeIonizedBox(float redshift, float prev_redshift, struct UserParams *us
 
         unsigned long long ct;
         double xH_ave;
+        
+        // Initialize mturn outputs, if they stay NAN then they are not supposed to be used
+        *box->Mturn_II = NAN;
+        *box->Mturn_III = NAN;
+        FILE *tmp_file;
 
         spin_temp->IonBox_cache[3] = 0.0; // MINIHALO hasn't been called yet
 
@@ -583,7 +588,13 @@ int ComputeIonizedBox(float redshift, float prev_redshift, struct UserParams *us
                     spin_temp->IonBox_cache[0] = Mturnover;
                     spin_temp->IonBox_cache[1] = Mturnover_MINI;
                     spin_temp->IonBox_cache[3] = 1.0; // MINIHALO is called
-                    
+                    *box->Mturn_II = Mturnover;
+                    *box->Mturn_III = Mturnover_MINI;
+
+                    tmp_file = fopen("/Users/cangtao/Desktop/tmp_Mturns.txt", "a");
+                    fprintf(tmp_file, "%.3f    %.7E    %.7E\n", redshift, Mturnover, Mturnover_MINI);
+	                fclose(tmp_file);
+
                     M_MIN = global_params.M_MIN_INTEGRAL;
                     Mlim_Fstar_MINI = Mass_limit_bisection(M_MIN, 1e16, astro_params->ALPHA_STAR_MINI, astro_params->F_STAR7_MINI * pow(1e3, astro_params->ALPHA_STAR_MINI));
                     Mlim_Fesc_MINI = Mass_limit_bisection(M_MIN, 1e16, astro_params->ALPHA_ESC, astro_params->F_ESC7_MINI * pow(1e3, astro_params->ALPHA_ESC));
