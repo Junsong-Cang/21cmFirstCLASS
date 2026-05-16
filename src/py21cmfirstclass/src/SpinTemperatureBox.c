@@ -1635,7 +1635,9 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                 else
                 {
                     while (zp < global_params.Z_HEAT_MAX)
+                    {
                         zp = ((1 + zp) * global_params.ZPRIME_STEP_FACTOR - 1);
+                    }
                     prev_zp = global_params.Z_HEAT_MAX;
                     zp = ((1 + zp) / global_params.ZPRIME_STEP_FACTOR - 1);
                 }
@@ -3832,7 +3834,6 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                                         TSold_fast = 0.0;
                                         while (fabs(TS_fast - TSold_fast) / TS_fast > 1.0e-3)
                                         {
-
                                             TSold_fast = TS_fast;
 
                                             // JordanFlitter: S_alpha correction, according to Eq. A4 in Mittal & Kulkarni (arXiv: 2009.10746),

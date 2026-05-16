@@ -176,10 +176,11 @@ def _configure_user_params(user_params,user_params_dic,verbose):
             except KeyError:
                 pass
         if not user_params.MANY_Z_SAMPLES_AT_COSMIC_DAWN:
-            logger.warning("You have set SCATTERING_DM to True but MANY_Z_SAMPLES_AT_COSMIC_DAWN is False!")
-            logger.warning("For large SDM cross sections we need more redshift iterations during cosmic dawn "
+            if verbose:
+                logger.warning("You have set SCATTERING_DM to True but MANY_Z_SAMPLES_AT_COSMIC_DAWN is False!")
+                logger.warning("For large SDM cross sections we need more redshift iterations during cosmic dawn "
                            "in order to evolve the temperature correctly.")
-            logger.warning("Consider setting MANY_Z_SAMPLES_AT_COSMIC_DAWN to True to avoid numerical errors.\n")
+                logger.warning("Consider setting MANY_Z_SAMPLES_AT_COSMIC_DAWN to True to avoid numerical errors.\n")
         if not user_params.USE_CS_S_ALPHA:
             try:
                 if user_params_dic["SCATTERING_DM"] and not user_params_dic["USE_CS_S_ALPHA"]:
@@ -3311,7 +3312,8 @@ def run_lightcone(
 
         # JordanFlitter: Genereate initial conditions from CLASS, and get Cl data
         if user_params.RUN_CLASS:
-            print("Now running CLASS...")
+            if verbose:
+                print("Now running CLASS...")
             time.sleep(0.1) # we pause the program for a short time just to print the above message before running CLASS
             Cl_data = run_ICs(cosmo_params,user_params,global_params)
         else:
@@ -3891,6 +3893,7 @@ def run_lightcone(
 
             # JordanFlitter: I do not necessarily want to compute the reionization field (and the derived brightness temperature field) at every iteration.
             #                In fact, I do not necessarily want *output* at every iteraion. This can happen if MANY_Z_SAMPLES_AT_COSMIC_DAWN is True.
+            
             if z in scrollz_cosmic_dawn_output:
                 ib2 = ionize_box(
                     redshift=z,
@@ -4038,7 +4041,8 @@ def run_lightcone(
                 pf = pf2
                 # JordanFlitter: we also need to increment iz_CD
                 iz_CD += 1
-
+            # print("iz = {:.0f}, nz = {:.0f}, z = {:.2f}".format(iz, len(scrollz_cosmic_dawn), z))
+            
         if flag_options.PHOTON_CONS:
             photon_nonconservation_data = _get_photon_nonconservation_data()
             if photon_nonconservation_data:

@@ -2046,7 +2046,6 @@ double dSDGF_SDM_dz(double z, double k)
     return (SDGF_SDM(z + dz, k, 0) - SDGF_SDM(z, k, 0)) / dz;
 }
 
-/* compute a mass limit where the stellar baryon fraction and the escape fraction exceed unity */
 float Mass_limit(float logM, float PL, float FRAC)
 {
     return FRAC * pow(pow(10., logM) / 1e10, PL);
@@ -2059,6 +2058,7 @@ void bisection(float *x, float xlow, float xup, int *iter)
 
 float Mass_limit_bisection(float Mmin, float Mmax, float PL, float FRAC)
 {
+    /* Compute the mass where the stellar fraction and/or the escape fraction exceed unity */
     int i, iter, max_iter = 200;
     float rel_tol = 0.001;
     float logMlow, logMupper, x, x1;
@@ -5044,13 +5044,13 @@ float sigma_linear_2D_interpolation(float M, float z)
     }
     else if (z < global_params.Z_ARRAY_FOR_SIGMA[0])
     {
-        LOG_ERROR("Attempted to compute sigma(M,z) for z=%f, but minimum z in the interpolation table is", z, global_params.Z_ARRAY_FOR_SIGMA[0]);
+        LOG_ERROR("Attempted to compute sigma(M,z) for z=%f, but minimum z in the interpolation table is %f", z, global_params.Z_ARRAY_FOR_SIGMA[0]);
         Throw(ValueError);
         return -1;
     }
     else if (z > global_params.Z_ARRAY_FOR_SIGMA[SIGMA_Z_NPTS - 1])
     {
-        LOG_ERROR("Attempted to compute sigma(M,z) for z=%f, but maximum z in the interpolation table is", z, global_params.Z_ARRAY_FOR_SIGMA[SIGMA_Z_NPTS - 1]);
+        LOG_ERROR("Attempted to compute sigma(M,z) for z=%f, but maximum z in the interpolation table is %f", z, global_params.Z_ARRAY_FOR_SIGMA[SIGMA_Z_NPTS - 1]);
         Throw(ValueError);
         return -1;
     }
