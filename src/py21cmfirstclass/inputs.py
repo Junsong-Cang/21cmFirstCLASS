@@ -397,7 +397,6 @@ class GlobalParams(StructInstanceWrapper):
         for k, v in prev.items():
             setattr(self, k, v)
 
-
 global_params = GlobalParams(lib.global_params, ffi)
 # JordanFlitter: added these lists to global_params. They serve as interpolation tables in the C code.
 #                The numerical values were achieved from running CLASS with Planck18 parameters

@@ -4326,6 +4326,7 @@ def _setup_lightcone(
         cosmo_params.cosmo.comoving_distance(scrollz[0] * z_step_factor).value
         - d_at_redshift
     )
+    
     lc_distances = np.arange(0, Ltotal, user_params.BOX_LEN / user_params.HII_DIM)
 
     # Use max_redshift to get the actual distances we require.
@@ -4354,7 +4355,6 @@ def _get_lightcone_redshifts(
             for d in lc_distances
         ]
     )
-
 
 def calibrate_photon_cons(
     user_params,
