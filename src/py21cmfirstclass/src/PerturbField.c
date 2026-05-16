@@ -215,7 +215,6 @@ int ComputePerturbField(
         int n_x, n_y, n_z;
         // JordanFlitter: new boolean flag
         int EVOLVE_LINEARLY;
-        float redshift_test_junsong = 5.0;
 
         // Function for deciding the dimensions of loops when we could
         // use either the low or high resolution grids.
@@ -230,14 +229,7 @@ int ComputePerturbField(
             switch_mid = MIDDLE;
             break;
         }
-        // printf("z = %f, PERTURB_ON_HIGH_RES = %d, dimension = %d, HII_DIM = %d, DIM = %d ====\n", redshift, user_params->PERTURB_ON_HIGH_RES, dimension, user_params->HII_DIM, user_params->DIM);
-        /*
-        if (redshift < 5.5)
-        {
-            printf("z = %f ======== \n", redshift);
-        }
-        */
-
+        
         // ***************   BEGIN INITIALIZATION   ************************** //
 
         // perform a very rudimentary check to see if we are underresolved and not using the linear approx
@@ -433,12 +425,6 @@ int ComputePerturbField(
         }
         else
         {
-            /*
-            if (redshift < 5.5)
-            {
-                printf("testing lowZ B, z = %f ======== \n", redshift);
-            }
-            */
 
             // Apply Zel'dovich/2LPT correction
             LOG_DEBUG("Apply Zel'dovich");
@@ -486,11 +472,6 @@ int ComputePerturbField(
             {
 
                 velocity_displacement_factor = (growth_factor - init_growth_factor) / user_params->BOX_LEN;
-                if (redshift < 100.0)
-                {
-                    printf("velocity_displacement_factor = %E, z = %E======\n", velocity_displacement_factor, redshift);
-                }
-
 
                 // now add the missing factor of D
 #pragma omp parallel shared(boxes, velocity_displacement_factor, dimension) private(i, j, k) num_threads(user_params -> N_THREADS)
@@ -577,10 +558,6 @@ int ComputePerturbField(
 
             // go through the high-res box, mapping the mass onto the low-res (updated) box
             // JordanFlitter: added new private variables for cloud-in-cell
-            if (redshift < 5.5)
-            {
-                printf("Something is about to crash, z = %f ======== \n", redshift);
-            }
 
             LOG_DEBUG("Perturb the density field");
 #pragma omp parallel shared(init_growth_factor, boxes, f_pixel_factor, resampled_box, dimension) \
@@ -599,11 +576,6 @@ int ComputePerturbField(
                             yf = (j + 0.5) / ((user_params->DIM) + 0.0);
                             zf = (k + 0.5) / ((user_params->DIM) + 0.0);
                             
-                            if (redshift < redshift_test_junsong)
-                            {
-                                printf("CheckPoint_1, v = %E, z = %f======== \n", xf, redshift);
-                            }
-                            
                             // update locations
                             if (user_params->PERTURB_ON_HIGH_RES)
                             {
@@ -619,14 +591,6 @@ int ComputePerturbField(
                                 xf += (boxes->lowres_vx)[HII_R_INDEX(HII_i, HII_j, HII_k)];
                                 yf += (boxes->lowres_vy)[HII_R_INDEX(HII_i, HII_j, HII_k)];
                                 zf += (boxes->lowres_vz)[HII_R_INDEX(HII_i, HII_j, HII_k)];
-                                if (redshift < redshift_test_junsong)
-                                {
-                                    printf("CheckPoint_1B, v1 = %E,  v2 = %E   ====!\n", xf, (boxes->lowres_vx)[HII_R_INDEX(HII_i, HII_j, HII_k)]);
-                                }
-                            }
-                            if (redshift < redshift_test_junsong)
-                            {
-                                printf("CheckPoint_2, v = %E, z = %f======== \n", xf, redshift);
                             }
 
                             // 2LPT PART
@@ -661,11 +625,7 @@ int ComputePerturbField(
                             {
                                 xf += (dimension);
                             }
-                            if (redshift < redshift_test_junsong)
-                            {
-                                printf("CheckPoint_3, v = %E, z = %f======== \n", xf, redshift);
-                            }
-                            
+
                             while (yf >= (float)(dimension))
                             {
                                 yf -= (dimension);
@@ -830,11 +790,6 @@ int ComputePerturbField(
                 }
             }
 
-            if (redshift < 5.5)
-            {
-                printf("No it worked, z = %f ======== \n", redshift);
-            }
-
             LOG_SUPER_DEBUG("resampled_box: ");
             debugSummarizeBoxDouble(resampled_box, dimension, "  ");
 
@@ -958,12 +913,6 @@ int ComputePerturbField(
             LOG_DEBUG("Cleanup velocities for perturb");
 
         } // End of non-linear evolution condition
-        /*
-        if (redshift < 5.5)
-        {
-            printf("z = %f ======== \n", redshift);
-        }
-        */
         
         // Now, if I still have the high resolution density grid (HIRES_density_perturb) I need to downsample it to the low-resolution grid
         if (user_params->PERTURB_ON_HIGH_RES)
@@ -1144,8 +1093,6 @@ int ComputePerturbField(
            3) For 2LPT calculations, we take the same 2LPT velocity boxes we used for CDM
         */
         
-        // printf("EVOLVE_BARYONS = %d, EVOLVE_MATTER = %d =====\n", user_params->EVOLVE_BARYONS, user_params->EVOLVE_MATTER);
-
         if (user_params->EVOLVE_BARYONS)
         {
             if (EVOLVE_LINEARLY)
@@ -1295,12 +1242,6 @@ int ComputePerturbField(
                         multiply_in_Fourier_space(boxes->lowres_vz_2LPT, FFT_LOWRES_dummy_box, user_params, redshift, 0, 0, 2, 1, 1); // Flags order: HIRES_FLAG, DENSITY_FLAG, SDGF_TYPE, 2LPT_FLAG, MULT_DIV_FLAG
                     }
                 }
-                /*
-                if (redshift < 5.5)
-                {
-                    printf("z = %f ======== \n", redshift);
-                }
-                */
 
                 // ************  END INITIALIZATION **************************** //
 
