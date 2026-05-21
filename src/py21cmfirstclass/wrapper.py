@@ -2981,7 +2981,6 @@ def _get_redshifts(flag_options, redshift):
     redshifts = sorted(set(redshifts), reverse=True)
     return redshifts
 
-
 def run_lightcone(
     *,
     redshift=None,
@@ -3559,14 +3558,14 @@ def run_lightcone(
 
         if not len(scrollz_dark_ages) == 0:
             # JordanFlitter: we print the following message (only if OUTPUT_AT_DARK_AGES = False, otherwise we have tqdm waiting bar)
-            if not user_params.OUTPUT_AT_DARK_AGES:
+            if (not user_params.OUTPUT_AT_DARK_AGES) and verbose:
                 print("Now going through the dark ages...")
                 time.sleep(0.1) # we pause the program for a short time just to print the above message before going through the dark ages
             # JordanFlitter: I added tqdm waiting bars
             for iz, z in tqdm.tqdm(enumerate(scrollz_dark_ages),
-                                 desc="21cmFAST (dark ages)",
+                                 desc="21cmFirstCLASS (dark ages)",
                                  unit="redshift",
-                                 disable=not user_params.OUTPUT_AT_DARK_AGES,
+                                 disable= (not user_params.OUTPUT_AT_DARK_AGES) or (not verbose),
                                  total=len(scrollz_dark_ages)):
 
                 # JordanFlitter: during the dark ages we ALWAYS compute the density field at each iteration,
@@ -4338,7 +4337,6 @@ def _setup_lightcone(
 
     n_lightcone = len(lc_distances)
     return d_at_redshift, lc_distances, n_lightcone
-
 
 def _get_lightcone_redshifts(
     cosmo_params, max_redshift, redshift, user_params, z_step_factor

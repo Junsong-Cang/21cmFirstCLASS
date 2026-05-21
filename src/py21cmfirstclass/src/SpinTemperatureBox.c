@@ -4551,6 +4551,8 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                     }
                 }
                 
+                // Print_HMF(redshift, user_params->HMF);
+                
                 this_spin_temp->IonBox_cache[2] = 1.0;
                 
                 if (flag_options->Calibrate_EoR_feedback && flag_options->USE_MINI_HALOS)

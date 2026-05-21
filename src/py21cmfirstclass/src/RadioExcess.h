@@ -611,9 +611,10 @@ void Print_debug_info_HistoryBox(struct TsBox *this_spin_temp)
 
 double Find_dTff_dz(struct TsBox *previous_spin_temp, struct AstroParams *astro_params, struct CosmoParams *cosmo_params, struct FlagOptions *flag_options, double *dT_Radio, double redshift)
 {
-	// TODO:
-	// 1 - do Pop II radio
-	// 2 - need to do last step?
+	/* Limitations:
+	1 - Not doing Pop II radio
+	2 - Need to do last step?
+	*/
 	double zax[zax_len_FF], dTdz_ax[zax_len_FF], Hax[zax_len_FF], xe_ax[zax_len_FF], Tk_ax[zax_len_FF], SFRD_II_ax[zax_len_FF], SFRD_III_ax[zax_len_FF];
 	double OmBh2, YHe, z1, z2, z, r;
 	// printf("This is not ready, dT_Radio needs to be passed from Spin.c!!!!\n");
@@ -757,12 +758,6 @@ double Find_Clumping_Factor(double z, double T, double HaloTab_Mmin, int hmf_mod
 {
 	/*
 	TODO:
-	Set Mmin from Tk
-	do Tk outside
-	Test how much time it needs to do a box-loop
-	Try using GSL
-	if u wanna do grid, better initialize Rho2 Array to avoid repeated calculations
-	check that dndms are indeed in correct unit
 	check F(cx) limit at x->0
 	*/
 	double m_ax[Clump_Factor_nm], m_ax_SI[Clump_Factor_nm], x_ax[Clump_Factor_nx], Mmin, m, dndm, RhoSQ, Rho2_Integrand[Clump_Factor_nm], Fcoll_Integrand[Clump_Factor_nm];
@@ -817,6 +812,54 @@ double Find_Clumping_Factor(double z, double T, double HaloTab_Mmin, int hmf_mod
 	RhoSQ_Halo = Integrate(m_ax_SI, Rho2_Integrand, Clump_Factor_nm, 1);
 	RhoB_ave = cosmo_params->OMb * RhoCr * pow(1.0 + z, 3.0);
 	result = pow(1.0 + fcoll, 2.0) + pow(1.0+z, 3.0) *RhoSQ_Halo / pow(RhoB_ave, 2.0);
-	// result = 3.14;
 	return result;
+}
+
+void Print_HMF(double z, int hmf_model)
+{
+	int nm = 200;
+	int idx;
+	double m_ax[200], dndm, m, growthf, Mmin, mc;
+	FILE *OutputFile;
+
+	printf("======== Printing HMF ========\n");
+	Mmin = 1.001E4;
+	logspace(log10(Mmin), 19.0, m_ax, nm);
+	growthf = dicke(z);
+	OutputFile = fopen("/Users/cangtao/FileVault/Projects/SDM/data/HMF/HMF_Table.txt", "a");
+	fprintf(OutputFile, "%.4E  ", z);
+	
+	for (idx = 0; idx < nm; idx++)
+	{
+		m = m_ax[idx];
+		if (hmf_model == 0)
+		{
+			dndm = dNdM(growthf, m, z);
+		}
+		else if (hmf_model == 1)
+		{
+			dndm = dNdM_st(growthf, m, z);
+		}
+		else if (hmf_model == 2)
+		{
+			dndm = dNdM_WatsonFOF(growthf, m, z);
+		}
+		else if (hmf_model == 3)
+		{
+			dndm = dNdM_WatsonFOF_z(z, growthf, m);
+		}
+		else
+		{
+			LOG_ERROR("Wrong choice of hmf_model!");
+			Throw(ValueError);
+		}
+		fprintf(OutputFile, "%.4E  ", dndm);
+	}
+	fprintf(OutputFile, "\n");
+	fclose(OutputFile);
+
+	mc = atomic_cooling_threshold(z);
+	OutputFile = fopen("/Users/cangtao/FileVault/Projects/SDM/data/HMF/mc.txt", "a");
+	fprintf(OutputFile, "%.4f  %.4E\n", z, mc);
+	fclose(OutputFile);	
 }

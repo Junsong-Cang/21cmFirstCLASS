@@ -5032,13 +5032,13 @@ float sigma_linear_2D_interpolation(float M, float z)
     // Check for inappropriate input
     if (log_M < global_params.LOG_M_ARR[0])
     {
-        LOG_ERROR("Attempted to compute sigma(M,z) for M=%e, but minimum M in the interpolation table is", M, pow(10., global_params.LOG_M_ARR[0]));
+        LOG_ERROR("Attempted to compute sigma(M,z) for M=%E, but minimum M in the interpolation table is %E", M, pow(10., global_params.LOG_M_ARR[0]));
         Throw(ValueError);
         return -1;
     }
     else if (log_M > global_params.LOG_M_ARR[SIGMA_M_NPTS - 1])
     {
-        LOG_ERROR("Attempted to compute sigma(M,z) for M=%e, but maximum M in the interpolation table is", M, pow(10., global_params.LOG_M_ARR[SIGMA_M_NPTS - 1]));
+        LOG_ERROR("Attempted to compute sigma(M,z) for M=%E, but maximum M in the interpolation table is %E", M, pow(10., global_params.LOG_M_ARR[SIGMA_M_NPTS - 1]));
         Throw(ValueError);
         return -1;
     }

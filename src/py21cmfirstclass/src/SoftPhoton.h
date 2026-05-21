@@ -144,7 +144,6 @@ double SoftPhoton_inj(double x, double xe, double z, double SFRD_II, double SFRD
 	sIII = fR_III * pow(f / 0.15E9, -aR_III) * SFRD_III;
 	src = sII + sIII;
 	r = 2.758304858210983E31 * pow((1.0+z)/f, 3.0) * src / ne;
-
 	return r;
 }
 
