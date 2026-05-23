@@ -608,7 +608,6 @@ int ComputeIonizedBox(float redshift, float prev_redshift, struct UserParams *us
             }
             else
             {
-
                 // set the minimum source mass
                 if (astro_params->ION_Tvir_MIN < 9.99999e3)
                 {                                                                            // neutral IGM
