@@ -972,6 +972,7 @@ double dsigmasq_dm(double k, void *params)
     //    return k*k*p*2*w*dwdr*drdm * d2fact;
     return k * k * p * 2 * w * dwdr * drdm;
 }
+
 double dsigmasqdm_z0(double M, double z)
 { // JordanFlitter: added redshift argument
     double result, error, lower_limit, upper_limit;

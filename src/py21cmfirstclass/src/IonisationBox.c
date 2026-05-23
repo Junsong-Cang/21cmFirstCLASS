@@ -31,15 +31,14 @@ int ComputeIonizedBox(float redshift, float prev_redshift, struct UserParams *us
 
     Try
     { // This Try brackets the whole function, so we don't indent.
-
+        
         unsigned long long ct;
         double xH_ave;
         
         // Initialize mturn outputs, if they stay NAN then they are not supposed to be used
         *box->Mturn_II = NAN;
         *box->Mturn_III = NAN;
-        FILE *tmp_file;
-
+        
         spin_temp->IonBox_cache[3] = 0.0; // MINIHALO hasn't been called yet
 
         if (redshift > global_params.Z_HEAT_MAX)
@@ -57,7 +56,9 @@ int ComputeIonizedBox(float redshift, float prev_redshift, struct UserParams *us
             }
         }
         else
-        { // JordanFlitter: the original code begins here
+        { 
+            // JordanFlitter: the original code begins here
+            
             LOG_DEBUG("input values:");
             LOG_DEBUG("redshift=%f, prev_redshift=%f", redshift, prev_redshift);
             if (LOG_LEVEL >= DEBUG_LEVEL)
@@ -300,13 +301,12 @@ int ComputeIonizedBox(float redshift, float prev_redshift, struct UserParams *us
                 deltax_unfiltered_baryons = (fftwf_complex *)fftwf_malloc(sizeof(fftwf_complex) * HII_KSPACE_NUM_PIXELS);
                 deltax_filtered_baryons = (fftwf_complex *)fftwf_malloc(sizeof(fftwf_complex) * HII_KSPACE_NUM_PIXELS);
             }
-
             if (flag_options->USE_MINI_HALOS)
             {
                 prev_deltax_unfiltered = (fftwf_complex *)fftwf_malloc(sizeof(fftwf_complex) * HII_KSPACE_NUM_PIXELS);
                 prev_deltax_filtered = (fftwf_complex *)fftwf_malloc(sizeof(fftwf_complex) * HII_KSPACE_NUM_PIXELS);
             }
-
+            
             if (flag_options->USE_TS_FLUCT)
             {
                 xe_unfiltered = (fftwf_complex *)fftwf_malloc(sizeof(fftwf_complex) * HII_KSPACE_NUM_PIXELS);
@@ -317,7 +317,7 @@ int ComputeIonizedBox(float redshift, float prev_redshift, struct UserParams *us
                 N_rec_unfiltered = (fftwf_complex *)fftwf_malloc(sizeof(fftwf_complex) * HII_KSPACE_NUM_PIXELS); // cumulative number of recombinations
                 N_rec_filtered = (fftwf_complex *)fftwf_malloc(sizeof(fftwf_complex) * HII_KSPACE_NUM_PIXELS);
             }
-
+            
             if (flag_options->USE_MASS_DEPENDENT_ZETA)
             {
                 xi_SFR = calloc(NGL_SFR + 1, sizeof(float));
@@ -352,7 +352,7 @@ int ComputeIonizedBox(float redshift, float prev_redshift, struct UserParams *us
                     Mturns_MINI = calloc(NMTURN, sizeof(float));
                 }
             }
-
+            
             // Calculate the density field for this redshift if the initial conditions/cosmology are changing
 
             if (flag_options->PHOTON_CONS)
@@ -412,7 +412,7 @@ int ComputeIonizedBox(float redshift, float prev_redshift, struct UserParams *us
             {
                 cell_length_factor = 1.;
             }
-
+            
             if (prev_redshift < 1)
             {
                 LOG_DEBUG("first redshift, do some initialization");
@@ -434,7 +434,7 @@ int ComputeIonizedBox(float redshift, float prev_redshift, struct UserParams *us
                 if (flag_options->INHOMO_RECO)
                     previous_ionize_box->dNrec_box = (float *)calloc(HII_TOT_NUM_PIXELS, sizeof(float));
             }
-
+            
             // set the minimum source mass
             if (flag_options->USE_MASS_DEPENDENT_ZETA)
             {
@@ -580,7 +580,7 @@ int ComputeIonizedBox(float redshift, float prev_redshift, struct UserParams *us
                             }
                         }
                     }
-
+                    
                     box->log10_Mturnover_ave = ave_log10_Mturnover / (double)HII_TOT_NUM_PIXELS;
                     box->log10_Mturnover_MINI_ave = ave_log10_Mturnover_MINI / (double)HII_TOT_NUM_PIXELS;
                     Mturnover = pow(10., box->log10_Mturnover_ave);
@@ -590,10 +590,6 @@ int ComputeIonizedBox(float redshift, float prev_redshift, struct UserParams *us
                     spin_temp->IonBox_cache[3] = 1.0; // MINIHALO is called
                     *box->Mturn_II = Mturnover;
                     *box->Mturn_III = Mturnover_MINI;
-
-                    tmp_file = fopen("/Users/cangtao/Desktop/tmp_Mturns.txt", "a");
-                    fprintf(tmp_file, "%.3f    %.7E    %.7E\n", redshift, Mturnover, Mturnover_MINI);
-	                fclose(tmp_file);
 
                     M_MIN = global_params.M_MIN_INTEGRAL;
                     Mlim_Fstar_MINI = Mass_limit_bisection(M_MIN, 1e16, astro_params->ALPHA_STAR_MINI, astro_params->F_STAR7_MINI * pow(1e3, astro_params->ALPHA_STAR_MINI));
@@ -623,7 +619,7 @@ int ComputeIonizedBox(float redshift, float prev_redshift, struct UserParams *us
                     M_MIN = (float)TtoM(redshift, astro_params->ION_Tvir_MIN, mu_b_ionized); // JordanFlitter: I changed the constant value to the general case
                 }
             }
-
+            
             LOG_SUPER_DEBUG("minimum source mass has been set: %f", M_MIN);
 
             if (user_params->USE_INTERPOLATION_TABLES)
@@ -648,14 +644,14 @@ int ComputeIonizedBox(float redshift, float prev_redshift, struct UserParams *us
             LOG_SUPER_DEBUG("sigma table has been initialised");
 
             // check for WDM
-
+            
             if (global_params.P_CUTOFF && (M_MIN < M_J_WDM()))
             {
                 LOG_WARNING("The default Jeans mass of %e Msun is smaller than the scale supressed by the effective pressure of WDM.", M_MIN);
                 M_MIN = M_J_WDM();
                 LOG_WARNING("Setting a new effective Jeans mass from WDM pressure supression of %e Msun", M_MIN);
             }
-
+            
             // ARE WE USING A DISCRETE HALO FIELD (identified in the ICs with FindHaloes.c and evolved  with PerturbHaloField.c)
             if (flag_options->USE_HALO_FIELD)
             {
@@ -686,7 +682,7 @@ int ComputeIonizedBox(float redshift, float prev_redshift, struct UserParams *us
                     }
                 }
             } // end of the USE_HALO_FIELD option
-
+            
             // lets check if we are going to bother with computing the inhmogeneous field at all...
             global_xH = 0.0;
 
@@ -2022,7 +2018,6 @@ int ComputeIonizedBox(float redshift, float prev_redshift, struct UserParams *us
 
             LOG_DEBUG("finished!\n");
         } // JordanFlitter: end of cosmic dawn condition
-        // Junsong: Computing averaged xH
         xH_ave = 0.0;
         for (ct = 0; ct < HII_TOT_NUM_PIXELS; ct++)
         {
@@ -2030,12 +2025,14 @@ int ComputeIonizedBox(float redshift, float prev_redshift, struct UserParams *us
         }
         xH_ave = xH_ave/((double) HII_TOT_NUM_PIXELS);
         spin_temp->IonBox_cache[4] = xH_ave;
+        
     } // End of Try()
 
     Catch(status)
     {
         return (status);
     }
+    
     return (0);
 }
 

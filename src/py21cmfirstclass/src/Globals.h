@@ -180,7 +180,7 @@ extern struct GlobalParams global_params = {
     .Zreion_HeII = 3.0,
     .FILTER = 0,
     .R_BUBBLE_MIN = 0.620350491,
-    .M_MIN_INTEGRAL = 1e5,
+    .M_MIN_INTEGRAL = 1e5, // default is 1E5
     .M_MAX_INTEGRAL = 1e16,
 
     .T_RE = 2e4,

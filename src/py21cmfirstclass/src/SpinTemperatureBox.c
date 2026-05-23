@@ -60,13 +60,14 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
         {
             writeAstroParams(flag_options, astro_params);
         }
+        
         /*
         TODO: Junsong
         double check: can i use ACG Radio? - check this in full debug notebook, don't remove this from here unless test passed
         Why do I get dif results between p21c/p21f for ACG & Radio ACG?
         Park18 Fiducial: we get very good match with HII_DIM 25 but relatively bad match with HII_DIM 50, why?
         Finally check that i can get TR by integrating over SFRD?
-        WHy cannot I run with parralel?
+        Why cannot I run with parralel?
         Cannot run SDM with SIGMA_8? - most likely an issue with dmeff_classy, code terminates before it can reach teh stage of printing out "Now running CLASS..."
         Double check Radio Heating
         For a template run, print SFRD & EoR, use it to compute dTff/dz externally and check with p21f
@@ -229,6 +230,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
             unfiltered_box_baryons = (fftwf_complex *)fftwf_malloc(sizeof(fftwf_complex) * HII_KSPACE_NUM_PIXELS);
         }
         fftwf_complex *log10_Mcrit_LW_unfiltered, *log10_Mcrit_LW_filtered;
+        
         if (flag_options->USE_MINI_HALOS)
         {
             log10_Mcrit_LW_unfiltered = (fftwf_complex *)fftwf_malloc(sizeof(fftwf_complex) * HII_KSPACE_NUM_PIXELS);
@@ -265,7 +267,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                 delta_SDM_derivative = (fftwf_complex *)fftwf_malloc(sizeof(fftwf_complex) * HII_KSPACE_NUM_PIXELS);
             }
         }
-
+        
         // ---------------- Radio Excess Preflight checks ----------------
         if ((flag_options->USE_RADIO_MCG) && (!flag_options->USE_MINI_HALOS))
         {
@@ -281,6 +283,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
             Radio_Silent = 1;
         }
         Fill_Fraction = (double)previous_spin_temp->History_box[0] * History_box_DIM / ((double)HII_TOT_NUM_PIXELS);
+        
         if (Fill_Fraction > 0.8)
         {
             LOG_ERROR("History_box not large enough to record previous coevals, consider the following: increse HII_DIM, reduce z_prime_factor");
@@ -665,6 +668,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
 
         } // JordanFlitter: End of cosmic dawn condition
         // JordanFlitter: define EPSILON_THRES (for TCA-DM)
+        
         if (redshift > 100.)
         {
             EPSILON_THRES = global_params.EPSILON_THRESH_HIGH_Z;
@@ -4629,7 +4633,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
 
                     for (box_ct = 0; box_ct < HII_TOT_NUM_PIXELS; box_ct++)
                     {
-                        if (flag_options->USE_RADIO_MCG)
+                        if (flag_options->USE_RADIO_MCG & Radio_Temp_ave > 1.0E-10)
                         {
                             this_spin_temp->Trad_box[box_ct] = Tr_EoR * this_spin_temp->Trad_box[box_ct] / Radio_Temp_ave;
                         }
@@ -4728,6 +4732,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
             }
             free(log10_Mcrit_LW);
         }
+        
         // JordanFlitter: We don't need these during the dark ages
         if (redshift <= global_params.Z_HEAT_MAX)
         {
@@ -4756,7 +4761,6 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
         {
             destruct_CLASS_GROWTH_FACTOR();
         }
-
     } // End of try
     Catch(status)
     {

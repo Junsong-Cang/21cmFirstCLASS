@@ -773,7 +773,12 @@ double Find_Clumping_Factor(double z, double T, double HaloTab_Mmin, int hmf_mod
 	{// if Mmin is too low, it's likely that gas is too cold, then collisional ionization won't matter anyway
 		Mmin = HaloTab_Mmin;
 	}
-
+	// This is the usual interpolation lower limit for sigma
+	if (Mmin < 1.1E4)
+	{
+		Mmin = 1.1E4;
+	}
+	
 	logspace(log10(Mmin), 19.0, m_ax, Clump_Factor_nm);
 	logspace(-4.0, 0.0, x_ax, Clump_Factor_nx);
 	
