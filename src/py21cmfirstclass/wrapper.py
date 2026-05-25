@@ -4057,7 +4057,7 @@ def run_lightcone(
             lib.FreeTsInterpolationTables(flag_options())
 
         # JordanFlitter: compute tau_reio and run CLASS with the updated value
-        if user_params.EVALUATE_TAU_REIO:
+        if user_params.EVALUATE_TAU_REIO and verbose:
             if user_params.RUN_CLASS:
                 print("Now evaluating tau to reionization and re-running CLASS...")
             else:
