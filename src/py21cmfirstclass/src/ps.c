@@ -1769,6 +1769,7 @@ void gauleg(float x1, float x2, float x[], float w[], int n)
 
 void initialiseSigmaMInterpTable(float M_Min, float M_Max)
 {
+    printf("initialiseSigmaMInterpTable: ======== M_Min = %.2E, M_Max = %.2E\n", M_Min, M_Max);
     int i;
     float Mass;
 
