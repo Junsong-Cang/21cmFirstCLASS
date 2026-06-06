@@ -1049,7 +1049,6 @@ double dsigmasqdm_z0(double M, double z)
 
     status = gsl_integration_qag(&F, lower_limit, upper_limit, 0, rel_tol, 1000, GSL_INTEG_GAUSS61, w, &result, &error);
     //<<<<<<<< debugging
-    printf("===== msxx = %.3E\n", M);
     tmp_FILE = fopen("/Users/cangtao/Desktop/tmp.txt", "w");
     logspace_tmp(log10(lower_limit), log10(upper_limit), tmp_k, 10000);
     tmp_N = 10000;

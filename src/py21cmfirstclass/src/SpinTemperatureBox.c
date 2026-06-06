@@ -653,7 +653,8 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
             // Initialize some interpolation tables
             if (this_spin_temp->first_box || (fabs(initialised_redshift - perturbed_field_redshift) > 0.0001))
             {
-                if (user_params->USE_INTERPOLATION_TABLES && !user_params->EVOLVE_MATTER)
+                // if (user_params->USE_INTERPOLATION_TABLES && !user_params->EVOLVE_MATTER)
+                if (user_params->USE_INTERPOLATION_TABLES)
                 {
                     if (user_params->FAST_FCOLL_TABLES)
                     {
@@ -794,7 +795,8 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                     M_MIN = (float)TtoM(redshift, astro_params->X_RAY_Tvir_MIN, mu_for_Ts);
                     LOG_DEBUG("Attempting to initialise sigmaM table with M_MIN=%e, Tvir_MIN=%e, mu=%e",
                               M_MIN, astro_params->X_RAY_Tvir_MIN, mu_for_Ts);
-                    if (user_params->USE_INTERPOLATION_TABLES && !user_params->EVOLVE_MATTER)
+                    // if (user_params->USE_INTERPOLATION_TABLES && !user_params->EVOLVE_MATTER)
+                    if (user_params->USE_INTERPOLATION_TABLES)
                     {
                         if (user_params->FAST_FCOLL_TABLES)
                         {
