@@ -249,25 +249,6 @@ void Broadcast_struct_global_PS(struct UserParams *user_params, struct CosmoPara
 */
 
 
-void logspace_tmp(double lgx_min, double lgx_max, double *x, int nx)
-{
-	/*
-	Create a logspace array
-	-- inputs --
-	lgx_min: minimum of log10(x)
-	lgx_max: maximum of log10(x)
-	x: pointer of pre-created x array
-	nx: array size
-	*/
-	int idx;
-	double dlx;
-	dlx = (lgx_max - lgx_min) / ((double)nx - 1.0);
-	for (idx = 0; idx < nx; idx++)
-	{
-		x[idx] = pow(10.0, lgx_min + ((double)idx * dlx));
-	}
-}
-
 // JordanFlitter: I modified this function such that we no longer read the data from a text file, but rather from global_params
 double TF_CLASS(double k, int flag_int, int flag_dv)
 {
@@ -1005,11 +986,6 @@ double dsigmasqdm_z0(double M, double z)
     double Radius;
     //    R = MtoR(M);
 
-    // Debug features
-    double tmp_k[10000], tmp_dlk, tmp_fun, tmp_k_here;
-    int tmp_idx, tmp_N;
-    FILE *tmp_FILE;
-	
     Radius = MtoR(M);
     // now lets do the integral for sigma and scale it with sigma_norm
     if (user_params_ps->POWER_SPECTRUM == 5)
@@ -1048,22 +1024,6 @@ double dsigmasqdm_z0(double M, double z)
     gsl_set_error_handler_off();
 
     status = gsl_integration_qag(&F, lower_limit, upper_limit, 0, rel_tol, 1000, GSL_INTEG_GAUSS61, w, &result, &error);
-    //<<<<<<<< debugging
-    tmp_FILE = fopen("/Users/cangtao/Desktop/tmp.txt", "w");
-    logspace_tmp(log10(lower_limit), log10(upper_limit), tmp_k, 10000);
-    tmp_N = 10000;
-
-    for (tmp_idx = 0; tmp_idx < tmp_N; tmp_idx ++)
-    {
-        tmp_k_here = tmp_k[tmp_idx];
-        tmp_fun = dsigmasq_dm(tmp_k_here, &parameters_gsl_sigma);
-        fprintf(tmp_FILE, "%.7E   %7E\n", tmp_k_here, tmp_fun);
-    }
-    
-    fclose(tmp_FILE);
-    
-    //>>>>>>>>
-	
 
     if (status != 0)
     {
