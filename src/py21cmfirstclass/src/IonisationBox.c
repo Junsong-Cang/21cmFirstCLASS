@@ -621,7 +621,7 @@ int ComputeIonizedBox(float redshift, float prev_redshift, struct UserParams *us
             
             LOG_SUPER_DEBUG("minimum source mass has been set: %f", M_MIN);
 
-            if (user_params->USE_INTERPOLATION_TABLES)
+            if (user_params->USE_INTERPOLATION_TABLES && !user_params->EVOLVE_MATTER)
             {
                 if (user_params->FAST_FCOLL_TABLES)
                 {

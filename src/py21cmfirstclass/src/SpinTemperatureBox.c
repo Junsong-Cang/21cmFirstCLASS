@@ -220,18 +220,18 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
             ION_EFF_FACTOR_MINI = 0.;
         }
 
-        //========
+        //<<<<<<<<
         tmp_debug_param = 0.0;
         for (box_ct = 0; box_ct < HII_TOT_NUM_PIXELS; box_ct++)
         {
             // #1: Gas temperature
             tmp_debug_param += previous_spin_temp->Tk_box[box_ct] / ((double)HII_TOT_NUM_PIXELS);
         }
-        printf("======== tmp_debug_param = %E, z = %.3f\n", tmp_debug_param, redshift);
-        OutputFile = fopen("/Users/cangtao/Desktop/tmp.txt", "a");
-        fprintf(OutputFile, "%.3f   %.3E\n", redshift, tmp_debug_param);
-        fclose(OutputFile);
-        //========
+        // printf("======== tmp_debug_param = %E, z = %.3f\n", tmp_debug_param, redshift);
+        // OutputFile = fopen("/Users/cangtao/Desktop/tmp.txt", "a");
+        // fprintf(OutputFile, "%.3f   %.3E\n", redshift, tmp_debug_param);
+        // fclose(OutputFile);
+        //>>>>>>>
         
         // Initialise arrays to be used for the Ts.c computation //
         fftwf_complex *box = (fftwf_complex *)fftwf_malloc(sizeof(fftwf_complex) * HII_KSPACE_NUM_PIXELS);
@@ -653,7 +653,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
             // Initialize some interpolation tables
             if (this_spin_temp->first_box || (fabs(initialised_redshift - perturbed_field_redshift) > 0.0001))
             {
-                if (user_params->USE_INTERPOLATION_TABLES)
+                if (user_params->USE_INTERPOLATION_TABLES && !user_params->EVOLVE_MATTER)
                 {
                     if (user_params->FAST_FCOLL_TABLES)
                     {
@@ -679,7 +679,6 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                     }
                 }
             }
-
         } // JordanFlitter: End of cosmic dawn condition
         // JordanFlitter: define EPSILON_THRES (for TCA-DM)
         
@@ -795,7 +794,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                     M_MIN = (float)TtoM(redshift, astro_params->X_RAY_Tvir_MIN, mu_for_Ts);
                     LOG_DEBUG("Attempting to initialise sigmaM table with M_MIN=%e, Tvir_MIN=%e, mu=%e",
                               M_MIN, astro_params->X_RAY_Tvir_MIN, mu_for_Ts);
-                    if (user_params->USE_INTERPOLATION_TABLES)
+                    if (user_params->USE_INTERPOLATION_TABLES && !user_params->EVOLVE_MATTER)
                     {
                         if (user_params->FAST_FCOLL_TABLES)
                         {
@@ -959,6 +958,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
 
             // JordanFlitter: If we are at high redshifts, we simply want to evlove x_e and T_k with no astrophysics.
             //                This makes the code to run MUCH FASTER per redshift iteration
+            
             if (redshift > global_params.Z_HEAT_MAX)
             {
 
@@ -1434,7 +1434,6 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                     free(delNL0[0]);
                     free(delNL0);
                 }
-
             } // JordanFlitter: End of dark ages condition.
             // JordanFlitter: We don't need all of that during the dark ages (if we enter the "else" condition below, astrophysics kicks in as we are in cosmic dawn)
             else
@@ -1696,7 +1695,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                 if (!flag_options->M_MIN_in_Mass)
                 {
                     M_MIN = (float)TtoM(determine_zpp_max, astro_params->X_RAY_Tvir_MIN, mu_for_Ts);
-                    if (user_params->USE_INTERPOLATION_TABLES)
+                    if (user_params->USE_INTERPOLATION_TABLES && !user_params->EVOLVE_MATTER)
                     {
                         if (user_params->FAST_FCOLL_TABLES)
                         {
@@ -2843,7 +2842,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                         T_IGM_ave += previous_spin_temp->Tk_box[box_ct];
                     }
                     T_IGM_ave /= (double) HII_TOT_NUM_PIXELS;
-                    ClumpingFactor = Find_Clumping_Factor(redshift, T_IGM_ave, HaloTab_Mmin, user_params->HMF, dicke(redshift), cosmo_params);
+                    ClumpingFactor = Find_Clumping_Factor(redshift, T_IGM_ave, HaloTab_Mmin, user_params, dicke(redshift), cosmo_params);
                 }
                 else
                 {
@@ -4718,6 +4717,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                     }
                 }
             } // JordanFlitter: End of cosmic dawn condition
+            
             // JordanFlitter: We need to free HyRec memory
             if (user_params->USE_HYREC)
             {

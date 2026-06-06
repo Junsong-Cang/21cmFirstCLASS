@@ -754,7 +754,7 @@ double Find_dxe_dz_Collisional(double z, double xe, double T, double H, double d
 	return r;
 }
 
-double Find_Clumping_Factor(double z, double T, double HaloTab_Mmin, int hmf_model, double growthf, struct CosmoParams *cosmo_params)
+double Find_Clumping_Factor(double z, double T, double HaloTab_Mmin, struct UserParams *user_params, double growthf, struct CosmoParams *cosmo_params)
 {
 	/*
 	TODO:
@@ -769,7 +769,7 @@ double Find_Clumping_Factor(double z, double T, double HaloTab_Mmin, int hmf_mod
 	RhoCr = 1.879E-26 * pow(cosmo_params->hlittle, 2.0);
 
 	Mmin = 1.3E3 * pow(10.0 * T / (1.0 + z), 1.5); // Above this mass baryons won't varialize and form halos
-	if (HaloTab_Mmin>Mmin)
+	if (HaloTab_Mmin>Mmin && !user_params->EVOLVE_MATTER)
 	{// if Mmin is too low, it's likely that gas is too cold, then collisional ionization won't matter anyway
 		Mmin = HaloTab_Mmin;
 	}
@@ -787,19 +787,19 @@ double Find_Clumping_Factor(double z, double T, double HaloTab_Mmin, int hmf_mod
 		m = m_ax[idx];
 		m_ax_SI[idx] = m*msun;
 		// Get HMF
-		if (hmf_model == 0)
+		if (user_params->HMF == 0)
 		{
 			dndm = dNdM(growthf, m, z);
 		}
-		else if (hmf_model == 1)
+		else if (user_params->HMF == 1)
 		{
 			dndm = dNdM_st(growthf, m, z);
 		}
-		else if (hmf_model == 2)
+		else if (user_params->HMF == 2)
 		{
 			dndm = dNdM_WatsonFOF(growthf, m, z);
 		}
-		else if (hmf_model == 3)
+		else if (user_params->HMF == 3)
 		{
 			dndm = dNdM_WatsonFOF_z(z, growthf, m);
 		}

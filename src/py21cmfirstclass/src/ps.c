@@ -248,6 +248,26 @@ void Broadcast_struct_global_PS(struct UserParams *user_params, struct CosmoPara
   similar to built-in function "double T_RECFAST(float z, int flag)"
 */
 
+
+void logspace_tmp(double lgx_min, double lgx_max, double *x, int nx)
+{
+	/*
+	Create a logspace array
+	-- inputs --
+	lgx_min: minimum of log10(x)
+	lgx_max: maximum of log10(x)
+	x: pointer of pre-created x array
+	nx: array size
+	*/
+	int idx;
+	double dlx;
+	dlx = (lgx_max - lgx_min) / ((double)nx - 1.0);
+	for (idx = 0; idx < nx; idx++)
+	{
+		x[idx] = pow(10.0, lgx_min + ((double)idx * dlx));
+	}
+}
+
 // JordanFlitter: I modified this function such that we no longer read the data from a text file, but rather from global_params
 double TF_CLASS(double k, int flag_int, int flag_dv)
 {
@@ -910,7 +930,7 @@ double dsigmasq_dm(double k, void *params)
         // JordanFlitter: v_cb correction is actually not needed for the caclculation of sigma (or its derivative), because we need sigma from linear theory
         //                for the extended Press-Schchter
         if (user_params_ps->USE_RELATIVE_VELOCITIES && !user_params_ps->EVOLVE_MATTER)
-        {                                                                                                                                                             // jbm:Add average relvel suppression
+        {
             p *= 1.0 - global_params.A_VCB_PM * exp(-pow(log(k / global_params.KP_VCB_PM), 2.0) / (2.0 * global_params.SIGMAK_VCB_PM * global_params.SIGMAK_VCB_PM)); // for v=vrms
         }
     }
@@ -984,6 +1004,12 @@ double dsigmasqdm_z0(double M, double z)
 
     double Radius;
     //    R = MtoR(M);
+
+    // Debug features
+    double tmp_k[10000], tmp_dlk, tmp_fun, tmp_k_here;
+    int tmp_idx, tmp_N;
+    FILE *tmp_FILE;
+	
     Radius = MtoR(M);
     // now lets do the integral for sigma and scale it with sigma_norm
     if (user_params_ps->POWER_SPECTRUM == 5)
@@ -1022,9 +1048,27 @@ double dsigmasqdm_z0(double M, double z)
     gsl_set_error_handler_off();
 
     status = gsl_integration_qag(&F, lower_limit, upper_limit, 0, rel_tol, 1000, GSL_INTEG_GAUSS61, w, &result, &error);
+    //<<<<<<<< debugging
+    printf("===== msxx = %.3E\n", M);
+    tmp_FILE = fopen("/Users/cangtao/Desktop/tmp.txt", "w");
+    logspace_tmp(log10(lower_limit), log10(upper_limit), tmp_k, 10000);
+    tmp_N = 10000;
+
+    for (tmp_idx = 0; tmp_idx < tmp_N; tmp_idx ++)
+    {
+        tmp_k_here = tmp_k[tmp_idx];
+        tmp_fun = dsigmasq_dm(tmp_k_here, &parameters_gsl_sigma);
+        fprintf(tmp_FILE, "%.7E   %7E\n", tmp_k_here, tmp_fun);
+    }
+    
+    fclose(tmp_FILE);
+    
+    //>>>>>>>>
+	
 
     if (status != 0)
     {
+        printf("Cracsh imminent, lower_limit = %.3E, upper_limit = %.3E\n", lower_limit, upper_limit);
         LOG_ERROR("gsl integration error occured!");
         LOG_ERROR("(function argument): lower_limit=%e upper_limit=%e rel_tol=%e result=%e error=%e", lower_limit, upper_limit, rel_tol, result, error);
         LOG_ERROR("data: M=%e", M);
@@ -1769,7 +1813,6 @@ void gauleg(float x1, float x2, float x[], float w[], int n)
 
 void initialiseSigmaMInterpTable(float M_Min, float M_Max)
 {
-    printf("initialiseSigmaMInterpTable: ======== M_Min = %.2E, M_Max = %.2E\n", M_Min, M_Max);
     int i;
     float Mass;
 
@@ -1795,6 +1838,8 @@ void initialiseSigmaMInterpTable(float M_Min, float M_Max)
     {
         if (isfinite(Mass_InterpTable[i]) == 0 || isfinite(Sigma_InterpTable[i]) == 0 || isfinite(dSigmadm_InterpTable[i]) == 0)
         {
+            printf("==== Crash imminent: m = %.3E, Mmin = %.3E, dSdM = %.3E, dSdm_L = %.3E\n",
+                exp(Mass_InterpTable[i]), M_Min, dSigmadm_InterpTable[i], dsigmasqdm_z0(exp(Mass_InterpTable[i]), 0.));
             LOG_ERROR("Detected either an infinite or NaN value in initialiseSigmaMInterpTable");
             //            Throw(ParameterError);
             Throw(TableGenerationError);
@@ -1804,6 +1849,7 @@ void initialiseSigmaMInterpTable(float M_Min, float M_Max)
     MinMass = log(M_Min);
     mass_bin_width = 1. / (NMass - 1) * (log(M_Max) - log(M_Min));
     inv_mass_bin_width = 1. / mass_bin_width;
+    
 }
 
 void freeSigmaMInterpTable()
