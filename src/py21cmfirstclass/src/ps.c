@@ -249,6 +249,25 @@ void Broadcast_struct_global_PS(struct UserParams *user_params, struct CosmoPara
 */
 
 
+void logspace_tmp(double lgx_min, double lgx_max, double *x, int nx)
+{
+	/*
+	Create a logspace array
+	-- inputs --
+	lgx_min: minimum of log10(x)
+	lgx_max: maximum of log10(x)
+	x: pointer of pre-created x array
+	nx: array size
+	*/
+	int idx;
+	double dlx;
+	dlx = (lgx_max - lgx_min) / ((double)nx - 1.0);
+	for (idx = 0; idx < nx; idx++)
+	{
+		x[idx] = pow(10.0, lgx_min + ((double)idx * dlx));
+	}
+}
+
 // JordanFlitter: I modified this function such that we no longer read the data from a text file, but rather from global_params
 double TF_CLASS(double k, int flag_int, int flag_dv)
 {
@@ -1062,6 +1081,7 @@ double dNdM_st(double growthf, double M, double z)
 { // JordanFlitter: added redshift argument
 
     double sigma, dsigmadm, nuhat;
+    double tmp_debug_var;
 
     float MassBinLow;
     int MassBin;
@@ -1094,6 +1114,11 @@ double dNdM_st(double growthf, double M, double z)
     dsigmadm = dsigmadm * (growthf * growthf / (2. * sigma));
 
     nuhat = sqrt(SHETH_a) * Deltac / sigma;
+    tmp_debug_var = (-(cosmo_params_ps->OMm) * RHOcrit / M) * (dsigmadm / sigma) * sqrt(2. / PI) * SHETH_A * (1 + pow(nuhat, -2 * SHETH_p)) * nuhat * pow(E, -nuhat * nuhat / 2.0);
+    if (tmp_debug_var < -1.0E-10)
+    {
+        printf("==== dNdM_ST is negative: %.3E  %.3E\n", dsigmadm, sigma);
+    }
 
     return (-(cosmo_params_ps->OMm) * RHOcrit / M) * (dsigmadm / sigma) * sqrt(2. / PI) * SHETH_A * (1 + pow(nuhat, -2 * SHETH_p)) * nuhat * pow(E, -nuhat * nuhat / 2.0);
 }
@@ -1516,6 +1541,13 @@ double dNion_General(double lnM, void *params)
         MassFunction = dNdM_WatsonFOF_z(z, growthf, M);
     }
 
+    if (MassFunction < -1.0E-20)
+    {
+        printf("==== MassFunction is negative, crash imminent. MassFunction = %.4E, HMF = %d\n", MassFunction, user_params_ps->HMF);
+        LOG_ERROR("MassFunction is negative\n");
+        Throw(ValueError);
+    }
+
     return MassFunction * M * M * exp(-MassTurnover / M) * Fstar * Fesc;
 }
 
@@ -1523,6 +1555,15 @@ double Nion_General(double z, double M_Min, double MassTurnover, double Alpha_st
 {
 
     double growthf;
+
+    // debug variables for SDM island, added by Junsong 2026/6/6
+    //<<<<<<<<
+    double x_tmp, xax_tmp[100000], f_tmp;
+    int idx_tmp, len_tmp;
+    FILE *FILE_tmp;
+    len_tmp = 100000;
+
+    //>>>>>>>>
 
     growthf = dicke(z);
 
@@ -1557,7 +1598,24 @@ double Nion_General(double z, double M_Min, double MassTurnover, double Alpha_st
         gsl_set_error_handler_off();
 
         status = gsl_integration_qag(&F, lower_limit, upper_limit, 0, rel_tol, 1000, GSL_INTEG_GAUSS61, w, &result, &error);
+        
+        logspace_tmp(log10(M_Min) + 0.01, log10(exp(upper_limit))-0.01, xax_tmp, len_tmp);
+        /*
+        if (z < 3.4730945587E+01 - 1E-5)
+        {
+            LOG_ERROR("Ok that's enough, dont go lower in this test\n");
+            Throw(TableGenerationError);
+        }
 
+        FILE_tmp = fopen("/Users/cangtao/Desktop/tmp_dNion_General.txt", "w");
+        for (idx_tmp=0; idx_tmp < len_tmp; idx_tmp ++)
+        {
+            x_tmp = xax_tmp[idx_tmp];
+            f_tmp = dNion_General(log(x_tmp), &parameters_gsl_SFR);
+            fprintf(FILE_tmp, "%.4E   %.4E    %.10E\n", x_tmp, f_tmp, z);
+        }
+        fclose(FILE_tmp);
+        */
         if (status != 0)
         {
             LOG_ERROR("gsl integration error occured!");
@@ -5095,6 +5153,11 @@ float sigma_sq_numerical_derivative(float M, float z)
     dsigma_2_dlog10_M = (sigma_linear_2D_interpolation(M * pow(10., dlog10_M), z) - sigma) / dlog10_M; // dsigma/dlog_10(M)
     // Chain rule: dsigma^2/dM = 2*sigma*dsigma/dM = 2*sigma*dsigma/dlog_10(M) * dlog_10(M)/dM = (2*sigma)/(ln(10)*M)*dsigma/dlog_10(M)
     dsigma_sq_dM = 2. * sigma / (log(10.) * M) * dsigma_2_dlog10_M;
+    if (dsigma_sq_dM > 0)
+    {
+        printf("======== dsigma_sq_dM = %.3E, sigma = %.3E\n", dsigma_sq_dM, sigma);
+    }
+
     return dsigma_sq_dM;
 }
 
