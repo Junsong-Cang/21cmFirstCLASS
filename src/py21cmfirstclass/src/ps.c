@@ -249,22 +249,23 @@ void Broadcast_struct_global_PS(struct UserParams *user_params, struct CosmoPara
 */
 
 
-void logspace_tmp(double lgx_min, double lgx_max, double *x, int nx)
+// First some useful general-purpose functions
+void linspace_tmp(double xmin, double xmax, double *x, int nx)
 {
 	/*
-	Create a logspace array
+	Create a linspace array
 	-- inputs --
-	lgx_min: minimum of log10(x)
-	lgx_max: maximum of log10(x)
+	xmin: minimum of x
+	xmax: maximum of x
 	x: pointer of pre-created x array
 	nx: array size
 	*/
 	int idx;
-	double dlx;
-	dlx = (lgx_max - lgx_min) / ((double)nx - 1.0);
+	double dx;
+	dx = (xmax - xmin) / ((double)nx - 1.0);
 	for (idx = 0; idx < nx; idx++)
 	{
-		x[idx] = pow(10.0, lgx_min + ((double)idx * dlx));
+		x[idx] = xmin + ((double)idx * dx);
 	}
 }
 
@@ -1081,8 +1082,6 @@ double dNdM_st(double growthf, double M, double z)
 { // JordanFlitter: added redshift argument
 
     double sigma, dsigmadm, nuhat;
-    double tmp_debug_var;
-
     float MassBinLow;
     int MassBin;
 
@@ -1114,10 +1113,10 @@ double dNdM_st(double growthf, double M, double z)
     dsigmadm = dsigmadm * (growthf * growthf / (2. * sigma));
 
     nuhat = sqrt(SHETH_a) * Deltac / sigma;
-    tmp_debug_var = (-(cosmo_params_ps->OMm) * RHOcrit / M) * (dsigmadm / sigma) * sqrt(2. / PI) * SHETH_A * (1 + pow(nuhat, -2 * SHETH_p)) * nuhat * pow(E, -nuhat * nuhat / 2.0);
-    if (tmp_debug_var < -1.0E-10)
+    if (dsigmadm > 0)
     {
-        printf("==== dNdM_ST is negative: %.3E  %.3E\n", dsigmadm, sigma);
+        LOG_ERROR("dsigmadm is positive and can lead to negative HMF, crash imminent.\n");
+        Throw(ValueError);
     }
 
     return (-(cosmo_params_ps->OMm) * RHOcrit / M) * (dsigmadm / sigma) * sqrt(2. / PI) * SHETH_A * (1 + pow(nuhat, -2 * SHETH_p)) * nuhat * pow(E, -nuhat * nuhat / 2.0);
@@ -1170,7 +1169,11 @@ double dNdM_WatsonFOF(double growthf, double M, double z)
     dsigmadm = dsigmadm * (growthf * growthf / (2. * sigma));
 
     f_sigma = Watson_A * (pow(Watson_beta / sigma, Watson_alpha) + 1.) * exp(-Watson_gamma / (sigma * sigma));
-
+    if (dsigmadm > 0)
+    {
+        LOG_ERROR("dsigmadm is positive and can lead to negative HMF, crash imminent.\n");
+        Throw(ValueError);
+    }
     return (-(cosmo_params_ps->OMm) * RHOcrit / M) * (dsigmadm / sigma) * f_sigma;
 }
 
@@ -1226,6 +1229,12 @@ double dNdM_WatsonFOF_z(double z, double growthf, double M)
     beta_z = Omega_m_z * (Watson_beta_z_1 * pow(1. + z, Watson_beta_z_2) + Watson_beta_z_3);
 
     f_sigma = A_z * (pow(beta_z / sigma, alpha_z) + 1.) * exp(-Watson_gamma_z / (sigma * sigma));
+    
+    if (dsigmadm > 0)
+    {
+        LOG_ERROR("dsigmadm is positive and can lead to negative HMF, crash imminent.\n");
+        Throw(ValueError);
+    }
 
     return (-(cosmo_params_ps->OMm) * RHOcrit / M) * (dsigmadm / sigma) * f_sigma;
 }
@@ -1274,6 +1283,11 @@ double dNdM(double growthf, double M, double z)
 
     sigma = sigma * growthf;
     dsigmadm = dsigmadm * (growthf * growthf / (2. * sigma));
+    if (dsigmadm > 0)
+    {
+        LOG_ERROR("dsigmadm is positive and can lead to negative HMF, crash imminent.\n");
+        Throw(ValueError);
+    }
 
     return (-(cosmo_params_ps->OMm) * RHOcrit / M) * sqrt(2 / PI) * (Deltac / (sigma * sigma)) * dsigmadm * pow(E, -(Deltac * Deltac) / (2 * sigma * sigma));
 }
@@ -1541,13 +1555,6 @@ double dNion_General(double lnM, void *params)
         MassFunction = dNdM_WatsonFOF_z(z, growthf, M);
     }
 
-    if (MassFunction < -1.0E-20)
-    {
-        printf("==== MassFunction is negative, crash imminent. MassFunction = %.4E, HMF = %d\n", MassFunction, user_params_ps->HMF);
-        LOG_ERROR("MassFunction is negative\n");
-        Throw(ValueError);
-    }
-
     return MassFunction * M * M * exp(-MassTurnover / M) * Fstar * Fesc;
 }
 
@@ -1556,21 +1563,12 @@ double Nion_General(double z, double M_Min, double MassTurnover, double Alpha_st
 
     double growthf;
 
-    // debug variables for SDM island, added by Junsong 2026/6/6
-    //<<<<<<<<
-    double x_tmp, xax_tmp[100000], f_tmp;
-    int idx_tmp, len_tmp;
-    FILE *FILE_tmp;
-    len_tmp = 100000;
-
-    //>>>>>>>>
-
     growthf = dicke(z);
 
     double result, error, lower_limit, upper_limit;
     gsl_function F;
     double rel_tol = 0.001; //<- relative tolerance
-
+    
     gsl_integration_workspace *w = gsl_integration_workspace_alloc(1000);
 
     struct parameters_gsl_SFR_General_int_ parameters_gsl_SFR = {
@@ -1599,33 +1597,16 @@ double Nion_General(double z, double M_Min, double MassTurnover, double Alpha_st
 
         status = gsl_integration_qag(&F, lower_limit, upper_limit, 0, rel_tol, 1000, GSL_INTEG_GAUSS61, w, &result, &error);
         
-        logspace_tmp(log10(M_Min) + 0.01, log10(exp(upper_limit))-0.01, xax_tmp, len_tmp);
-        /*
-        if (z < 3.4730945587E+01 - 1E-5)
+        // Junsong: SDM can suppress structure formation and give near-zero HMF for extreme SDM params, we can allow this
+        if (status != 0 && (result > 1.0E-100 || cosmo_params_ps->sigma_SDM > 39.0 || !user_params_ps->SCATTERING_DM))
         {
-            LOG_ERROR("Ok that's enough, dont go lower in this test\n");
-            Throw(TableGenerationError);
-        }
-
-        FILE_tmp = fopen("/Users/cangtao/Desktop/tmp_dNion_General.txt", "w");
-        for (idx_tmp=0; idx_tmp < len_tmp; idx_tmp ++)
-        {
-            x_tmp = xax_tmp[idx_tmp];
-            f_tmp = dNion_General(log(x_tmp), &parameters_gsl_SFR);
-            fprintf(FILE_tmp, "%.4E   %.4E    %.10E\n", x_tmp, f_tmp, z);
-        }
-        fclose(FILE_tmp);
-        */
-        if (status != 0)
-        {
-            LOG_ERROR("gsl integration error occured!");
+            LOG_ERROR("GSL integration error occured!");
             LOG_ERROR("(function argument): lower_limit=%e upper_limit=%e rel_tol=%e result=%e error=%e", lower_limit, upper_limit, rel_tol, result, error);
             LOG_ERROR("data: z=%e growthf=%e MassTurnover=%e Alpha_star=%e Alpha_esc=%e", z, growthf, MassTurnover, Alpha_star, Alpha_esc);
             LOG_ERROR("data: Fstar10=%e Fesc10=%e Mlim_Fstar=%e Mlim_Fesc=%e", Fstar10, Fesc10, Mlim_Fstar, Mlim_Fesc);
             GSL_ERROR(status);
         }
         gsl_integration_workspace_free(w);
-
         return result / ((cosmo_params_ps->OMm) * RHOcrit);
     }
     else
@@ -1727,7 +1708,7 @@ double Nion_General_MINI(double z, double M_Min, double MassTurnover, double Mas
 
         status = gsl_integration_qag(&F, lower_limit, upper_limit, 0, rel_tol, 1000, GSL_INTEG_GAUSS61, w, &result, &error);
         // JordanFlitter: added a condition on the integration result to deal with very light FDM
-        if (status != 0 && result > 1.e-15)
+        if (status != 0 && (result > 1.0E-100 || cosmo_params_ps->sigma_SDM > 39.0 || !user_params_ps->SCATTERING_DM))
         {
             LOG_ERROR("gsl integration error occurred!");
             LOG_ERROR("lower_limit=%e upper_limit=%e rel_tol=%e result=%e error=%e", lower_limit, upper_limit, rel_tol, result, error);
@@ -1855,10 +1836,7 @@ void initialiseSigmaMInterpTable(float M_Min, float M_Max)
     {
         if (isfinite(Mass_InterpTable[i]) == 0 || isfinite(Sigma_InterpTable[i]) == 0 || isfinite(dSigmadm_InterpTable[i]) == 0)
         {
-            printf("==== Crash imminent: m = %.3E, Mmin = %.3E, dSdM = %.3E, dSdm_L = %.3E\n",
-                exp(Mass_InterpTable[i]), M_Min, dSigmadm_InterpTable[i], dsigmasqdm_z0(exp(Mass_InterpTable[i]), 0.));
             LOG_ERROR("Detected either an infinite or NaN value in initialiseSigmaMInterpTable");
-            //            Throw(ParameterError);
             Throw(TableGenerationError);
         }
     }
@@ -5153,10 +5131,6 @@ float sigma_sq_numerical_derivative(float M, float z)
     dsigma_2_dlog10_M = (sigma_linear_2D_interpolation(M * pow(10., dlog10_M), z) - sigma) / dlog10_M; // dsigma/dlog_10(M)
     // Chain rule: dsigma^2/dM = 2*sigma*dsigma/dM = 2*sigma*dsigma/dlog_10(M) * dlog_10(M)/dM = (2*sigma)/(ln(10)*M)*dsigma/dlog_10(M)
     dsigma_sq_dM = 2. * sigma / (log(10.) * M) * dsigma_2_dlog10_M;
-    if (dsigma_sq_dM > 0)
-    {
-        printf("======== dsigma_sq_dM = %.3E, sigma = %.3E\n", dsigma_sq_dM, sigma);
-    }
 
     return dsigma_sq_dM;
 }

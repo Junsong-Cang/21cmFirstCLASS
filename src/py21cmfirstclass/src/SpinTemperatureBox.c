@@ -202,8 +202,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
         double Radio_Prefix_ACG, Radio_Prefix_MCG, Fill_Fraction, Radio_Temp_ave, dzpp_Rct0, zpp_Rct0, H_Rct0, Tr_EoR, SFRD_EoR_MINI, SFRD_MINI_ave, Radio_Prefix_ACG_Rct, Radio_Prefix_MCG_Rct;
         int ArchiveSize, head, phi_idx, tk_idx, phi3_idx, zpp_idx, Radio_Silent;
         double HaloTab_Mmin, ClumpingFactor, MAX_TK_Collisional_Ionization;
-        double tmp_debug_param;
-
+        
         FILE *OutputFile;
 
         Radio_Prefix_ACG = 113.6161 * astro_params->fR * cosmo_params->OMb * (pow(cosmo_params->hlittle, 2)) * (astro_params->F_STAR10) * pow(astro_nu0 / 1.4276, astro_params->aR) * pow(1 + redshift, 3 + astro_params->aR);
@@ -220,19 +219,6 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
             ION_EFF_FACTOR_MINI = 0.;
         }
 
-        //<<<<<<<<
-        tmp_debug_param = 0.0;
-        for (box_ct = 0; box_ct < HII_TOT_NUM_PIXELS; box_ct++)
-        {
-            // #1: Gas temperature
-            tmp_debug_param += previous_spin_temp->Tk_box[box_ct] / ((double)HII_TOT_NUM_PIXELS);
-        }
-        // printf("======== tmp_debug_param = %E, z = %.3f\n", tmp_debug_param, redshift);
-        // OutputFile = fopen("/Users/cangtao/Desktop/tmp.txt", "a");
-        // fprintf(OutputFile, "%.3f   %.3E\n", redshift, tmp_debug_param);
-        // fclose(OutputFile);
-        //>>>>>>>
-        
         // Initialise arrays to be used for the Ts.c computation //
         fftwf_complex *box = (fftwf_complex *)fftwf_malloc(sizeof(fftwf_complex) * HII_KSPACE_NUM_PIXELS);
         fftwf_complex *unfiltered_box = (fftwf_complex *)fftwf_malloc(sizeof(fftwf_complex) * HII_KSPACE_NUM_PIXELS);
