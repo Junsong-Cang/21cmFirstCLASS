@@ -3122,7 +3122,6 @@ def run_lightcone(
         See docs of :func:`initial_conditions` for more information.
     """
     direc, regenerate, hooks = _get_config_options(direc, regenerate, write, hooks)
-
     with global_params.use(**global_kwargs):
         random_seed, user_params, cosmo_params = _configure_inputs(
             [
@@ -3232,7 +3231,6 @@ def run_lightcone(
                 cosmo_params.SIGMA_8 = CLASS_OUTPUT.sigma8()
             else:
                 cosmo_params.A_s = CLASS_OUTPUT.get_current_derived_parameters(['A_s'])['A_s']
-
         if user_params.MINIMIZE_MEMORY and not write:
             raise ValueError(
                 "If trying to minimize memory usage, you must be caching. Set write=True!"
@@ -3253,7 +3251,7 @@ def run_lightcone(
         )
 
         redshift = configure_redshift(redshift, perturb)
-
+        
         max_redshift = (
             global_params.Z_HEAT_MAX
             if (

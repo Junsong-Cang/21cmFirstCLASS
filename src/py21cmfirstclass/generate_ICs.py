@@ -33,7 +33,6 @@ _not4_ = 3.9715 # This is the ratio between Helium to Hydrogen mass. It is not 4
 # Convert redshift to time in Gyr
 def z_to_time(z,cosmo_params):
     Omega_m0 = cosmo_params[2]
-    print("==== debug ==== tmp, Omega_m0 = ", Omega_m0)
     Omega_Lambda = cosmo_params[8]
     H_0 = cosmo_params[9] # 1/sec
     t = (2./3./H_0)*np.sqrt(1.+Omega_m0/Omega_Lambda)*np.arcsinh(np.sqrt(Omega_Lambda/Omega_m0)*pow(1+z,-3./2.)) # sec
@@ -197,7 +196,6 @@ def run_ICs(cosmo_params,user_params,global_params):
     h = cosmo_params.hlittle
     Omega_b0 = cosmo_params.OMb
     Omega_m0 = cosmo_params.OMm
-    print("==== debug omm, Omega_m0 = ", Omega_m0)
     ns = cosmo_params.POWER_INDEX
     A_s = cosmo_params.A_s
     tau_reio = cosmo_params.tau_reio
@@ -299,9 +297,6 @@ def run_ICs(cosmo_params,user_params,global_params):
         from classy import Class
 
     # Run CLASS!
-    print("TMP ==== debug ====")
-    for k in CLASS_params.keys():
-        print("'" + k + "': ", CLASS_params[k], ',')
     CLASS_OUTPUT = Class()
     CLASS_OUTPUT.set(CLASS_params)
     CLASS_OUTPUT.compute()
@@ -433,14 +428,6 @@ def run_ICs(cosmo_params,user_params,global_params):
             for M_ind, M in enumerate(pow(10.,log10_M_array)):
                 R = pow(M*3./4./np.pi/Omega_m0/rho_crit,1./3.) # Mpc
                 sigma_Mz_mat[z_ind,M_ind] = CLASS_OUTPUT.sigma(R,z)
-        # ======== Begin debug
-        print('========== DEBUGGING In Progress in generate_ICs.py ==========')
-        print("sigma_SDM = {:.3E}, m_chi = {:.3E}".format(sigma_SDM, m_chi))
-        print(sigma_Mz_mat)
-        datafile = "/Users/cangtao/Desktop/tmp_CLASS_mx_{:.8E}_sx_{:.8E}.npz".format(m_chi, sigma_SDM)
-        np.savez(datafile, sigma_Mz_mat = sigma_Mz_mat, z = z_array_for_sigma, M = 10.0**log10_M_array, mx=m_chi, sx=sigma_SDM)
-        # ======== End debug
-        
 
     # Scale-Dependent Growth Factor (SDGF) - baryons
     if user_params.EVOLVE_BARYONS:
