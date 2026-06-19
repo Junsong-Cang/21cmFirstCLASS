@@ -4325,7 +4325,7 @@ def _setup_lightcone(
     )
     
     lc_distances = np.arange(0, Ltotal, user_params.BOX_LEN / user_params.HII_DIM)
-
+    
     # Use max_redshift to get the actual distances we require.
     Lmax = cosmo_params.cosmo.comoving_distance(max_redshift).value - d_at_redshift
     first_greater = np.argwhere(lc_distances > Lmax)[0][0]

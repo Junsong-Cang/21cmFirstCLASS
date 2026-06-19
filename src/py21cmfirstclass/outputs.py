@@ -437,7 +437,6 @@ class TsBox(_AllParamsBox):
         if (self.user_params.SCATTERING_DM):
             out.update({"T_chi_box": shape})
             out.update({"V_chi_b_box": shape})
-
         return out
 
     @cached_property

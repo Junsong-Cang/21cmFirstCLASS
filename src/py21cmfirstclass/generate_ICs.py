@@ -76,7 +76,7 @@ def Interpolate_transfer(T_CLASS,k_CLASS,k_output):
 def fitting_function(k, Ap, kp, sigma_p):
 	return 1.-Ap*np.exp(-(np.log(k/kp))**2/(2.*sigma_p**2))
 
-def Check_CLASS_Sigma_Array(sigma):
+def Check_CLASS_Sigma_Array(sigma, CLASS_params):
     sigma_shape = np.shape(sigma)
     nm = sigma_shape[1]
     nz = sigma_shape[0]
@@ -89,6 +89,9 @@ def Check_CLASS_Sigma_Array(sigma):
         corrupt_count += len(ds_positive)
     corrupt_fraction = corrupt_count / (nz * (nm-1))
     if corrupt_count > 0:
+        print("Crash imminent for params:")
+        for k in CLASS_params.keys():
+            print(k, CLASS_params[k])
         MSG = "Found corrupted sigma from CLASS. count = {:.0f}, fraction = {:.3E}".format(corrupt_count, corrupt_fraction)
         raise Exception(MSG)
 
@@ -444,7 +447,7 @@ def run_ICs(cosmo_params,user_params,global_params):
             for M_ind, M in enumerate(pow(10.,log10_M_array)):
                 R = pow(M*3./4./np.pi/Omega_m0/rho_crit,1./3.) # Mpc
                 sigma_Mz_mat[z_ind,M_ind] = CLASS_OUTPUT.sigma(R,z)
-        Check_CLASS_Sigma_Array(sigma_Mz_mat)
+        Check_CLASS_Sigma_Array(sigma_Mz_mat, CLASS_params)
 
     # Scale-Dependent Growth Factor (SDGF) - baryons
     if user_params.EVOLVE_BARYONS:
