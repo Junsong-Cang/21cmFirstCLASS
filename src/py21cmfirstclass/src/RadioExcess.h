@@ -6,7 +6,7 @@
 #define zax_len_FF 1000	   // axis length for soft-photon heating
 #define Clump_Factor_nm 1000
 #define Clump_Factor_nx 1000
-#define print_debug_info 0
+#define print_debug_info 1
 #include "HaloProfile.c"
 
 int Find_Index(double *x_axis, double x, int nx)
@@ -233,6 +233,7 @@ double History_box_Interp(struct TsBox *previous_spin_temp, double z, int Type, 
 		}
 		else if (Type == 3)
 		{
+			printf("==== Dont give TK_at_Z_HEAT_MAX, use whatever you have in the box. Check that this gives correct results as in cache before u proceed!!! \n");
 			return global_params.TK_at_Z_HEAT_MAX;
 		}
 		else if (Type == 4 || Type == 5)
@@ -309,7 +310,6 @@ double History_box_Interp(struct TsBox *previous_spin_temp, double z, int Type, 
 	{
 		r = Interp_1D(z, z_axis, f_axis, ArchiveSize, 0, 1, Overflow_Handle);
 	}
-
 	return r;
 }
 
@@ -560,7 +560,7 @@ double Get_SFRD_EoR_MINI(struct TsBox *previous_spin_temp, struct AstroParams *a
 	}
 	else
 	{
-		if (fabs(previous_spin_temp->IonBox_cache[3] - 1.0) > 1E-2)
+		if (fabs(previous_spin_temp->IonBox_cache[3] - 2026.0) > 1E-4)
 		{
 			printf("mturn is unset, setting now to inf\n");
 			mturn = 1.0E20;
@@ -595,16 +595,17 @@ void Print_debug_info_HistoryBox(struct TsBox *this_spin_temp)
 	// Yell to ensure that the user does not forget this, e.g. when running mcmc
 	printf("------------------------------------------------ print_debug_info activated------------------------------------------------\n");
 
-	OutputFile = fopen("/Users/cangtao/Desktop/tmp/tmp_test_Radio_Heating/History_box_tmp.txt", "w");
+	OutputFile = fopen("/Users/cangtao/Desktop/History_box_tmp.txt", "w");
 	ArchiveSize = (int)round(this_spin_temp->History_box[0]);
-	fprintf(OutputFile, "   z       Tk        xH       SFRD3\n");
+	fprintf(OutputFile, "   z        Tk          xH        SFRD3		Mturn_III\n");
 	for (idx = 1; idx <= ArchiveSize; idx++)
 	{
 		head = (idx - 1) * History_box_DIM + 1;
-		fprintf(OutputFile, "%.7f   ", this_spin_temp->History_box[head]);
-		fprintf(OutputFile, "%.7E   ", this_spin_temp->History_box[head + 2]);
-		fprintf(OutputFile, "%.7E   ", this_spin_temp->History_box[head + 8]);
-		fprintf(OutputFile, "%.7E\n", this_spin_temp->History_box[head + 7]);
+		fprintf(OutputFile, "%.3f   ", this_spin_temp->History_box[head]);
+		fprintf(OutputFile, "%.3E   ", this_spin_temp->History_box[head + 2]);
+		fprintf(OutputFile, "%.3E   ", this_spin_temp->History_box[head + 8]);
+		fprintf(OutputFile, "%.3E	", this_spin_temp->History_box[head + 7]);
+		fprintf(OutputFile, "%.3E\n", this_spin_temp->History_box[head + 6]);
 	}
 	fclose(OutputFile);
 }
@@ -653,7 +654,7 @@ double Find_dTff_dz(struct TsBox *previous_spin_temp, struct AstroParams *astro_
 	if (print_debug_info)
 	{
 		printf("Running Radio heating, ArchiveSize = %d, z1 = %7f, z2 = %7f\n", ArchiveSize, z1, z2);
-		OutputFile = fopen("/Users/cangtao/Desktop/tmp/tmp_test_Radio_Heating/Radio_Heating.txt", "w");
+		OutputFile = fopen("/Users/cangtao/Desktop/tmp_Radio_Heating.txt", "w");
 		fprintf(OutputFile, "   z       Tk        xe       SFRD3\n");
 	}
 
@@ -681,7 +682,7 @@ double Find_dTff_dz(struct TsBox *previous_spin_temp, struct AstroParams *astro_
 	r = Compute_dTffdz(zax, dTdz_ax, Hax, xe_ax, Tk_ax, SFRD_II_ax, SFRD_III_ax, dT_Radio, astro_params->fR, astro_params->fR_mini, astro_params->aR, astro_params->aR_mini, OmBh2, YHe, redshift, 1.0E10, zax_len_FF);
 	if (print_debug_info)
 	{
-		OutputFile = fopen("/Users/cangtao/Desktop/tmp/tmp_test_Radio_Heating/dT_Radio.txt", "a");
+		OutputFile = fopen("/Users/cangtao/Desktop/tmp_dT_Radio.txt", "a");
 		fprintf(OutputFile, "%7f	%7E\n", redshift, *dT_Radio);
 		fclose(OutputFile);
 	}
@@ -827,7 +828,7 @@ void Print_HMF(double z, int hmf_model)
 	double m_ax[200], dndm, m, growthf, Mmin, mc;
 	FILE *OutputFile;
 
-	printf("======== Printing HMF ========\n");
+	printf("-------- Printing HMF ----\n");
 	Mmin = 1.001E4;
 	logspace(log10(Mmin), 19.0, m_ax, nm);
 	growthf = dicke(z);

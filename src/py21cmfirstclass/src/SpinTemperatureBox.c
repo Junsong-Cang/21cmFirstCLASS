@@ -86,7 +86,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
         /////////////////// Defining variables for the computation of Ts.c //////////////
 
         FILE *F, *OUT;
-
+        
         unsigned long long ct, FCOLL_SHORT_FACTOR, box_ct;
 
         int R_ct, i, ii, j, k, i_z, COMPUTE_Ts, x_e_ct, m_xHII_low, m_xHII_high, n_ct, zpp_gridpoint1_int;
@@ -204,7 +204,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
         double HaloTab_Mmin, ClumpingFactor, MAX_TK_Collisional_Ionization;
         
         FILE *OutputFile;
-
+        
         Radio_Prefix_ACG = 113.6161 * astro_params->fR * cosmo_params->OMb * (pow(cosmo_params->hlittle, 2)) * (astro_params->F_STAR10) * pow(astro_nu0 / 1.4276, astro_params->aR) * pow(1 + redshift, 3 + astro_params->aR);
         Radio_Prefix_MCG = 113.6161 * astro_params->fR_mini * cosmo_params->OMb * (pow(cosmo_params->hlittle, 2)) * (astro_params->F_STAR7_MINI) * pow(astro_nu0 / 1.4276, astro_params->aR_mini) * pow(1 + redshift, 3 + astro_params->aR_mini);
         
@@ -306,6 +306,17 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
 		    this_spin_temp->IonBox_cache[box_ct] = NAN;
         }
         this_spin_temp->IonBox_cache[2] = 0.0;
+
+        if (user_params->MANY_Z_SAMPLES_AT_COSMIC_DAWN)
+        {// Caching is a bit complicated in this case, sometimes IonBox call is skipped
+            if (fabs(previous_spin_temp->IonBox_cache[3] - 2026.0) < 1.0E-3)
+            {// MINI_HALO was called or assigneg in previous step, in this case copy Ion info which will be updated in Ion anyway
+                this_spin_temp->IonBox_cache[0] = previous_spin_temp->IonBox_cache[0];
+                this_spin_temp->IonBox_cache[1] = previous_spin_temp->IonBox_cache[1];
+                this_spin_temp->IonBox_cache[3] = previous_spin_temp->IonBox_cache[3];
+                this_spin_temp->IonBox_cache[4] = previous_spin_temp->IonBox_cache[4];
+            }
+        }
 
         // Above certain temperature, collisional ionization will strongly ionize H and suppress 21cm signal. One can ignore heating above this threshold 
         // (5E4 by default), which gives incorect 21cm signal, or we can do everything properly
@@ -4570,12 +4581,11 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
 
                 // Caching averaged quantities
                 if (fabs(previous_spin_temp->IonBox_cache[2]) < 1E-10)
-                {
-                    // Astro module has never been called in Spin.c before
+                {// Astro module has never been called in Spin.c before
                     this_spin_temp->History_box[0] = 1.0;                    // ArchiveSize
                     this_spin_temp->History_box[1] = redshift;               // redshift
                     this_spin_temp->History_box[2] = 0.0;                    // Phi
-                    this_spin_temp->History_box[3] = Tk_BC;                  // Tk
+                    this_spin_temp->History_box[3] = T_IGM_ave;              // Tk
                     this_spin_temp->History_box[4] = 0.0;                    // Phi_mini
                     this_spin_temp->History_box[5] = zpp_for_evolve_list[0]; // zpp0
                     this_spin_temp->History_box[6] = 1.0e20;                 // mturn_II
@@ -4597,22 +4607,23 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                     this_spin_temp->History_box[head + 2] = T_IGM_ave;
                     this_spin_temp->History_box[head + 3] = Phi_ave_mini;
                     this_spin_temp->History_box[head + 4] = zpp_for_evolve_list[0];
-                    if (fabs(previous_spin_temp->IonBox_cache[3]) < 1E-10)
+                    if (fabs(previous_spin_temp->IonBox_cache[3] - 1995.0) < 1E-4)
                     {
                         // MNIHALO hasn't been called yet in Ion.c and mturn is unassigned
                         this_spin_temp->History_box[head + 5] = 1.0E20;
                         this_spin_temp->History_box[head + 6] = 1.0E20;
                     }
-                    else if (fabs(previous_spin_temp->IonBox_cache[3] - 1.0) < 1E-10)
+                    else if (fabs(previous_spin_temp->IonBox_cache[3] - 2026.0) < 1E-4)
                     {
                         this_spin_temp->History_box[head + 5] = previous_spin_temp->IonBox_cache[0];
                         this_spin_temp->History_box[head + 6] = previous_spin_temp->IonBox_cache[1]; // Mturn_MINI
                     }
                     else
                     {
-                	    fprintf(stderr, "previous_spin_temp->IonBox_cache[3] must be either 0 or 1, something must have gone wrong\n");
+                	    fprintf(stderr, "Unknown value detected for previous_spin_temp->IonBox_cache[3]: %.10E\n", previous_spin_temp->IonBox_cache[3]);
                         Throw(InfinityorNaNError);
                     }
+                    
                     this_spin_temp->History_box[head + 7] = SFRD_EoR_MINI; // SFRD_MINI_EOR
                     this_spin_temp->History_box[head + 8] = previous_spin_temp->IonBox_cache[4]; // xH
                 }

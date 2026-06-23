@@ -39,7 +39,7 @@ int ComputeIonizedBox(float redshift, float prev_redshift, struct UserParams *us
         *box->Mturn_II = NAN;
         *box->Mturn_III = NAN;
         
-        spin_temp->IonBox_cache[3] = 0.0; // MINIHALO hasn't been called yet
+        spin_temp->IonBox_cache[3] = 1995.0; // MINIHALO hasn't been called yet
 
         if (redshift > global_params.Z_HEAT_MAX)
         { // JordanFlitter: I made that condition since we don't want to calculate f_mean_coll at redshifts at the dark ages
@@ -128,7 +128,7 @@ int ComputeIonizedBox(float redshift, float prev_redshift, struct UserParams *us
             float prev_min_density, prev_max_density;
 
             float stored_redshift, adjustment_factor;
-
+            
             gsl_rng *r[user_params->N_THREADS];
             int *overdense_int_boundexceeded_threaded = calloc(user_params->N_THREADS, sizeof(int));
             LOG_SUPER_DEBUG("initing heat");
@@ -587,7 +587,8 @@ int ComputeIonizedBox(float redshift, float prev_redshift, struct UserParams *us
                     Mturnover_MINI = pow(10., box->log10_Mturnover_MINI_ave);
                     spin_temp->IonBox_cache[0] = Mturnover;
                     spin_temp->IonBox_cache[1] = Mturnover_MINI;
-                    spin_temp->IonBox_cache[3] = 1.0; // MINIHALO is called
+                    spin_temp->IonBox_cache[3] = 2026.0; // MINIHALO is called
+                    
                     *box->Mturn_II = Mturnover;
                     *box->Mturn_III = Mturnover_MINI;
 

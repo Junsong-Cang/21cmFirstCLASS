@@ -296,7 +296,7 @@ double Compute_dTffdz(double *zax, double *dTdz, double *Hax, double *xe_ax, dou
 
 	if (print_debug_info)
 	{
-		OutputFile = fopen("/Users/cangtao/Desktop/tmp/tmp_test_Radio_Heating/dTff_dz_tmp.txt", "w");
+		OutputFile = fopen("/Users/cangtao/Desktop/dTff_dz_tmp.txt", "w");
 	}
 
 	// Start Evolving
