@@ -6,7 +6,7 @@
 #define zax_len_FF 1000	   // axis length for soft-photon heating
 #define Clump_Factor_nm 1000
 #define Clump_Factor_nx 1000
-#define print_debug_info 1
+#define print_debug_info 0
 #include "HaloProfile.c"
 
 int Find_Index(double *x_axis, double x, int nx)
@@ -225,19 +225,21 @@ double History_box_Interp(struct TsBox *previous_spin_temp, double z, int Type, 
 
 	ArchiveSize = (int)round(previous_spin_temp->History_box[0]);
 	if (previous_spin_temp->first_box || ArchiveSize < 2)
-	{
-		// Too early to get reliable results?
+	{// Too early to get reliable results?
 		if ((Type == 1 || Type == 2) || Type == 6)
 		{ // Set Phi_II, Phi_III, SFRD_EoR_MINI to 0
 			return 0.0;
 		}
+		/*
 		else if (Type == 3)
 		{
 			printf("==== Dont give TK_at_Z_HEAT_MAX, use whatever you have in the box. Check that this gives correct results as in cache before u proceed!!! \n");
+			Throw(ValueError);
 			return global_params.TK_at_Z_HEAT_MAX;
 		}
+		*/
 		else if (Type == 4 || Type == 5)
-		{
+		{// Give large Mturns so that SFRD is 0 at high z
 			return 1.0E20;
 		}
 		else
@@ -246,7 +248,7 @@ double History_box_Interp(struct TsBox *previous_spin_temp, double z, int Type, 
 		}
 	}
 
-	if (ArchiveSize > 800)
+	if (ArchiveSize > 980)
 	{
 		fprintf(stderr, "Error: ArchiveSize exceeds z_axis size.\n");
 		Throw(ValueError);

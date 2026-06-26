@@ -1344,6 +1344,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                             if (T < 0)
                             { // spurious bahaviour of the trapazoidalintegrator. generally overcooling in underdensities
                                 T = T_cmb * (1 + zp);
+                                printf("==== Setting T -> Tcmb, z = %.3f, marker = 0\n", redshift);
                             }
 
                             x_e += (dxe_dzp)*dzp; // remember dzp is negative
@@ -3763,6 +3764,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                                         if (T < 0)
                                         { // spurious bahaviour of the trapazoidalintegrator. generally overcooling in underdensities
                                             T = T_cmb * (1 + zp);
+                                            printf("==== Setting T -> Tcmb, z = %.3f, marker = 2\n", redshift);
                                         }
                                     }
                                     else
