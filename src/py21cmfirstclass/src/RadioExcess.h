@@ -481,6 +481,7 @@ double Get_EoR_Radio_mini(struct TsBox *this_spin_temp, struct AstroParams *astr
 
 	if ((this_spin_temp->first_box) || (redshift > find_redshift_step(2) - 0.5))
 	{
+		// Need to do this more carefully, find_redshift_step does not work when USE_MANY_Z_xxx = T
 		T = 0;
 	}
 	else
