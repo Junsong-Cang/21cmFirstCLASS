@@ -2,6 +2,7 @@
 dist/
 
 src/21cmFAST.egg-info/
+src/py21cmfirstclass/
 
 pip-wheel-metadata/
 
