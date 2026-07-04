@@ -956,7 +956,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
             //                This makes the code to run MUCH FASTER per redshift iteration
             
             if (redshift > global_params.Z_HEAT_MAX)
-            {//==== Dark Ages loop
+            {
                 // allocate memory for the nonlinear density field
                 // JordanFlitter: during the dark ages, we don't need curr_delNL0 (or delta(z=0)) as we use the baryons density field at perturbed_field_redshift
                 if (!user_params->NO_INI_MATTER_FLUCTS && !user_params->EVOLVE_BARYONS)
@@ -1286,45 +1286,9 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                                 dT_chi_2_dt_ext = (dadia_dzp_SDM - 2. * T_chi / (1.0 + zp)) / dtdz(zp);
                                 if (user_params->EVOLVE_BARYONS)
                                 {
-
-                                    // ==== debug ====
-                                    // printf("==== Danger!!! Setting V_chi_b as HMG, remove after debugging ====\n");
-                                    // V_chi_b = 1.0E5; // This is the culprit
-                                    // delta_baryons_local = 0.0;
-                                    // delta_SDM_local = 0.0;
-                                    // ==== debug ====
-                                    
                                     SDM_rates = SDM_derivatives(zp, x_e, T, T_chi, V_chi_b, delta_baryons_local, delta_SDM_local, hubble(zp),
                                                                 -hubble(zp) * (1. + zp) * dcomp_dzp_prefactor * x_e / (1. + x_e), Trad_fast, dzp, dT_b_2_dt_ext,
                                                                 dT_chi_2_dt_ext);
-                                    // ======== debug ========
-                                    /*
-                                    if (box_ct == HII_TOT_NUM_PIXELS-1)
-                                    {
-                                        if (tmp_Run_on_Mac() == 1)
-	                                    {
-		                                    OutputFile = fopen("/Users/cangtao/Desktop/tmp_SDM_inputs_HMG.txt", "a");
-	                                    }
-	                                    else
-	                                    {
-                                            if (user_params->N_THREADS == 1)
-                                            {
-		                                        OutputFile = fopen("/afs/ihep.ac.cn/users/z/zhangzixuan/work/cjs/SDM/tmp_SDM_inputs_HPC_1thread_HMG.txt", "a");
-                                            }
-                                            else
-                                            {
-                                                OutputFile = fopen("/afs/ihep.ac.cn/users/z/zhangzixuan/work/cjs/SDM/tmp_SDM_inputs_HPC_multi_thread_HMG.txt", "a");
-                                            }
-	                                    }
-                                        fprintf(OutputFile, "%.10E    %.10E    %.10E    %.10E    %.10E    %.10E    %.10E    %.10E    %.10E    %.10E    %.10E    %d\n", 
-                                            zp, x_e, T, T_chi, V_chi_b, delta_baryons_local, delta_SDM_local, dcomp_dzp_prefactor, Trad_fast, dT_b_2_dt_ext, dT_chi_2_dt_ext, HII_TOT_NUM_PIXELS);
-                                        //   0   1   2    3       4             5                   6                7                 8            9              10                 11
-                                        //                       junk          junk                junk                                            junk            junk
-                                        fclose(OutputFile);
-                                    }
-                                    */
-                                    /// ======== debug ========
-
                                 }
                                 else
                                 {
@@ -1359,30 +1323,6 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                                 if (T < MAX_TK_Collisional_Ionization)
                                 {
                                     T += (dcomp_dzp + dspec_dzp + dadia_dzp + dSDM_b_heat_dzp) * dzp;
-                                    // ======== debug ========
-                                    /*
-                                    if (box_ct == HII_TOT_NUM_PIXELS-1)
-                                    {
-                                        if (tmp_Run_on_Mac() == 1)
-	                                    {
-		                                    OutputFile = fopen("/Users/cangtao/Desktop/tmp_SDM_Heating_Rates_HMG.txt", "a");
-	                                    }
-	                                    else
-	                                    {
-                                            if (user_params->N_THREADS == 1)
-                                            {
-		                                        OutputFile = fopen("/afs/ihep.ac.cn/users/z/zhangzixuan/work/cjs/SDM/tmp_SDM_Heating_Rates_HPC_1thread_HMG.txt", "a");
-                                            }
-                                            else
-                                            {
-                                                OutputFile = fopen("/afs/ihep.ac.cn/users/z/zhangzixuan/work/cjs/SDM/tmp_SDM_Heating_Rates_HPC_multi_thread_HMG.txt", "a");
-                                            }
-	                                    }
-                                        fprintf(OutputFile, "%.10E    %.10E    %.10E    %.10E    %.10E\n", zp, dcomp_dzp, dspec_dzp, dadia_dzp, dSDM_b_heat_dzp);
-                                        fclose(OutputFile);
-                                    }
-                                    */
-                                    // ======== debug ========
                                 }
                             }
                             // JordanFlitter: Otherwise, if epsilon_b is not small enough (or SDM doesn't exist), we evolve T_k with Compton TCA!

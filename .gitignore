@@ -14,6 +14,7 @@ pip-wheel-metadata/
 pip-wheel-metadata/
 src/py21cmfast\.egg-info/
 src/py21cmfirstclass\.egg-info/
+src/py21cmfirstclass/__pycache__/
 
 *.so
 build/
