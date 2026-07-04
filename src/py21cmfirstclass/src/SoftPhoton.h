@@ -296,7 +296,14 @@ double Compute_dTffdz(double *zax, double *dTdz, double *Hax, double *xe_ax, dou
 
 	if (print_debug_info)
 	{
-		OutputFile = fopen("/Users/cangtao/Desktop/dTff_dz_tmp.txt", "w");
+		if (tmp_Run_on_Mac()==1)
+		{
+			OutputFile = fopen("/Users/cangtao/Desktop/tmp_dTff_dz.txt", "w");
+		}
+		else
+		{
+			OutputFile = fopen("/afs/ihep.ac.cn/users/z/zhangzixuan/work/cjs/SDM/tmp_dTff_dz_HPC.txt", "w");
+		}
 	}
 
 	// Start Evolving

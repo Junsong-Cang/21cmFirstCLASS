@@ -1988,6 +1988,7 @@ SDM_RATES SDM_derivatives(float zp, double x_e, double T_b, double T_chi, double
 // JordanFlitter: S_alpha correction. Similar to the T_RECFAST function
 // This function interpolates the data in an external text file, which was generated from Eq. A4 in Mittal & Kulkarni (arXiv: 2009.10746),
 // a result that was derived from the work of Chuzhouy & Shapiro (arXiv: astro-ph/0512206).
+
 double S_alpha_correction(float xi, int flag)
 {
     double ans;

@@ -9,6 +9,45 @@
 #define print_debug_info 0
 #include "HaloProfile.c"
 
+// ==== debug ====
+#include <unistd.h>
+
+void Find_Tk_ave_tmp(struct TsBox *this_spin_temp, struct UserParams *user_params, float redshift)
+{
+	int i, j, k;
+	double Tk_ave;
+	Tk_ave = 0.0;
+	for (i = 0; i < user_params->HII_DIM; i++)
+    {
+		for (j = 0; j < user_params->HII_DIM; j++)
+		{
+			for (k = 0; k < user_params->HII_DIM; k++)
+			{
+				Tk_ave += this_spin_temp->Tk_box[HII_R_INDEX(i, j, k)];
+			}
+		}
+	}
+	Tk_ave /= (double) (user_params->HII_DIM*user_params->HII_DIM*user_params->HII_DIM);
+	printf("==== Tk_ave = %.10E, z = %.4f\n", Tk_ave, redshift);
+}
+
+int tmp_Run_on_Mac()
+{
+	int status;
+    const char *filename = "/Users/cangtao/FileVault/Projects/SDM/ToolKit/DataSetTools.py";
+    
+    if (access(filename, F_OK) == 0) 
+	{
+		status = 1;
+    }
+	else
+	{
+		status = 0;
+    }
+	return status;
+}
+// ==== debug ====
+
 int Find_Index(double *x_axis, double x, int nx)
 {
 	/*
@@ -597,8 +636,14 @@ void Print_debug_info_HistoryBox(struct TsBox *this_spin_temp)
 	int ArchiveSize, head, idx;
 	// Yell to ensure that the user does not forget this, e.g. when running mcmc
 	printf("------------------------------------------------ print_debug_info activated------------------------------------------------\n");
-
-	OutputFile = fopen("/Users/cangtao/Desktop/History_box_tmp.txt", "w");
+	if (tmp_Run_on_Mac() == 1)
+	{
+		OutputFile = fopen("/Users/cangtao/Desktop/tmp_History_box.txt", "w");
+	}
+	else
+	{
+		OutputFile = fopen("/afs/ihep.ac.cn/users/z/zhangzixuan/work/cjs/SDM/tmp_History_box_HPC.txt", "w");
+	}
 	ArchiveSize = (int)round(this_spin_temp->History_box[0]);
 	fprintf(OutputFile, "   z        Tk          xH        SFRD3		Mturn_III\n");
 	for (idx = 1; idx <= ArchiveSize; idx++)
@@ -657,7 +702,14 @@ double Find_dTff_dz(struct TsBox *previous_spin_temp, struct AstroParams *astro_
 	if (print_debug_info)
 	{
 		printf("Running Radio heating, ArchiveSize = %d, z1 = %7f, z2 = %7f\n", ArchiveSize, z1, z2);
-		OutputFile = fopen("/Users/cangtao/Desktop/tmp_Radio_Heating.txt", "w");
+		if (tmp_Run_on_Mac()==1)
+		{
+			OutputFile = fopen("/Users/cangtao/Desktop/tmp_Radio_Heating.txt", "w");
+		}
+		else
+		{
+			OutputFile = fopen("/afs/ihep.ac.cn/users/z/zhangzixuan/work/cjs/SDM/tmp_Radio_Heating_HPC.txt", "w");
+		}
 		fprintf(OutputFile, "   z       Tk        xe       SFRD3\n");
 	}
 
@@ -685,7 +737,14 @@ double Find_dTff_dz(struct TsBox *previous_spin_temp, struct AstroParams *astro_
 	r = Compute_dTffdz(zax, dTdz_ax, Hax, xe_ax, Tk_ax, SFRD_II_ax, SFRD_III_ax, dT_Radio, astro_params->fR, astro_params->fR_mini, astro_params->aR, astro_params->aR_mini, OmBh2, YHe, redshift, 1.0E10, zax_len_FF);
 	if (print_debug_info)
 	{
-		OutputFile = fopen("/Users/cangtao/Desktop/tmp_dT_Radio.txt", "a");
+		if (tmp_Run_on_Mac() == 1)
+		{
+			OutputFile = fopen("/Users/cangtao/Desktop/tmp_dT_Radio.txt", "a");
+		}
+		else
+		{
+			OutputFile = fopen("/afs/ihep.ac.cn/users/z/zhangzixuan/work/cjs/SDM/tmp_dT_Radio_HPC.txt", "a");
+		}
 		fprintf(OutputFile, "%7f	%7E\n", redshift, *dT_Radio);
 		fclose(OutputFile);
 	}
