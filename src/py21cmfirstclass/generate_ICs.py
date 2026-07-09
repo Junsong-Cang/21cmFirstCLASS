@@ -618,6 +618,8 @@ def run_ICs(cosmo_params,user_params,global_params):
     if user_params.EVOLVE_BARYONS:
         global_params.LOG_K_ARR_FOR_SDGF = list(log_k_array)
         global_params.LOG_SDGF_BARYONS = list(log10_D_b_kz_mat.T.flatten())
+        print('====Saving GF data')
+        np.savez('/Users/cangtao/Desktop/tmp_SDGF_CLASS.npz', k = log_k_array, G = log10_D_b_kz_mat.T, Dz=log10_D_z)
         if user_params.SCATTERING_DM:
             global_params.LOG_SDGF_SDM = list(log10_D_chi_kz_mat.T.flatten())
     if user_params.EVOLVE_MATTER:

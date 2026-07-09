@@ -1245,6 +1245,7 @@ double SDGF_BARYONS(double z, double k, int flag)
     static double log_SDGF_arr[Z_ARRAY_NPTS * SDGF_K_NPTS];
     static gsl_interp_accel *log_z_acc, *log_k_acc;
     static gsl_interp2d *interp;
+    FILE *tmp_debug_file;
 
     if (flag == 1)
     {
@@ -1285,13 +1286,14 @@ double SDGF_BARYONS(double z, double k, int flag)
     // Convert to log10
     double log10_z = log10(z);
     double log10_k = log10(k);
-
+    
     if (log10_z > global_params.LOG_Z_ARR[Z_ARRAY_NPTS - 1])
     { // Called at z>1100! Bail out
         LOG_ERROR("Called SDGF with z=%f.", z);
         Throw 1;
     }
     else if ((log10_z < global_params.LOG_Z_ARR[0]) || (log10_k < global_params.LOG_K_ARR_FOR_SDGF[0]))
+    // else if ((log10_z < log10(35.0)) || (log10_k < global_params.LOG_K_ARR_FOR_SDGF[0])) // ==== Junsong: use SIGF at cosmic dawn
     { // approximate the SDGF to SIGF at very low redshifts or very large scales
         ans = log10(dicke(z));
     }
@@ -1303,6 +1305,18 @@ double SDGF_BARYONS(double z, double k, int flag)
     { // Do 2D interpolation!
         ans = gsl_interp2d_eval(interp, log_z_arr, log_k_arr, log_SDGF_arr, log10_z, log10_k, log_z_acc, log_k_acc);
     }
+    // printf("==== maybe better use Dicke at low Z, can do this also for DM");
+    // ==== debug ==== -> Use Dicke at Cosmic Dawn
+    if (z < 35.0)
+    {
+        ans = log10(dicke(z));
+    }
+    // ==== debug ====
+    /*
+    tmp_debug_file = fopen("/Users/cangtao/Desktop/tmp_Growth_Factor.txt", "a");
+    fprintf(tmp_debug_file, "%.4E    %.4E    %.4E\n", z, k, pow(10., ans));
+    fclose(tmp_debug_file);
+    */
 
     return pow(10., ans);
 }
