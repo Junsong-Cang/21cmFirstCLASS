@@ -64,6 +64,7 @@ struct UserParams
     bool EVALUATE_TAU_REIO;             // JordanFlitter: added flag to evaluate tau_reio from the simulation
     bool EVOLVE_MATTER;                 // JordanFlitter: added flag to properly evolve the CDM density field (and the total matter field)
     bool LINEAR_DELTA_IN_EPS;           // JordanFlitter: added flag to use delta_m from linear theory in the EPS formalism
+    bool USE_SIGF_AT_LOW_Z;             // JunsongCang: CLASS SDGF might lead to numerical artifacts, use SIGF below z 35
 };
 
 struct AstroParams

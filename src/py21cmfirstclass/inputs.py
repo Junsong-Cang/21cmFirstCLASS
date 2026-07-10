@@ -761,6 +761,7 @@ class UserParams(StructWithDefaults):
         Whether to use delta_m from linear theory in the EPS formalism. Can be set to True, only if EVOLVE_BARYONS is set to True,
         in which case delta_b is evaluated from non-linear 2LPT. If set to False, delta_m is computed similarly to delta_b, whether
         it is computed from linear theory or not. Default is True.
+    USE_SIGF_AT_LOW_Z: CLASS SDGF might lead to numerical artifacts, use SIGF below z 35
     FUZZY_DM: bool, optional
         Whether to consider fuzzy dark matter (FDM) in the simulation. If set to True,
         AxionCAMB is called in order to generate initial conditions that are consistent
@@ -874,6 +875,7 @@ class UserParams(StructWithDefaults):
         "EVALUATE_TAU_REIO": True, # JordanFlitter: added flag to evaluate tau_reio from the simulation
         "EVOLVE_MATTER": True, # JordanFlitter: added flag to properly evolve the CDM density field (and the total matter field)
         "LINEAR_DELTA_IN_EPS": True, # JordanFlitter: added flag to use delta_m from linear theory in the EPS formalism
+        "USE_SIGF_AT_LOW_Z": False
     }
 
     _hmf_models = ["PS", "ST", "WATSON", "WATSON-Z"]

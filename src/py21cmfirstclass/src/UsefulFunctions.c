@@ -1285,24 +1285,29 @@ double SDGF_BARYONS(double z, double k, int flag)
     // Convert to log10
     double log10_z = log10(z);
     double log10_k = log10(k);
-    
-    if (log10_z > global_params.LOG_Z_ARR[Z_ARRAY_NPTS - 1])
-    { // Called at z>1100! Bail out
-        LOG_ERROR("Called SDGF with z=%f.", z);
-        Throw 1;
-    }
-    else if ((log10_z < global_params.LOG_Z_ARR[0]) || (log10_k < global_params.LOG_K_ARR_FOR_SDGF[0]))
-    // else if ((log10_z < log10(35.0)) || (log10_k < global_params.LOG_K_ARR_FOR_SDGF[0])) // ==== Junsong: use SIGF at cosmic dawn
-    { // approximate the SDGF to SIGF at very low redshifts or very large scales
+    if ((user_params_ufunc->USE_SIGF_AT_LOW_Z) && (log10_z < log10(35.0)))
+    {
         ans = log10(dicke(z));
     }
-    else if (log10_k > global_params.LOG_K_ARR_FOR_SDGF[SDGF_K_NPTS - 1])
-    { // SDGF converges at very small scales
-        ans = gsl_interp2d_eval(interp, log_z_arr, log_k_arr, log_SDGF_arr, log10_z, global_params.LOG_K_ARR_FOR_SDGF[SDGF_K_NPTS - 1], log_z_acc, log_k_acc);
-    }
     else
-    { // Do 2D interpolation!
-        ans = gsl_interp2d_eval(interp, log_z_arr, log_k_arr, log_SDGF_arr, log10_z, log10_k, log_z_acc, log_k_acc);
+    {
+        if (log10_z > global_params.LOG_Z_ARR[Z_ARRAY_NPTS - 1])
+        { // Called at z>1100! Bail out
+            LOG_ERROR("Called SDGF with z=%f.", z);
+            Throw 1;
+        }
+        else if ((log10_z < global_params.LOG_Z_ARR[0]) || (log10_k < global_params.LOG_K_ARR_FOR_SDGF[0]))
+        { // approximate the SDGF to SIGF at very low redshifts or very large scales
+            ans = log10(dicke(z));
+        }
+        else if (log10_k > global_params.LOG_K_ARR_FOR_SDGF[SDGF_K_NPTS - 1])
+        { // SDGF converges at very small scales
+            ans = gsl_interp2d_eval(interp, log_z_arr, log_k_arr, log_SDGF_arr, log10_z, global_params.LOG_K_ARR_FOR_SDGF[SDGF_K_NPTS - 1], log_z_acc, log_k_acc);
+        }
+        else
+        { // Do 2D interpolation!
+            ans = gsl_interp2d_eval(interp, log_z_arr, log_k_arr, log_SDGF_arr, log10_z, log10_k, log_z_acc, log_k_acc);
+        }
     }
     return pow(10., ans);
 }
