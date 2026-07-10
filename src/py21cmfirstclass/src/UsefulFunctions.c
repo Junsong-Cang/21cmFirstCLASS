@@ -1245,8 +1245,7 @@ double SDGF_BARYONS(double z, double k, int flag)
     static double log_SDGF_arr[Z_ARRAY_NPTS * SDGF_K_NPTS];
     static gsl_interp_accel *log_z_acc, *log_k_acc;
     static gsl_interp2d *interp;
-    FILE *tmp_debug_file;
-
+    
     if (flag == 1)
     {
 
@@ -1305,19 +1304,6 @@ double SDGF_BARYONS(double z, double k, int flag)
     { // Do 2D interpolation!
         ans = gsl_interp2d_eval(interp, log_z_arr, log_k_arr, log_SDGF_arr, log10_z, log10_k, log_z_acc, log_k_acc);
     }
-    // printf("==== maybe better use Dicke at low Z, can do this also for DM");
-    // ==== debug ==== -> Use Dicke at Cosmic Dawn
-    if (z < 35.0)
-    {
-        ans = log10(dicke(z));
-    }
-    // ==== debug ====
-    /*
-    tmp_debug_file = fopen("/Users/cangtao/Desktop/tmp_Growth_Factor.txt", "a");
-    fprintf(tmp_debug_file, "%.4E    %.4E    %.4E\n", z, k, pow(10., ans));
-    fclose(tmp_debug_file);
-    */
-
     return pow(10., ans);
 }
 

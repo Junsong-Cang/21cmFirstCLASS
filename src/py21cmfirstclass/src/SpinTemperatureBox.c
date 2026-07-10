@@ -2785,26 +2785,6 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
 
                                     *((fftwf_complex *)delta_baryons + HII_C_INDEX(n_x, n_y, n_z)) *= SDGF_BARYONS(zp, k_mag, 0) / SDGF_BARYONS(perturbed_field_redshift, k_mag, 0) / HII_TOT_NUM_PIXELS;
                                     *((fftwf_complex *)delta_baryons_derivative + HII_C_INDEX(n_x, n_y, n_z)) *= dSDGF_BARYONS_dz(zp, k_mag) / SDGF_BARYONS(perturbed_field_redshift, k_mag, 0) / HII_TOT_NUM_PIXELS;
-                                    // ==== debug ====
-                                    if (fabs(redshift - 26.85) < 0.1)
-                                    {
-                                        OutputFile = fopen("/Users/cangtao/Desktop/tmp_Growth_Factor_SD.txt", "a");
-                                        fprintf(
-                                            OutputFile, 
-                                            "%.5E    %.5E    %.5E    %.5E    %.5E    %.5E    %.5E    %d    %.E\n", 
-                                            zp, 
-                                            k_mag, 
-                                            SDGF_BARYONS(zp, k_mag, 0), 
-                                            SDGF_BARYONS(perturbed_field_redshift, k_mag, 0), 
-                                            dSDGF_BARYONS_dz(zp, k_mag), 
-                                            perturbed_field_redshift, 
-                                            SDGF_BARYONS(zp, k_mag, 0) / SDGF_BARYONS(perturbed_field_redshift, k_mag, 0) / HII_TOT_NUM_PIXELS,
-                                            HII_TOT_NUM_PIXELS,
-                                            dSDGF_BARYONS_dz(zp, k_mag) / SDGF_BARYONS(perturbed_field_redshift, k_mag, 0) / HII_TOT_NUM_PIXELS);
-
-                                        fclose(OutputFile);
-                                    }
-                                    // ==== debug ====
                                     if (user_params->SCATTERING_DM)
                                     {
                                         *((fftwf_complex *)delta_SDM + HII_C_INDEX(n_x, n_y, n_z)) *= SDGF_SDM(zp, k_mag, 0) / SDGF_SDM(perturbed_field_redshift, k_mag, 0) / HII_TOT_NUM_PIXELS;
@@ -2831,13 +2811,8 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                             {
                                 for (k = 0; k < user_params->HII_DIM; k++)
                                 {
-                                    //if (i==86 && (j==0 && (k==41 && (fabs(redshift - 26.856) < 1E-2))))
-                                    //{
-                                    //    printf("==== delta = %.5E\n", *((float *)delta_baryons + HII_R_FFT_INDEX(i, j, k)));
-                                    //}
                                     if (*((float *)delta_baryons + HII_R_FFT_INDEX(i, j, k)) <= -1)
                                     { // correct for aliasing in the filtering step
-                                        // printf("================ Found void, i, j, k = %d  %d  %d, z = %.4f, delta = %.5E\n", i,j,k, redshift, *((float *)delta_baryons + HII_R_FFT_INDEX(i, j, k)));
                                         *((float *)delta_baryons + HII_R_FFT_INDEX(i, j, k)) = -1 + FRACT_FLOAT_ERR;
                                     }
                                     if (user_params->SCATTERING_DM)
@@ -3749,36 +3724,11 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                                             {
                                                 T += (dxheat_dzp + dcomp_dzp + dspec_dzp + dadia_dzp + dCMBheat_dzp + eps_Lya_cont + eps_Lya_inj + dSDM_b_heat_dzp + dTdz_FF) * dzp;
                                             }
-                                            // ======== debug ========
-                                            if (box_ct == 860043)
-                                            {
-                                                OutputFile = fopen("/Users/cangtao/Desktop/tmp_Heating_Rates.txt", "a");
-                                                fprintf(OutputFile, 
-                                                    "%.3f   %.4E   %.4E   %.4E   %.4E   %.4E   %.4E    %.4E    %.4E\n",
-                                                    redshift, dxheat_dzp, dcomp_dzp, dspec_dzp, dadia_dzp, dSDM_b_heat_dzp, T, delta_baryons_derivative_local, 1+delta_baryons_local);
-                                                    //             1          2          3          4            5          6         7                               8
-                                                fclose(OutputFile);
-	                                        }
-                                            if (box_ct == 132500)
-                                            {
-                                                OutputFile = fopen("/Users/cangtao/Desktop/tmp_Heating_Rates_Normal_Cell.txt", "a");
-                                                fprintf(OutputFile, 
-                                                    "%.3f   %.4E   %.4E   %.4E   %.4E   %.4E   %.4E    %.4E    %.4E\n",
-                                                    redshift, dxheat_dzp, dcomp_dzp, dspec_dzp, dadia_dzp, dSDM_b_heat_dzp, T, delta_baryons_derivative_local, 1+delta_baryons_local);
-                                                    //             1          2          3          4            5          6         7                               8
-                                                fclose(OutputFile);
-	                                        }
-
-                                            // ======== debug ========
                                         }
                                     }
                                     // JordanFlitter: Otherwise, we evolve T_k with DM TCA!
                                     else
                                     {
-                                        if (box_ct == 860043)
-                                        {
-                                            printf("==== Using DM TCA ====, z = %.3f\n", redshift);
-                                        }
                                         T = SDM_rates.T_bar_chi_b + SDM_rates.Delta_T_b_chi / 2.; // K
                                     }
 
@@ -3795,11 +3745,6 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                                         else
                                         {
                                             T_chi = SDM_rates.T_bar_chi_b - SDM_rates.Delta_T_b_chi / 2.; // K
-                                            // ======== debug ========
-                                            if (box_ct == 860043)
-                                            {
-                                                printf("==== Using DM TCA for SDM, z = %.3f ====\n", redshift);
-                                            }
                                         }
                                         V_chi_b += (V_chi_b / (1.0 + zp) - D_V_chi_b_dzp) * dzp; // cm/sec
                                     }
@@ -3823,7 +3768,6 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                                     {
                                         if (T < T_chi)
                                         { // T should never be smaller than T_chi!
-                                            printf("==== Tk is smaller than T_chi? z = %.3f, T = %.4E, T_chi = %.4E, box_ct = %d\n", redshift, T, T_chi, box_ct);
                                             if (T_chi > 0)
                                             {
                                                 T = T_chi;
@@ -3833,16 +3777,6 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                                                 T = previous_spin_temp->Tk_box[box_ct]; // Don't update T in that special scenario
                                             }
                                         }
-                                        // ======== debug ========
-                                        if (box_ct == 860043)
-                                        {
-                                            OutputFile = fopen("/Users/cangtao/Desktop/tmp_SDM_Rates.txt", "a");
-                                            fprintf(OutputFile, 
-                                                "%.3f   %.4E   %.4E    %.4E    %.4E\n",
-                                                redshift, T, T_chi, dadia_dzp_SDM, dSDM_chi_heat_dzp);
-                                            fclose(OutputFile);
-	                                    }
-                                        // ======== debug ========
                                     }
 
                                     // JordanFlitter: similar logic for T_chi and V_chi_b in case of spurious bahaviour
@@ -3857,12 +3791,6 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                                             V_chi_b = 0.;
                                         }
                                     }
-                                    // ======== debug ========
-                                    if (fabs(T - previous_spin_temp->Tk_box[box_ct])/T > 2.0)
-                                    {
-                                        printf("======== Possible jump detected, T = %.5E, T_prev = %.5E, z = %.5E, box_ct = %d\n", T, previous_spin_temp->Tk_box[box_ct], redshift, box_ct);
-                                    }
-                                    // ======== debug ========
                                     this_spin_temp->x_e_box[box_ct] = x_e;
                                     this_spin_temp->Tk_box[box_ct] = T;
                                     // JordanFlitter: update T_chi_box and V_chi_b_box
@@ -4589,10 +4517,6 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                     }
                 }
                 
-                // ==== debug ====
-                Print_Growth_Factor_tmp();
-                // ==== debug ====
-
                 // ---- Computing averaged quantities ----
                 T_IGM_ave = 0.0;
                 Radio_Temp_ave = 0.0;

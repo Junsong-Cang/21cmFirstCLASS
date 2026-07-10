@@ -248,27 +248,6 @@ void Broadcast_struct_global_PS(struct UserParams *user_params, struct CosmoPara
   similar to built-in function "double T_RECFAST(float z, int flag)"
 */
 
-
-// First some useful general-purpose functions
-void linspace_tmp(double xmin, double xmax, double *x, int nx)
-{
-	/*
-	Create a linspace array
-	-- inputs --
-	xmin: minimum of x
-	xmax: maximum of x
-	x: pointer of pre-created x array
-	nx: array size
-	*/
-	int idx;
-	double dx;
-	dx = (xmax - xmin) / ((double)nx - 1.0);
-	for (idx = 0; idx < nx; idx++)
-	{
-		x[idx] = xmin + ((double)idx * dx);
-	}
-}
-
 // JordanFlitter: I modified this function such that we no longer read the data from a text file, but rather from global_params
 double TF_CLASS(double k, int flag_int, int flag_dv)
 {

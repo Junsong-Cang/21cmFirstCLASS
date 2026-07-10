@@ -871,19 +871,3 @@ void Print_HMF(double z, int hmf_model)
 	fprintf(OutputFile, "%.4f  %.4E\n", z, mc);
 	fclose(OutputFile);	
 }
-
-void Print_Growth_Factor_tmp()
-{
-	double zax[10000], z;
-	int idx, nz;
-	nz = 10000;
-	FILE *OutputFile;
-	linspace(0.01, 50.0, zax, nz);
-	OutputFile = fopen("/Users/cangtao/Desktop/tmp_Growth_Factor_SI.txt", "w");
-	for (idx=0; idx<nz; idx++)
-	{
-		z = zax[idx];
-		fprintf(OutputFile, "%.5E    %.5E\n", z, dicke(z));
-	}
-	fclose(OutputFile);
-}

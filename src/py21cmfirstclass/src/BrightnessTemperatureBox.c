@@ -54,7 +54,6 @@ int ComputeBrightnessTemp(float redshift, struct UserParams *user_params, struct
         float RSD_pos_new, RSD_pos_new_boundary_low, RSD_pos_new_boundary_high, fraction_within, fraction_outside, cell_distance;
 
         double dvdx, max_v_deriv;
-        double junsong_debug_var_tmp;
         float const_factor, T_rad, pixel_Ts_factor, pixel_x_HI, pixel_deltax, H;
         // JordanFlitter: new variables for low temperature corrections
         double xi_factor, xi_correction;
@@ -112,7 +111,6 @@ int ComputeBrightnessTemp(float redshift, struct UserParams *user_params, struct
                                 // box->brightness_temp[HII_R_INDEX(i,j,k)] *= pixel_Ts_factor;
                                 // Converting the prefactors into the optical depth, tau. Factor of 1000 is the conversion of spin temperature from K to mK
                                 box->brightness_temp[HII_R_INDEX(i, j, k)] *= (1. + redshift) / (1000. * spin_temp->Ts_box[HII_R_INDEX(i, j, k)]);
-                                junsong_debug_var_tmp = box->brightness_temp[HII_R_INDEX(i, j, k)];
                                 box->brightness_temp[HII_R_INDEX(i, j, k)] = (1. - exp(-box->brightness_temp[HII_R_INDEX(i, j, k)])) *
                                                                              1000. * (spin_temp->Ts_box[HII_R_INDEX(i, j, k)] - T_rad - spin_temp->Trad_box[HII_R_INDEX(i, j, k)]) / (1. + redshift);
                             }
