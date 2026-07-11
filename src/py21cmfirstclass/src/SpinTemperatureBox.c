@@ -60,7 +60,6 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
         {
             writeAstroParams(flag_options, astro_params);
         }
-        
         /*
         TODO: Junsong
         double check: can i use ACG Radio? - check this in full debug notebook, don't remove this from here unless test passed
@@ -304,7 +303,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
 	    {
 		    this_spin_temp->IonBox_cache[box_ct] = NAN;
         }
-        this_spin_temp->IonBox_cache[2] = 0.0;
+        this_spin_temp->IonBox_cache[2] = 1994.0;
 
         if (user_params->MANY_Z_SAMPLES_AT_COSMIC_DAWN)
         {// Caching is a bit complicated in this case, sometimes IonBox call is skipped
@@ -4557,7 +4556,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                     this_spin_temp->SFRD_MINI_box[box_ct] = Phi_2_SFRD(Phi_mini, zpp_Rct0, H_Rct0, astro_params, cosmo_params, 1);
 
                     // copying entire History_box
-                    if (fabs(previous_spin_temp->IonBox_cache[2] - 1.0) < 1.0E-2) // Astro called previously
+                    if (fabs(previous_spin_temp->IonBox_cache[2] - 2026.0) < 1.0E-2) // Astro called previously
                     {
                         this_spin_temp->History_box[box_ct] = previous_spin_temp->History_box[box_ct];
                     }
@@ -4565,7 +4564,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                 
                 // Print_HMF(redshift, user_params->HMF);
                 
-                this_spin_temp->IonBox_cache[2] = 1.0;
+                this_spin_temp->IonBox_cache[2] = 2026.0; // Confirm that Astro was called in Spin.c
                 
                 if (flag_options->Calibrate_EoR_feedback && flag_options->USE_MINI_HALOS)
                 {
@@ -4578,7 +4577,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                 }
 
                 // Caching averaged quantities
-                if (fabs(previous_spin_temp->IonBox_cache[2]) < 1E-10)
+                if (fabs(previous_spin_temp->IonBox_cache[2] - 1994.0) < 1.0E-2)
                 {// Astro module has never been called in Spin.c before
                     this_spin_temp->History_box[0] = 1.0;                    // ArchiveSize
                     this_spin_temp->History_box[1] = redshift;               // redshift
@@ -4593,7 +4592,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                     this_spin_temp->IonBox_cache[0] = 1.0e20;                // mturn_II
                     this_spin_temp->IonBox_cache[1] = 1.0e20;                // mturn_III, this is in fact for previous redshift
                 }
-                else if (fabs(previous_spin_temp->IonBox_cache[2] - 1.0) < 1E-10)
+                else if (fabs(previous_spin_temp->IonBox_cache[2] - 2026.0) < 1.0E-2)
                 {
                     this_spin_temp->History_box[0] = previous_spin_temp->History_box[0] + 1.0; // updating archive size
                     ArchiveSize = (int)round(this_spin_temp->History_box[0]);                  // remember that this is for current box, at least 2 by now
@@ -4627,7 +4626,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                 }
                 else
                 {
-                	fprintf(stderr, "previous_spin_temp->IonBox_cache[2] must be either 0 or 1, something must have gone wrong\n");
+                	fprintf(stderr, "previous_spin_temp->IonBox_cache[2] must be either 1994 or 2006, something must have gone wrong\n");
                     Throw(InfinityorNaNError);
                 }
                 
