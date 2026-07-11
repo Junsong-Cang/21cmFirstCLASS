@@ -664,6 +664,7 @@ double Find_dTff_dz(struct TsBox *previous_spin_temp, struct AstroParams *astro_
 
 	if (ArchiveSize < 3)
 	{
+		*dT_Radio = 0.0;
 		return 0.0;
 	}
 	z1 = previous_spin_temp->History_box[1];
