@@ -306,7 +306,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
 
         if (user_params->MANY_Z_SAMPLES_AT_COSMIC_DAWN)
         {// Caching is a bit complicated in this case, sometimes IonBox call is skipped
-            if (Check_IonBox_Cache_status(previous_spin_temp, 0) == 1)
+            if (Check_Astro_Call_Status(previous_spin_temp, 0) == 1)
             {// MINI_HALO was called or assigned in previous step, in this case copy Ion info which will be updated in Ion anyway
                 this_spin_temp->IonBox_cache[0] = previous_spin_temp->IonBox_cache[0];
                 this_spin_temp->IonBox_cache[1] = previous_spin_temp->IonBox_cache[1];
@@ -4555,7 +4555,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                     this_spin_temp->SFRD_MINI_box[box_ct] = Phi_2_SFRD(Phi_mini, zpp_Rct0, H_Rct0, astro_params, cosmo_params, 1);
 
                     // copying entire History_box
-                    if (Check_IonBox_Cache_status(previous_spin_temp, 1)) // Astro called previously in Spin.c
+                    if (Check_Astro_Call_Status(previous_spin_temp, 1)==1) // Astro called previously in Spin.c
                     {
                         this_spin_temp->History_box[box_ct] = previous_spin_temp->History_box[box_ct];
                     }
@@ -4576,7 +4576,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                 }
 
                 // Caching averaged quantities
-                if (fabs(previous_spin_temp->IonBox_cache[2] - 1994.0) < 1.0E-2)
+                if (Check_Astro_Call_Status(previous_spin_temp, 1)==0)
                 {// Astro module has never been called in Spin.c before
                     this_spin_temp->History_box[0] = 1.0;                    // ArchiveSize
                     this_spin_temp->History_box[1] = redshift;               // redshift
@@ -4591,7 +4591,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                     this_spin_temp->IonBox_cache[0] = 1.0e20;                // mturn_II
                     this_spin_temp->IonBox_cache[1] = 1.0e20;                // mturn_III, this is in fact for previous redshift
                 }
-                else if (fabs(previous_spin_temp->IonBox_cache[2] - 2026.0) < 1.0E-2)
+                else
                 {
                     this_spin_temp->History_box[0] = previous_spin_temp->History_box[0] + 1.0; // updating archive size
                     ArchiveSize = (int)round(this_spin_temp->History_box[0]);                  // remember that this is for current box, at least 2 by now
@@ -4603,30 +4603,20 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                     this_spin_temp->History_box[head + 2] = T_IGM_ave;
                     this_spin_temp->History_box[head + 3] = Phi_ave_mini;
                     this_spin_temp->History_box[head + 4] = zpp_for_evolve_list[0];
-                    if (fabs(previous_spin_temp->IonBox_cache[3] - 1994.0) < 1E-3)
+                    if (Check_Astro_Call_Status(previous_spin_temp, 0)==0)
                     {
-                        // MNIHALO hasn't been called yet in Ion.c and mturn is unassigned
+                        // MNIHALO hasn't been called yet in Ion.c and mturn&xH are unassigned
                         this_spin_temp->History_box[head + 5] = 1.0E20;
                         this_spin_temp->History_box[head + 6] = 1.0E20;
-                    }
-                    else if (fabs(previous_spin_temp->IonBox_cache[3] - 2026.0) < 1E-3)
-                    {
-                        this_spin_temp->History_box[head + 5] = previous_spin_temp->IonBox_cache[0];
-                        this_spin_temp->History_box[head + 6] = previous_spin_temp->IonBox_cache[1]; // Mturn_MINI
+                        this_spin_temp->History_box[head + 8] = 1.0;
                     }
                     else
                     {
-                	    fprintf(stderr, "Unknown value detected for previous_spin_temp->IonBox_cache[3]: %.10E\n", previous_spin_temp->IonBox_cache[3]);
-                        Throw(InfinityorNaNError);
+                        this_spin_temp->History_box[head + 5] = previous_spin_temp->IonBox_cache[0];
+                        this_spin_temp->History_box[head + 6] = previous_spin_temp->IonBox_cache[1]; // Mturn_MINI
+                        this_spin_temp->History_box[head + 8] = previous_spin_temp->IonBox_cache[4]; // xH
                     }
-                    
                     this_spin_temp->History_box[head + 7] = SFRD_EoR_MINI; // SFRD_MINI_EOR
-                    this_spin_temp->History_box[head + 8] = previous_spin_temp->IonBox_cache[4]; // xH
-                }
-                else
-                {
-                	fprintf(stderr, "previous_spin_temp->IonBox_cache[2] must be either 1994 or 2006, something must have gone wrong\n");
-                    Throw(InfinityorNaNError);
                 }
                 
                 if (flag_options->Calibrate_EoR_feedback && flag_options->USE_MINI_HALOS)

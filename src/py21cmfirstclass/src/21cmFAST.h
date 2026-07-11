@@ -188,7 +188,7 @@ struct TsBox
     
     // Boxes for Inhomogeneous Radio Background
     float *Trad_box;
-    float IonBox_cache[5]; // Cache: 0-Mturn_II; 1-Mturn_III; 2-Spin.c call status; 3-Ion.c call status; 4-xH
+    float IonBox_cache[5]; // Cache: 0-Mturn_II; 1-Mturn_III; 2-Spin.c astro call status; 3-Ion.c MINI_HALO call status; 4-xH
     float *History_box;
     /*
     History_box saves averaged quantities from previous boxes, to be updated at every z step

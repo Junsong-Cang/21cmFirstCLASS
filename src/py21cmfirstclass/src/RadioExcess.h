@@ -9,7 +9,7 @@
 #define print_debug_info 0
 #include "HaloProfile.c"
 
-int Check_IonBox_Cache_status(struct TsBox *spin_temp, int Check_Spin)
+int Check_Astro_Call_Status(struct TsBox *spin_temp, int Check_Spin)
 {
 	int idx, status;
 	idx = Check_Spin ? 2 : 3;
@@ -372,7 +372,7 @@ double Get_Radio_Temp_HMG(struct TsBox *previous_spin_temp, struct TsBox *this_s
 
 	double z1, z2, dz, Phi, Phi_mini, z, fun_ACG, fun_MCG, Radio_Temp, Radio_Prefix_ACG, Radio_Prefix_MCG;
 	int nz, zid, RadioSilent, AstroCalled, ArchiveSize;
-	AstroCalled = Check_IonBox_Cache_status(previous_spin_temp, 1);
+	AstroCalled = Check_Astro_Call_Status(previous_spin_temp, 1);
 	ArchiveSize = (int)round(previous_spin_temp->History_box[0]);
 	
 	nz = 1000;
@@ -688,7 +688,7 @@ double Find_dTff_dz(struct TsBox *previous_spin_temp, struct AstroParams *astro_
 	}
 	
 	// Check whether astro has been called in Spin.c previously
-	if (Check_IonBox_Cache_status(previous_spin_temp,1)==0)
+	if (Check_Astro_Call_Status(previous_spin_temp,1)==0)
 	{
 		*dT_Radio = 0.0;
 		return 0.0;
