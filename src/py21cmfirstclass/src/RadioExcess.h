@@ -328,6 +328,10 @@ double History_box_Interp(struct TsBox *previous_spin_temp, double z, int Type, 
 	if (Type == 7)
 	{
 		r = Interp_1D(z, z_axis, f_axis, ArchiveSize, 0, 0, Overflow_Handle);
+		if (r>0.99999)
+		{
+			r = 0.99999;
+		}
 	}
 	else
 	{
