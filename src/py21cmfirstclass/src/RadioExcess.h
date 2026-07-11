@@ -117,7 +117,7 @@ int Find_Index(double *x_axis, double x, int nx)
 		if (count > 100)
 		{
 			fprintf(stderr, "Error @ Find_Index: solution not found after 100 iterations, x_axis[0] = %E, x = %E, x_axis[-1] = %E.\n", x_axis[0], x, x_axis[nx - 1]);
-			exit(1);
+			Throw(ValueError);
 		}
 	}
 
@@ -154,7 +154,7 @@ double Interp_1D(double x, double *x_axis, double *y_axis, int nx, int Use_LogX,
 		else
 		{
 			fprintf(stderr, "Error from Interp_1D: x is not in range, axis range: [%E   %E], x = %E\n", x_axis[0], x_axis[nx - 1], x);
-			exit(1);
+			Throw(ValueError);
 		}
 	}
 	else if (id1 == nx - 1)
@@ -170,7 +170,7 @@ double Interp_1D(double x, double *x_axis, double *y_axis, int nx, int Use_LogX,
 		else
 		{
 			fprintf(stderr, "Error from Interp_1D: x is not in range, axis range: [%E   %E], x = %E\n", x_axis[0], x_axis[nx - 1], x);
-			exit(1);
+			Throw(ValueError);
 		}
 	}
 	else
@@ -190,7 +190,7 @@ double Interp_1D(double x, double *x_axis, double *y_axis, int nx, int Use_LogX,
 			if (((x1 < 0) || (x2 < 0)) || (x < 0))
 			{
 				fprintf(stderr, "cannot use LogX for axis or x with negative element\n");
-				exit(1);
+				Throw(ValueError);
 			}
 
 			x1 = log(x1);
@@ -206,7 +206,7 @@ double Interp_1D(double x, double *x_axis, double *y_axis, int nx, int Use_LogX,
 			if ((y1 < 0) || (y2 < 0))
 			{
 				fprintf(stderr, "Cannot use LogY for axis with negative element. Info: x1 = %E, x =  %E, x2 = %E, y1 = %E, y2 = %E\n", x1, x, x1, y1, y2);
-				exit(1);
+				Throw(ValueError);
 			}
 
 			y1 = y1 > Small ? y1 : Small;
@@ -221,7 +221,6 @@ double Interp_1D(double x, double *x_axis, double *y_axis, int nx, int Use_LogX,
 		{
 			r = exp(r);
 		}
-		// printf("x_ = %f, x1 = %f, x2 = %f, y1 = %f, y2 = %f\n", x_, x1, x2, y1, y2);
 	}
 
 	return r;
@@ -328,9 +327,30 @@ double History_box_Interp(struct TsBox *previous_spin_temp, double z, int Type, 
 	if (Type == 7)
 	{
 		r = Interp_1D(z, z_axis, f_axis, ArchiveSize, 0, 0, Overflow_Handle);
-		if (r>0.99999)
+		// Ensure xH is between [0, 1] while leaving for some redundencies for possible numerical precision issues
+		if (r > 1.0-1.0E-8)
 		{
-			r = 0.99999;
+			if (r < 1.0+1.0E-4)
+			{
+				r = 1.0-1.0E-8;
+			}
+			else
+			{
+				fprintf(stderr, "Interpolated xH is >1\n");
+				Throw(ValueError);
+			}
+		}
+		if (r < 1.0E-10)
+		{
+			if (r > -1.0E-15)
+			{
+				r = 1.0E-15;
+			}
+			else
+			{
+				fprintf(stderr, "Interpolated xH is negative\n");
+				Throw(ValueError);
+			}
 		}
 	}
 	else
