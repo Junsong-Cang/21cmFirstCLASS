@@ -304,15 +304,14 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
         }
         this_spin_temp->IonBox_cache[2] = 1994.0;
 
-        if (user_params->MANY_Z_SAMPLES_AT_COSMIC_DAWN)
-        {// Caching is a bit complicated in this case, sometimes IonBox call is skipped
-            if (Check_Astro_Call_Status(previous_spin_temp, 0) == 1)
-            {// MINI_HALO was called or assigned in previous step, in this case copy Ion info which will be updated in Ion anyway
+        if ((user_params->MANY_Z_SAMPLES_AT_COSMIC_DAWN) && (fabs(previous_spin_temp->IonBox_cache[3] - 2026.0) < 0.001))
+        {
+            // Caching is a bit complicated in this case, sometimes IonBox call is skipped. If MINI_HALO call happened in Ion.c in previous time-step, 
+            // copy Ion info which will be updated in Ion anyway
                 this_spin_temp->IonBox_cache[0] = previous_spin_temp->IonBox_cache[0];
                 this_spin_temp->IonBox_cache[1] = previous_spin_temp->IonBox_cache[1];
                 this_spin_temp->IonBox_cache[3] = previous_spin_temp->IonBox_cache[3];
                 this_spin_temp->IonBox_cache[4] = previous_spin_temp->IonBox_cache[4];
-            }
         }
 
         // Above certain temperature, collisional ionization will strongly ionize H and suppress 21cm signal. One can ignore heating above this threshold 
