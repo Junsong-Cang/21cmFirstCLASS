@@ -9,6 +9,30 @@
 #define print_debug_info 0
 #include "HaloProfile.c"
 
+int Check_IonBox_Cache_status(struct TsBox *spin_temp, int Check_Spin)
+{
+	int idx, status;
+	idx = Check_Spin ? 2 : 3;
+	if (fabs(spin_temp->IonBox_cache[idx] - 1994.0) < 0.001)
+	{
+		status = 0; // Astro not called
+	}
+	else if (fabs(spin_temp->IonBox_cache[idx] - 2026.0) < 0.001)
+	{
+		status = 1; // Astro called
+	}
+	else
+	{
+		status = -1; // Unknown
+	}
+	if (status == -1)
+	{
+		fprintf(stderr, "Cannot determine run status from IonBox_cache.\n");
+		Throw(ValueError);
+	}
+	return status;
+}
+
 int Find_Index(double *x_axis, double x, int nx)
 {
 	/*
@@ -324,22 +348,9 @@ double Get_Radio_Temp_HMG(struct TsBox *previous_spin_temp, struct TsBox *this_s
 
 	double z1, z2, dz, Phi, Phi_mini, z, fun_ACG, fun_MCG, Radio_Temp, Radio_Prefix_ACG, Radio_Prefix_MCG;
 	int nz, zid, RadioSilent, AstroCalled, ArchiveSize;
+	AstroCalled = Check_IonBox_Cache_status(previous_spin_temp, 1);
 	ArchiveSize = (int)round(previous_spin_temp->History_box[0]);
-
-	if (fabs(previous_spin_temp->IonBox_cache[2] - 2026.0) < 1.0E-2)
-	{
-		AstroCalled = 1;
-	}
-	else if (fabs(previous_spin_temp->IonBox_cache[2] - 1994.0) < 1.0E-2)
-	{
-		AstroCalled = 0;
-	}
-	else
-	{
-		fprintf(stderr, "Error: Cannot determine astro call status, IonBox_cache[2] = %.2f.\n", previous_spin_temp->IonBox_cache[2]);
-        Throw(ValueError);
-	}
-
+	
 	nz = 1000;
 
 	if (flag_options->USE_RADIO_ACG)
@@ -635,7 +646,6 @@ double Find_dTff_dz(struct TsBox *previous_spin_temp, struct AstroParams *astro_
 	*/
 	double zax[zax_len_FF], dTdz_ax[zax_len_FF], Hax[zax_len_FF], xe_ax[zax_len_FF], Tk_ax[zax_len_FF], SFRD_II_ax[zax_len_FF], SFRD_III_ax[zax_len_FF];
 	double OmBh2, YHe, z1, z2, z, r;
-	// printf("This is not ready, dT_Radio needs to be passed from Spin.c!!!!\n");
 	FILE *OutputFile;
 	int idx, ArchiveSize, head;
 	if (!flag_options->USE_RADIO_HEATING)
@@ -651,6 +661,13 @@ double Find_dTff_dz(struct TsBox *previous_spin_temp, struct AstroParams *astro_
 			fprintf(stderr, "Error: You must set USE_RADIO_MCG to True if USE_RADIO_HEATING.\n");
 			Throw(ValueError);
 		}
+	}
+	
+	// Check whether astro has been called in Spin.c previously
+	if (Check_IonBox_Cache_status(previous_spin_temp,1)==0)
+	{
+		*dT_Radio = 0.0;
+		return 0.0;
 	}
 
 	OmBh2 = cosmo_params->OMb * (pow(cosmo_params->hlittle, 2));
