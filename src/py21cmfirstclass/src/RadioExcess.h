@@ -230,14 +230,11 @@ double History_box_Interp(struct TsBox *previous_spin_temp, double z, int Type, 
 		{ // Set Phi_II, Phi_III, SFRD_EoR_MINI to 0
 			return 0.0;
 		}
-		/*
 		else if (Type == 3)
 		{
-			printf("==== Dont give TK_at_Z_HEAT_MAX, use whatever you have in the box. Check that this gives correct results as in cache before u proceed!!! \n");
+			fprintf(stderr, "Error: Too early to get reliable Tk from HistoryBox\n");
 			Throw(ValueError);
-			return global_params.TK_at_Z_HEAT_MAX;
 		}
-		*/
 		else if (Type == 4 || Type == 5)
 		{// Give large Mturns so that SFRD is 0 at high z
 			return 1.0E20;
@@ -315,17 +312,33 @@ double History_box_Interp(struct TsBox *previous_spin_temp, double z, int Type, 
 	return r;
 }
 
-double Get_Radio_Temp_HMG(struct TsBox *previous_spin_temp, struct TsBox *this_spin_temp, struct AstroParams *astro_params, struct CosmoParams *cosmo_params, struct FlagOptions *flag_options, double zpp_max, double redshift, double Z_HEAT_MAX)
+double Get_Radio_Temp_HMG(struct TsBox *previous_spin_temp, struct TsBox *this_spin_temp, struct AstroParams *astro_params, struct CosmoParams *cosmo_params, struct FlagOptions *flag_options, double zpp_max, double redshift)
 {
 
-	/* Find Radio Temp from sources in redshifts [zpp_max, Z_Heat_max]
+	/* 
+	Find Radio Temp from sources in redshifts [zpp_max, Z_Heat_max]
 	---- inputs ----
 	zpp_max: maximum zpp
 	redshift: redshift at which you want to compute radio temp
 	*/
 
 	double z1, z2, dz, Phi, Phi_mini, z, fun_ACG, fun_MCG, Radio_Temp, Radio_Prefix_ACG, Radio_Prefix_MCG;
-	int nz, zid, RadioSilent;
+	int nz, zid, RadioSilent, AstroCalled, ArchiveSize;
+	ArchiveSize = (int)round(previous_spin_temp->History_box[0]);
+
+	if (fabs(previous_spin_temp->IonBox_cache[2] - 2026.0) < 1.0E-2)
+	{
+		AstroCalled = 1;
+	}
+	else if (fabs(previous_spin_temp->IonBox_cache[2] - 1994.0) < 1.0E-2)
+	{
+		AstroCalled = 0;
+	}
+	else
+	{
+		fprintf(stderr, "Error: Cannot determine astro call status, IonBox_cache[2] = %.2f.\n", previous_spin_temp->IonBox_cache[2]);
+        Throw(ValueError);
+	}
 
 	nz = 1000;
 
@@ -356,12 +369,14 @@ double Get_Radio_Temp_HMG(struct TsBox *previous_spin_temp, struct TsBox *this_s
 		RadioSilent = 1;
 	}
 
-	if ((RadioSilent || redshift > Z_HEAT_MAX - 0.8) || this_spin_temp->first_box)
+	if (((RadioSilent || (AstroCalled==0)) || this_spin_temp->first_box) || ArchiveSize < 3)
 	{
+		// Don't proceed if: radio excess is off, astro not called or this is first box, don't have enough samples in HistoryBox
 		Radio_Temp = 0.0;
 	}
 	else
 	{
+		// Start from the first redshift in History_box, abort if it's below zpp_max
 		z2 = previous_spin_temp->History_box[5] - 0.01;
 		z1 = zpp_max;
 		if (z1 > z2)

@@ -81,7 +81,6 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
 
         // This is an entire re-write of Ts.c from 21cmFAST. You can refer back to Ts.c in 21cmFAST if this become a little obtuse. The computation has remained the same //
         omp_set_num_threads(user_params->N_THREADS);
-
         /////////////////// Defining variables for the computation of Ts.c //////////////
 
         FILE *F, *OUT;
@@ -2718,7 +2717,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
 
                 zpp_max = zpp_for_evolve_list[global_params.NUM_FILTER_STEPS_FOR_Ts - 1];
                 // Correcting for the radio temp from sources > R_XLy_MAX
-                Radio_Temp_HMG = Get_Radio_Temp_HMG(previous_spin_temp, this_spin_temp, astro_params, cosmo_params, flag_options, zpp_max, redshift, global_params.Z_HEAT_MAX);
+                Radio_Temp_HMG = Get_Radio_Temp_HMG(previous_spin_temp, this_spin_temp, astro_params, cosmo_params, flag_options, zpp_max, redshift);
                 // JordanFlitter: if we evolve the baryons density field, we need to have delta_b(z) and its redshift derivative
                 if (user_params->EVOLVE_BARYONS)
                 {
