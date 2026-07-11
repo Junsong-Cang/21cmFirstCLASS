@@ -306,8 +306,8 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
 
         if (user_params->MANY_Z_SAMPLES_AT_COSMIC_DAWN)
         {// Caching is a bit complicated in this case, sometimes IonBox call is skipped
-            if (fabs(previous_spin_temp->IonBox_cache[3] - 2026.0) < 1.0E-3)
-            {// MINI_HALO was called or assigneg in previous step, in this case copy Ion info which will be updated in Ion anyway
+            if (Check_IonBox_Cache_status(previous_spin_temp, 0) == 1)
+            {// MINI_HALO was called or assigned in previous step, in this case copy Ion info which will be updated in Ion anyway
                 this_spin_temp->IonBox_cache[0] = previous_spin_temp->IonBox_cache[0];
                 this_spin_temp->IonBox_cache[1] = previous_spin_temp->IonBox_cache[1];
                 this_spin_temp->IonBox_cache[3] = previous_spin_temp->IonBox_cache[3];
@@ -4555,7 +4555,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                     this_spin_temp->SFRD_MINI_box[box_ct] = Phi_2_SFRD(Phi_mini, zpp_Rct0, H_Rct0, astro_params, cosmo_params, 1);
 
                     // copying entire History_box
-                    if (fabs(previous_spin_temp->IonBox_cache[2] - 2026.0) < 1.0E-2) // Astro called previously
+                    if (Check_IonBox_Cache_status(previous_spin_temp, 1)) // Astro called previously in Spin.c
                     {
                         this_spin_temp->History_box[box_ct] = previous_spin_temp->History_box[box_ct];
                     }
@@ -4603,13 +4603,13 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                     this_spin_temp->History_box[head + 2] = T_IGM_ave;
                     this_spin_temp->History_box[head + 3] = Phi_ave_mini;
                     this_spin_temp->History_box[head + 4] = zpp_for_evolve_list[0];
-                    if (fabs(previous_spin_temp->IonBox_cache[3] - 1995.0) < 1E-4)
+                    if (fabs(previous_spin_temp->IonBox_cache[3] - 1994.0) < 1E-3)
                     {
                         // MNIHALO hasn't been called yet in Ion.c and mturn is unassigned
                         this_spin_temp->History_box[head + 5] = 1.0E20;
                         this_spin_temp->History_box[head + 6] = 1.0E20;
                     }
-                    else if (fabs(previous_spin_temp->IonBox_cache[3] - 2026.0) < 1E-4)
+                    else if (fabs(previous_spin_temp->IonBox_cache[3] - 2026.0) < 1E-3)
                     {
                         this_spin_temp->History_box[head + 5] = previous_spin_temp->IonBox_cache[0];
                         this_spin_temp->History_box[head + 6] = previous_spin_temp->IonBox_cache[1]; // Mturn_MINI
