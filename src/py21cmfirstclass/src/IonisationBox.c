@@ -39,7 +39,7 @@ int ComputeIonizedBox(float redshift, float prev_redshift, struct UserParams *us
         *box->Mturn_II = NAN;
         *box->Mturn_III = NAN;
         
-        spin_temp->IonBox_cache[3] = 1995.0; // MINIHALO hasn't been called yet
+        spin_temp->IonBox_cache[3] = 1994.0; // MINIHALO hasn't been called yet
 
         if (redshift > global_params.Z_HEAT_MAX)
         { // JordanFlitter: I made that condition since we don't want to calculate f_mean_coll at redshifts at the dark ages

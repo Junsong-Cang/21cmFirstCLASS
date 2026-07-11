@@ -27,7 +27,7 @@ int Check_Astro_Call_Status(struct TsBox *spin_temp, int Check_Spin)
 	}
 	if (status == -1)
 	{
-		fprintf(stderr, "Cannot determine run status from IonBox_cache.\n");
+		fprintf(stderr, "Cannot determine run status from IonBox_cache, v = %.5E.\n", spin_temp->IonBox_cache[idx]);
 		Throw(ValueError);
 	}
 	return status;
