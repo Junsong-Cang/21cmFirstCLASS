@@ -3556,10 +3556,17 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                                         dxe_dzp = dt_dzp * (dxion_source_dt_box[box_ct] - dxion_sink_dt);
                                     }
                                     
-                                    // Junsong: adding a flash test for collisional ionization
-                                    if (!flag_options->USE_COLLISIONAL_IONIZATION)
+                                    if (flag_options->USE_COLLISIONAL_IONIZATION)
                                     {
-	                                    dxe_dz_collisional = Find_dxe_dz_Collisional(prev_redshift, x_e, T, hubble(prev_redshift), curr_delNL0 * growth_factor_zp, ClumpingFactor);
+                                        if (user_params->EVOLVE_BARYONS)
+                                        {
+	                                        dxe_dz_collisional = Find_dxe_dz_Collisional(prev_redshift, x_e, T, hubble(prev_redshift), delta_baryons_local, ClumpingFactor);
+                                        }
+                                        else
+                                        {
+                                            dxe_dz_collisional = Find_dxe_dz_Collisional(prev_redshift, x_e, T, hubble(prev_redshift), curr_delNL0 * growth_factor_zp, ClumpingFactor);
+                                        }
+
                                         dxe_dzp += dxe_dz_collisional;
                                     }
                                     
