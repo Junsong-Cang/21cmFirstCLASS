@@ -66,7 +66,6 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
         Why do I get dif results between p21c/p21f for ACG & Radio ACG?
         Park18 Fiducial: we get very good match with HII_DIM 25 but relatively bad match with HII_DIM 50, why?
         Finally check that i can get TR by integrating over SFRD?
-        Why cannot I run with parralel?
         Cannot run SDM with SIGMA_8? - most likely an issue with dmeff_classy, code terminates before it can reach teh stage of printing out "Now running CLASS..."
         Double check Radio Heating
         For a template run, print SFRD & EoR, use it to compute dTff/dz externally and check with p21f
