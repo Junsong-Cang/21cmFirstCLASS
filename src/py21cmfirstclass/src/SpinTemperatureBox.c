@@ -3309,11 +3309,11 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                                 prefactor_2, delNL0, growth_factor_zp, dt_dzp, zp, dgrowth_factor_dzp, dcomp_dzp_prefactor, Trad_fast, dzp, TS_prefactor,       \
                                 xc_inverse, Trad_fast_inv, dstarlyLW_dt_box, dstarlyLW_dt_prefactor, dxheat_dt_box_MINI, dxion_source_dt_box_MINI,              \
                                 dxlya_dt_box_MINI, dstarlya_dt_box_MINI, dstarlyLW_dt_box_MINI, dfcoll_dz_val_MINI, del_fcoll_Rct_MINI,                         \
-                                dstarlya_dt_prefactor_MINI, dstarlyLW_dt_prefactor_MINI, prefactor_2_MINI, const_zp_prefactor_MINI,                             \
+                                dstarlya_dt_prefactor_MINI, dstarlyLW_dt_prefactor_MINI, prefactor_2_MINI, const_zp_prefactor_MINI, ClumpingFactor,             \
                                 dstarlya_cont_dt_box, dstarlya_inj_dt_box, dstarlya_cont_dt_prefactor, dstarlya_inj_dt_prefactor, delta_baryons,                \
                                 dstarlya_cont_dt_box_MINI, dstarlya_inj_dt_box_MINI, dstarlya_cont_dt_prefactor_MINI, dstarlya_inj_dt_prefactor_MINI, rec_data, \
                                 delta_baryons_derivative, delta_SDM, delta_SDM_derivative, Radio_Prefix_MCG_Rct, Radio_Prefix_ACG_Rct, dT_Radio_FF, dTdz_FF)    \
-    private(box_ct, x_e, T, dxion_sink_dt, dxe_dzp, dadia_dzp, dspec_dzp, dcomp_dzp, dxheat_dzp, J_alpha_tot, T_inv, T_inv_sq, ClumpingFactor,                  \
+    private(box_ct, x_e, T, dxion_sink_dt, dxe_dzp, dadia_dzp, dspec_dzp, dcomp_dzp, dxheat_dzp, J_alpha_tot, T_inv, T_inv_sq,                                  \
                 xc_fast, xi_power, xa_tilde_fast_arg, TS_fast, TSold_fast, xa_tilde_fast, dxheat_dzp_MINI, J_alpha_tot_MINI, curr_delNL0,                       \
                 prev_Ts, tau21, xCMB, eps_CMB, dCMBheat_dzp, E_continuum, E_injected, Ndot_alpha_cont, Ndot_alpha_inj,                                          \
                 eps_Lya_cont, eps_Lya_inj, Ndot_alpha_cont_MINI, Ndot_alpha_inj_MINI, eps_Lya_cont_MINI, eps_Lya_inj_MINI,                                      \
@@ -3973,7 +3973,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                 xa_tilde_fast_arg, TS_fast, TSold_fast, xa_tilde_fast, prev_Ts, tau21, xCMB, eps_CMB, dCMBheat_dzp, dstarlya_cont_dt, dstarlya_inj_dt,        \
                 E_continuum, E_injected, Ndot_alpha_cont, Ndot_alpha_inj, eps_Lya_cont, eps_Lya_inj, Radio_Temp, dT_Radio,                                    \
                 T_chi, V_chi_b, dSDM_b_heat_dzp, dSDM_chi_heat_dzp, D_V_chi_b_dzp, SDM_rates, dT_b_2_dt_ext, dT_chi_2_dt_ext, dadia_dzp_SDM,                  \
-                delta_baryons_local, delta_baryons_derivative_local, delta_SDM_local, delta_SDM_derivative_local)                                             \
+                delta_baryons_local, delta_baryons_derivative_local, delta_SDM_local, delta_SDM_derivative_local, Trad_inv)                                    \
     num_threads(user_params -> N_THREADS)
                     {
 #pragma omp for reduction(+ : J_alpha_ave, xalpha_ave, Xheat_ave, Xion_ave, Ts_ave, Tk_ave, x_e_ave)
