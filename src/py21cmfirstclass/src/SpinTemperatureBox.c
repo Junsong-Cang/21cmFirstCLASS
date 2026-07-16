@@ -60,11 +60,6 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
         {
             writeAstroParams(flag_options, astro_params);
         }
-        /*
-        TODO: Junsong
-        Add additional soft photon variables to pragma thing!!!! -> dT_Radio_FF
-        */
-        // printf("Check TODO above ====\n");
         // Makes the parameter structs visible to a variety of functions/macros
         // Do each time to avoid Python garbage collection issues
         Broadcast_struct_global_PS(user_params, cosmo_params);
