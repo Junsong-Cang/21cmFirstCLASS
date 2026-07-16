@@ -3132,7 +3132,6 @@ def run_lightcone(
             init_box,
             perturb,
         )
-        print("==== 1")
         # JordanFlitter: I added compatibility with A_s
         if ((not 'SIGMA_8' in cosmo_params) and 'A_s' in cosmo_params):
             A_s_FLAG = True
@@ -3148,7 +3147,6 @@ def run_lightcone(
             flag_options, USE_VELS_AUX=user_params.USE_RELATIVE_VELOCITIES
         )
         astro_params = AstroParams(astro_params, INHOMO_RECO=flag_options.INHOMO_RECO)
-        print("==== 2")
         
         # JordanFlitter: I added some logics to prevent conflict between inputs
         # I'm not sure if that's the best place for these logics, but it works...
@@ -3212,7 +3210,6 @@ def run_lightcone(
                     raise ValueError("SDM_TARGET_TYPE must be 1 (baryons), 2 (ionized), 3 (hydrogen), 4 (protons) or 5 (electrons)")
                 # Fix other SDM parameters/flags
                 CLASS_params['Vrel_dmeff'] = 30 # This is the initial guess for the mean relative velocity between baryons and SDM
-            print("A_s_FLAG ===== ", A_s_FLAG)
             # Set A_s or sigma8 based on the user input
             if A_s_FLAG:
                 CLASS_params['A_s'] = cosmo_params.A_s
@@ -3229,9 +3226,7 @@ def run_lightcone(
             # Run CLASS!
             CLASS_OUTPUT = Class()
             CLASS_OUTPUT.set(CLASS_params)
-            print('==== afdghtre')
             CLASS_OUTPUT.compute()
-            print('==== ABS')
             if A_s_FLAG:
                 cosmo_params.SIGMA_8 = CLASS_OUTPUT.sigma8()
             else:
@@ -3240,7 +3235,6 @@ def run_lightcone(
             raise ValueError(
                 "If trying to minimize memory usage, you must be caching. Set write=True!"
             )
-        print("==== 3")
         
         # JordanFlitter: We need lightcone boxes of delta (more precisely delta_b) and x_HI if we want to compute tau_reio from the simulation
         if user_params.EVALUATE_TAU_REIO:
@@ -3255,8 +3249,7 @@ def run_lightcone(
         _fld_names = _get_interpolation_outputs(
             list(lightcone_quantities), list(global_quantities), flag_options
         )
-        print("==== 4")
-
+        
         redshift = configure_redshift(redshift, perturb)
         
         max_redshift = (
@@ -3268,7 +3261,6 @@ def run_lightcone(
             )
             else max_redshift
         )
-        print("==== 5")
 
         # Get the redshift through which we scroll and evaluate the ionization field.
         # JordanFlitter: I replaced scrollz with scrollz_cosmic_dawn (yes, longer name but it helps distinguishing it from scrollz_dark_ages_output)
@@ -3295,7 +3287,6 @@ def run_lightcone(
             scrollz_cosmic_dawn_output = []
             for z in scrollz_array:
                 scrollz_cosmic_dawn_output.append(scrollz_cosmic_dawn[np.argmin(np.abs(np.array(scrollz_cosmic_dawn)-z))])
-        print("==== 6")
         if (
             flag_options.PHOTON_CONS
             and np.amin(scrollz_cosmic_dawn) < global_params.PhotonConsEndCalibz
@@ -3314,8 +3305,7 @@ def run_lightcone(
         compute_coeval_callback = _get_coeval_callbacks(
             scrollz_cosmic_dawn, coeval_callback, coeval_callback_redshifts
         )
-        print("==== 7")
-
+        
         # JordanFlitter: Genereate initial conditions from CLASS, and get Cl data
         if user_params.RUN_CLASS:
             if verbose:

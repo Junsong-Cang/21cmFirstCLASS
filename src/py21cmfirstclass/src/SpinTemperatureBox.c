@@ -63,7 +63,6 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
         /*
         TODO: Junsong
         Finally check that i can get TR by integrating over SFRD?
-        Cannot run SDM with SIGMA_8? - most likely an issue with dmeff_classy, code terminates before it can reach teh stage of printing out "Now running CLASS...": issue at line CLASS_OUTPUT.compute() in wrapper.py
         Double check Radio Heating
         For a template run, print SFRD & EoR, use it to compute dTff/dz externally and check with p21f
         Add additional soft photon variables to pragma thing!!!! -> dT_Radio_FF
