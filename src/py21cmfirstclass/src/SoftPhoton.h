@@ -114,7 +114,6 @@ double Lambda_BR(double z, double xe, double x, double Tk, double OmBh2, double 
 	return r;
 }
 
-// double SoftPhoton_inj(double x, double xe, double z, double SFRD_II, double SFRD_III, double fR_II, double fR_III, double aR_II, double aR_III, double n_inj, double H, double YHe, double OmBh2)
 double SoftPhoton_inj(double x, double xe, double z, double SFRD_II, double SFRD_III, double fR_II, double fR_III, double aR_II, double aR_III, double YHe, double OmBh2)
 {
 	/*
@@ -263,7 +262,7 @@ double Compute_dTffdz(double *zax, double *dTdz, double *Hax, double *xe_ax, dou
 
 	int xid, zid;
 	FILE *OutputFile;
-
+	
 	// Initializing
 	hb = 6.626070040818181818E-34 / (2.0 * M_PI);
 	kB = 1.38064852E-23;
@@ -325,12 +324,10 @@ double Compute_dTffdz(double *zax, double *dTdz, double *Hax, double *xe_ax, dou
 			DST_ax[xid] = DeltaS_tilte(xax[xid], xe, z, SFRD_II, SFRD_III, fR_II, fR_III, aR_II, aR_III, YHe, OmBh2, Tk, LBR_ax[xid]);
 			DeltaN_ax[xid] = DeltaN_ax[xid] * exp_dtff_inv + DST_ax[xid] * (1.0 - exp_dtff_inv);
 			DeltaN_inj[xid] = DeltaN_inj[xid] * exp_dtff_inv + dninj_dtff * (1.0 - exp_dtff_inv);
-			// DeltaN_ax[xid] = DeltaN_ax[xid]*(exp_dtff_inv) + DST_ax[xid]*dtff;
 		}
-
 		dTdz[zid] = Build_dTffdz_Kernel(z, xe, Tk, H, YHe, OmBh2, xax, LBR_ax, DeltaN_ax, DeltaN_inj, EMS_inj);
 		
-		// ======== Computing Radio attenuation ========
+		// -------- Computing Radio attenuation --------
 		if (fabs(z - zax[nz-1]) > delta_z_TRadio)
 		{
 			EMS21 = 0.0;
@@ -342,7 +339,7 @@ double Compute_dTffdz(double *zax, double *dTdz, double *Hax, double *xe_ax, dou
 		dT_Radio -= dT_Radio_PreFix * EMS21 * dz /(H * (1.0+z));// Remember that dz is negative!
 		if (print_debug_info)
 		{
-			fprintf(OutputFile, "%7f   %7E\n", z, dTdz[zid]);
+			fprintf(OutputFile, "%.7f    %.7E    %.7E    %.7E    %.7E    %.7E\n", z, dTdz[zid], H, xe, Tk, SFRD_III);
 		}
 	}
 	if (print_debug_info)

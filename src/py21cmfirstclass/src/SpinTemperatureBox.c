@@ -62,8 +62,6 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
         }
         /*
         TODO: Junsong
-        Double check Radio Heating
-        For a template run, print SFRD & EoR, use it to compute dTff/dz externally and check with p21f
         Add additional soft photon variables to pragma thing!!!! -> dT_Radio_FF
         */
         // printf("Check TODO above ====\n");
