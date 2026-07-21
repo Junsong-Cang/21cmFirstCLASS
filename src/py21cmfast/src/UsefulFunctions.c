@@ -309,7 +309,7 @@ double omega_mz(float z)
 double dicke(double z)
 {
     // JordanFlitter: if we do not want to use the DICKIE growth factor, we take CLASS growth factor
-    if (!user_params_ufunc->USE_DICKE_GROWTH_FACTOR)
+    if (!user_params_ufunc->USE_DICKE_GROWTH_FACTOR && z > pow(10.0, global_params.LOG_Z_ARR[0])+0.2)
     {
         return CLASS_GROWTH_FACTOR(z, 0);
     }
