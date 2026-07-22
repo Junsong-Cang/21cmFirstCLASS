@@ -639,6 +639,13 @@ double kappa_10(double TK, int flag)
         tkin_spline[29] = 9.21034037198;
         kap_spline[29] = -20.9627928675;
     }
+    
+    if ((TK < 0.0) || (isfinite(TK) == 0))
+    {
+        fprintf(stderr, "Tk is negative, NaN or infinite. Tk = %.3E, fR_mini = %.3E, fst = %.3E, LX = %.3E, fesc = %.3E, mx = %.3E, sx = %.3E\n",
+            TK, astro_params_hf->fR_mini, astro_params_hf->F_STAR7_MINI, astro_params_hf->L_X_MINI, astro_params_hf->F_ESC7_MINI, cosmo_params_hf->m_chi, cosmo_params_hf->sigma_SDM);
+        Throw(ValueError);
+    }
 
     TK = log(TK);
 
