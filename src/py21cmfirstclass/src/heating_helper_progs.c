@@ -569,8 +569,9 @@ double kappa_10(double TK, int flag)
 {
 
     static double tkin_spline[KAPPA_10_NPTS_Spline], kap_spline[KAPPA_10_NPTS_Spline];
-    double ans;
+    double ans, small;
     int tkin_spline_int;
+    small = 1.0E-10;
 
     if (flag == 1)
     {
@@ -649,11 +650,11 @@ double kappa_10(double TK, int flag)
 
     TK = log(TK);
 
-    if (TK < tkin_spline[0])
+    if (TK < tkin_spline[0] + small)
     { // Below 1 K, just use that value
         ans = kap_spline[0];
     }
-    else if (TK > tkin_spline[KAPPA_10_NPTS_Spline - 1])
+    else if (TK > tkin_spline[KAPPA_10_NPTS_Spline - 1] - small)
     {
         // Power law extrapolation
         ans = log(exp(kap_spline[KAPPA_10_NPTS_Spline - 1]) * pow(exp(TK) / exp(tkin_spline[KAPPA_10_NPTS_Spline - 1]), 0.381));
@@ -662,7 +663,12 @@ double kappa_10(double TK, int flag)
     { // Do spline
 
         tkin_spline_int = (int)floor((TK - tkin_spline[0]) * inv_BinWidth_10);
-
+        if (tkin_spline_int < 0)
+        {
+            fprintf(stderr, "tkin_spline_int is negative and this can lead to segfault. Tk = %.3E, fR_mini = %.3E, fst = %.3E, LX = %.3E, fesc = %.3E, mx = %.3E, sx = %.3E\n",
+                TK, astro_params_hf->fR_mini, astro_params_hf->F_STAR7_MINI, astro_params_hf->L_X_MINI, astro_params_hf->F_ESC7_MINI, cosmo_params_hf->m_chi, cosmo_params_hf->sigma_SDM);
+            Throw(ValueError);
+        }
         ans = kap_spline[tkin_spline_int] + (TK - (tkin_spline[0] + BinWidth_10 * (float)tkin_spline_int)) * (kap_spline[tkin_spline_int + 1] - kap_spline[tkin_spline_int]) * inv_BinWidth_10;
     }
 
@@ -672,8 +678,9 @@ double kappa_10(double TK, int flag)
 double kappa_10_pH(double T, int flag)
 {
     static double TK_spline[KAPPA_10_pH_NPTS_Spline], kappa_spline[KAPPA_10_pH_NPTS_Spline];
-    double ans;
+    double ans, small;
     int TK_spline_int;
+    small = 1.0E-10;
 
     if (flag == 1)
     {
@@ -743,13 +750,20 @@ double kappa_10_pH(double T, int flag)
         kappa_spline[29] = -19.9343540344;
     }
 
+    if ((T < 0.0) || (isfinite(T) == 0))
+    {
+        fprintf(stderr, "T is negative, NaN or infinite. T = %.3E, fR_mini = %.3E, fst = %.3E, LX = %.3E, fesc = %.3E, mx = %.3E, sx = %.3E\n",
+            T, astro_params_hf->fR_mini, astro_params_hf->F_STAR7_MINI, astro_params_hf->L_X_MINI, astro_params_hf->F_ESC7_MINI, cosmo_params_hf->m_chi, cosmo_params_hf->sigma_SDM);
+        Throw(ValueError);
+    }
+
     T = log(T);
 
-    if (T < TK_spline[0])
+    if (T < TK_spline[0] + small)
     { // Below 1 K, just use that value
         ans = kappa_spline[0];
     }
-    else if (T > TK_spline[KAPPA_10_pH_NPTS_Spline - 1])
+    else if (T > TK_spline[KAPPA_10_pH_NPTS_Spline - 1] - small)
     {
         // Power law extrapolation
         ans = kappa_spline[KAPPA_10_pH_NPTS_Spline - 1] + ((kappa_spline[KAPPA_10_pH_NPTS_Spline - 1] - kappa_spline[KAPPA_10_pH_NPTS_Spline - 2]) / (TK_spline[KAPPA_10_pH_NPTS_Spline - 1] - TK_spline[KAPPA_10_pH_NPTS_Spline - 2]) * (T - TK_spline[KAPPA_10_pH_NPTS_Spline - 1]));
@@ -758,6 +772,12 @@ double kappa_10_pH(double T, int flag)
     { // Do spline
 
         TK_spline_int = (int)floor((T - TK_spline[0]) * inv_BinWidth_pH);
+        if (TK_spline_int < 0)
+        {
+            fprintf(stderr, "TK_spline_int is negative and this can lead to segfault. TK_spline_int = %d, T = %.3E, fR_mini = %.3E, fst = %.3E, LX = %.3E, fesc = %.3E, mx = %.3E, sx = %.3E\n",
+                TK_spline_int, T, astro_params_hf->fR_mini, astro_params_hf->F_STAR7_MINI, astro_params_hf->L_X_MINI, astro_params_hf->F_ESC7_MINI, cosmo_params_hf->m_chi, cosmo_params_hf->sigma_SDM);
+            Throw(ValueError);
+        }
 
         ans = kappa_spline[TK_spline_int] + (T - (TK_spline[0] + BinWidth_pH * (double)TK_spline_int)) * (kappa_spline[TK_spline_int + 1] - kappa_spline[TK_spline_int]) * inv_BinWidth_pH;
     }
@@ -769,8 +789,9 @@ double kappa_10_elec(double T, int flag)
 {
 
     static double TK_spline[KAPPA_10_elec_NPTS_Spline], kappa_spline[KAPPA_10_elec_NPTS_Spline];
-    double ans;
+    double ans, small;
     int TK_spline_int;
+    small = 1.0E-10;
 
     if (flag == 1)
     {
@@ -840,13 +861,20 @@ double kappa_10_elec(double T, int flag)
         kappa_spline[29] = -19.408859606;
     }
 
+    if ((T < 0.0) || (isfinite(T) == 0))
+    {
+        fprintf(stderr, "kappa_10_elec: T is negative, NaN or infinite. T = %.3E, fR_mini = %.3E, fst = %.3E, LX = %.3E, fesc = %.3E, mx = %.3E, sx = %.3E\n",
+            T, astro_params_hf->fR_mini, astro_params_hf->F_STAR7_MINI, astro_params_hf->L_X_MINI, astro_params_hf->F_ESC7_MINI, cosmo_params_hf->m_chi, cosmo_params_hf->sigma_SDM);
+        Throw(ValueError);
+    }
+
     T = log(T);
 
-    if (T < TK_spline[0])
+    if (T < TK_spline[0] + small)
     { // Below 1 K, just use that value
         ans = kappa_spline[0];
     }
-    else if (T > TK_spline[KAPPA_10_elec_NPTS_Spline - 1])
+    else if (T > TK_spline[KAPPA_10_elec_NPTS_Spline - 1] - small)
     {
         // Power law extrapolation
         ans = kappa_spline[KAPPA_10_elec_NPTS_Spline - 1] + ((kappa_spline[KAPPA_10_elec_NPTS_Spline - 1] - kappa_spline[KAPPA_10_elec_NPTS_Spline - 2]) / (TK_spline[KAPPA_10_elec_NPTS_Spline - 1] - TK_spline[KAPPA_10_elec_NPTS_Spline - 2]) * (T - TK_spline[KAPPA_10_elec_NPTS_Spline - 1]));
@@ -856,6 +884,13 @@ double kappa_10_elec(double T, int flag)
 
         TK_spline_int = (int)floor((T - TK_spline[0]) * inv_BinWidth_elec);
 
+        if (TK_spline_int < 0)
+        {
+            fprintf(stderr, "kappa_10_elec: TK_spline_int is negative and this can lead to segfault. TK_spline_int = %d, T = %.3E, fR_mini = %.3E, fst = %.3E, LX = %.3E, fesc = %.3E, mx = %.3E, sx = %.3E\n",
+                TK_spline_int, T, astro_params_hf->fR_mini, astro_params_hf->F_STAR7_MINI, astro_params_hf->L_X_MINI, astro_params_hf->F_ESC7_MINI, cosmo_params_hf->m_chi, cosmo_params_hf->sigma_SDM);
+            Throw(ValueError);
+        }
+        
         ans = kappa_spline[TK_spline_int] + (T - (TK_spline[0] + BinWidth_elec * (float)TK_spline_int)) * (kappa_spline[TK_spline_int + 1] - kappa_spline[TK_spline_int]) * inv_BinWidth_elec;
     }
     return exp(ans);
