@@ -3757,7 +3757,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                                     }
                                     else
                                     {
-                                        if (T < T_chi)
+                                        if ((T < T_chi) || (T < 0))
                                         { // T should never be smaller than T_chi!
                                             if (T_chi > 0)
                                             {
@@ -4348,7 +4348,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                             }
                             else
                             {
-                                if (T < T_chi)
+                                if ((T < T_chi) || (T < 0))
                                 { // T should never by smaller than T_chi!
                                     if (T_chi > 0)
                                     {
