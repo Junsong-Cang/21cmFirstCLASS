@@ -64,7 +64,6 @@ int Find_Index(double *x_axis, double x, int nx)
 	}
 	else
 	{
-		// printf("x1 = %f, x3 = %f\n", x1, x3);
 		if (x >= x1)
 		{
 			Stop = 1;

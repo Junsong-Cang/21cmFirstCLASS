@@ -14,7 +14,8 @@ if "DEBUG" in os.environ:
     extra_compile_args = ["-w", "-g", "-O0", "-Wall", "-Wuninitialized"]
 else:
     # extra_compile_args = ["-Ofast", "-w", "-Wall", "-Wuninitialized"]
-    extra_compile_args = ["-Ofast", "-w", "-Wall", "-Wuninitialized"]
+    extra_compile_args = ["-Ofast", "-w", "-Wall", "-Wuninitialized", "-fno-finite-math-only"]
+
 if not platform.system() == 'Darwin':
     extra_compile_args.append("-fopenmp")
 
@@ -31,7 +32,6 @@ available_levels = [
     "SUPER_DEBUG",
     "ULTRA_DEBUG",
 ]
-
 
 if isinstance(log_level, str) and log_level.upper() in available_levels:
     log_level = available_levels.index(log_level.upper())

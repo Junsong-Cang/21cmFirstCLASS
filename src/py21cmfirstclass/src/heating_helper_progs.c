@@ -569,9 +569,10 @@ double kappa_10(double TK, int flag)
 {
 
     static double tkin_spline[KAPPA_10_NPTS_Spline], kap_spline[KAPPA_10_NPTS_Spline];
-    double ans, small;
+    double ans, small, Tk0;
     int tkin_spline_int;
     small = 1.0E-10;
+    Tk0 = TK;
 
     if (flag == 1)
     {
@@ -663,10 +664,11 @@ double kappa_10(double TK, int flag)
     { // Do spline
 
         tkin_spline_int = (int)floor((TK - tkin_spline[0]) * inv_BinWidth_10);
+        
         if (tkin_spline_int < 0)
         {
-            fprintf(stderr, "tkin_spline_int is negative and this can lead to segfault. Tk = %.3E, fR_mini = %.3E, fst = %.3E, LX = %.3E, fesc = %.3E, mx = %.3E, sx = %.3E\n",
-                TK, astro_params_hf->fR_mini, astro_params_hf->F_STAR7_MINI, astro_params_hf->L_X_MINI, astro_params_hf->F_ESC7_MINI, cosmo_params_hf->m_chi, cosmo_params_hf->sigma_SDM);
+            fprintf(stderr, "tkin_spline_int is negative and this can lead to segfault. Tk = %.3E, Tk0 = %.3E, fR_mini = %.3E, fst = %.3E, LX = %.3E, fesc = %.3E, mx = %.3E, sx = %.3E\n",
+                TK, Tk0, astro_params_hf->fR_mini, astro_params_hf->F_STAR7_MINI, astro_params_hf->L_X_MINI, astro_params_hf->F_ESC7_MINI, cosmo_params_hf->m_chi, cosmo_params_hf->sigma_SDM);
             Throw(ValueError);
         }
         ans = kap_spline[tkin_spline_int] + (TK - (tkin_spline[0] + BinWidth_10 * (float)tkin_spline_int)) * (kap_spline[tkin_spline_int + 1] - kap_spline[tkin_spline_int]) * inv_BinWidth_10;
@@ -890,7 +892,7 @@ double kappa_10_elec(double T, int flag)
                 TK_spline_int, T, astro_params_hf->fR_mini, astro_params_hf->F_STAR7_MINI, astro_params_hf->L_X_MINI, astro_params_hf->F_ESC7_MINI, cosmo_params_hf->m_chi, cosmo_params_hf->sigma_SDM);
             Throw(ValueError);
         }
-        
+
         ans = kappa_spline[TK_spline_int] + (T - (TK_spline[0] + BinWidth_elec * (float)TK_spline_int)) * (kappa_spline[TK_spline_int + 1] - kappa_spline[TK_spline_int]) * inv_BinWidth_elec;
     }
     return exp(ans);
