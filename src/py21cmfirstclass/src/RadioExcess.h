@@ -792,6 +792,7 @@ double Collisional_Ionization_SigmaV(double T)
 	else
 	{
 		// I donno what to do at higher energy, return NaN
+		fprintf(stderr, "T is too high to get reliable SigmaV, T = %.3E\n", T);
 		r = NAN;
 	}
 	return r;

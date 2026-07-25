@@ -7,9 +7,10 @@
 
 double Halo_Concentration(double m, double z, double h)
 {
-    /*Halo concentration, use Ref1 if Use_Conde_Concentration, otherwise Ref2
-        Ref1: M. A. Sánchez-Conde and F. Prada, Mon. Not. R. Astron.Soc. 442, 2271 (2014).
-        Ref2: F. Ziparo, S. Gallerani, A. Ferrara, and F. Vito, Mon. Not. R. Astron. Soc. 517, 1086 (2022).
+    /*
+        Halo concentration, use Ref2 if Use_Conde_Concentration, otherwise Ref1
+        Ref1: F. Ziparo, S. Gallerani, A. Ferrara, and F. Vito, Mon. Not. R. Astron. Soc. 517, 1086 (2022).
+        Ref2: M. A. Sánchez-Conde and F. Prada, Mon. Not. R. Astron.Soc. 442, 2271 (2014).
     */
 
     double c0, c1, c2, c3, c4, c5, x, r;
@@ -33,7 +34,7 @@ double Halo_Concentration(double m, double z, double h)
 }
 
 double Halo_F_fun(double x)
-{
+{// Function F defined in Eq.(8) of Ref1
     return log(1.0+x) - x/(1.0+x);
 }
 
