@@ -779,7 +779,7 @@ double Collisional_Ionization_SigmaV(double T)
 		Gamma = exp(Gamma);
 		r = Gamma * exp(-13.6 * Q / (kB * T)) * 1E-6;
 	}
-	else if (kB * T / Q <= 2E4)
+	else if (kB * T / Q <= 2.0E4)
 	{
 		// Voronov97 fit, valid for [2eV, 20KeV]
 		U = 13.6 * Q / (T * kB);
@@ -791,8 +791,9 @@ double Collisional_Ionization_SigmaV(double T)
 	}
 	else
 	{
-		// I donno what to do at higher energy, return NaN
+		// Return NaN&exit at higher energy, at such high T CI would kill 21cm signal
 		fprintf(stderr, "T is too high to get reliable SigmaV, T = %.3E\n", T);
+		Throw(ValueError);
 		r = NAN;
 	}
 	return r;

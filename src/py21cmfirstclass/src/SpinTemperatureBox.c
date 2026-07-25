@@ -301,11 +301,10 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                 this_spin_temp->IonBox_cache[4] = previous_spin_temp->IonBox_cache[4];
         }
 
-        // Above certain temperature, collisional ionization will strongly ionize H and suppress 21cm signal. One can ignore heating above this threshold 
-        // (5E4 by default), which gives incorect 21cm signal, or we can do everything properly
+        // Above certain temperature, collisional ionization will strongly ionize H and kill 21cm signal. One can ignore heating above this threshold 
         if (flag_options->USE_COLLISIONAL_IONIZATION)
         {
-            MAX_TK_Collisional_Ionization = 2.0E9;
+            MAX_TK_Collisional_Ionization = 2.0E8;
         }
         else
         {
@@ -3548,7 +3547,6 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                                         if (user_params->EVOLVE_BARYONS)
                                         {
 	                                        dxe_dz_collisional = Find_dxe_dz_Collisional(prev_redshift, x_e, T, hubble(prev_redshift), delta_baryons_local, ClumpingFactor);
-                                            // =====                                                   2E-4 2E8?                         -5E-2                 1.4
                                         }
                                         else
                                         {
@@ -3574,16 +3572,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                                     }
                                     // next heating due to the changing species
                                     dspec_dzp = -dxe_dzp * T / (1 + x_e);
-                                    if (isfinite(dspec_dzp) == 0)
-                                    {
-                                        fprintf(stderr, "===== @ Spin.c: dspec_dzp is NaN or infinite. dspec_dzp = %.3E, others = %.3E    %.3E    %.3E    %.3E    %.3E    %.3E    %.3E    %.3E    %.3E    %.3E\n", 
-                                            dspec_dzp, 
-                                            dxe_dzp, T, x_e, dxe_dz_collisional,
-                                            dxion_source_dt_box[box_ct], dxion_source_dt_box_MINI[box_ct], dxion_sink_dt, dt_dzp,
-                                            delta_baryons_local, ClumpingFactor);
-                                        Throw(ValueError);
-                                    }
-
+                                    
                                     // next, Compton heating
                                     //                dcomp_dzp = dT_comp(zp, T, x_e);
                                     // JordanFlitter: there shouldn't be any f_He at the Compton heating term, as x_e=n_e/(n_H+n_He). This was verified with Mesinger
@@ -3724,23 +3713,12 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                                             {
                                                 T += (dxheat_dzp + dcomp_dzp + dspec_dzp + dadia_dzp + dCMBheat_dzp + eps_Lya_cont + eps_Lya_inj + dSDM_b_heat_dzp + dTdz_FF) * dzp;
                                             }
-                                            if (isfinite(T) == 0)
-                                            {
-                                                fprintf(stderr, "===== @ Spin.c: T is NaN or infinite. T = %.3E, Heating Rates: %.3E    %.3E    %.3E    %.3E    %.3E    %.3E    %.3E    %.3E    %.3E    %.3E    %.3E    %.3E\n", 
-                                                    T, dxheat_dzp, dxheat_dzp_MINI, dcomp_dzp, dspec_dzp, dadia_dzp, dCMBheat_dzp, eps_Lya_cont, eps_Lya_inj, eps_Lya_cont_MINI, eps_Lya_inj_MINI, dSDM_b_heat_dzp, dTdz_FF);
-                                                Throw(ValueError);
-                                            }
                                         }
                                     }
                                     // JordanFlitter: Otherwise, we evolve T_k with DM TCA!
                                     else
                                     {
                                         T = SDM_rates.T_bar_chi_b + SDM_rates.Delta_T_b_chi / 2.; // K
-                                        if (isfinite(T) == 0)
-                                        {
-                                            fprintf(stderr, "===== @ Spin.c: T is NaN or infinite. T = %.3E, SDM var: %.3E,    %.3E\n", T, SDM_rates.T_bar_chi_b, SDM_rates.Delta_T_b_chi);
-                                            Throw(ValueError);
-                                        }
                                     }
 
                                     // JordanFlitter: evolution equations for T_chi and V_chi_b in SDM universe
@@ -3769,12 +3747,6 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                                     // This problem doesn't happen when the SDM number-density is comparable to the baryons number-density; in that case, both fluids are strongly
                                     // coupled to each other, effectively behaving as a single fluid, and their common temperature is increased by the X-rays.
                                     
-                                    if (isfinite(T) == 0)
-                                    {
-                                        fprintf(stderr, "===== @ Spin.c: T is NaN or infinite. T = %.3E\n", T);
-                                        Throw(ValueError);
-                                    }
-
                                     if (!user_params->SCATTERING_DM)
                                     {
                                         if (T < 0)

@@ -512,11 +512,6 @@ double xcoll_HI(double z, double TK, double delta, double xe)
 {
     double krate, nH, Trad;
     double xcoll;
-    if (isfinite(TK) == 0)
-    {
-        fprintf(stderr, "===== @ xcoll_HI: Tk is NaN or infinite. Tk = %.3E\n", TK);
-        Throw(ValueError);
-    }
     Trad = T_cmb * (1.0 + z);
     nH = (1.0 - xe) * No * pow(1.0 + z, 3.0) * (1.0 + delta);
     krate = kappa_10(TK, 0);
@@ -1445,7 +1440,6 @@ double nu_tau_one_MINI(double zp, double zpp, double x_e, double HI_filling_fact
     if (!isfinite(r))
     {
         LOG_ERROR("Value for nu_tau_one_MINI is infinite or NAN");
-        //        Throw(ParameterError);
         Throw(InfinityorNaNError);
     }
 
@@ -1515,7 +1509,6 @@ double nu_tau_one(double zp, double zpp, double x_e, double HI_filling_factor_zp
     if (!isfinite(r))
     {
         LOG_ERROR("nu_tau_one is infinite or NAN");
-        //        Throw(ParameterError);
         Throw(InfinityorNaNError);
     }
 
