@@ -13,8 +13,7 @@ double Halo_Concentration(double m, double z, double h)
         Ref2: M. A. Sánchez-Conde and F. Prada, Mon. Not. R. Astron.Soc. 442, 2271 (2014).
     */
 
-    double c0, c1, c2, c3, c4, c5, x, r;
-    double LgC, C_zip;
+    double c0, c1, c2, c3, c4, c5, x, r, LgC;
     
     c0 = 37.5153;
     c1 = -1.5093;

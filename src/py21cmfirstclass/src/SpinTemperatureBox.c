@@ -71,7 +71,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
         /////////////////// Defining variables for the computation of Ts.c //////////////
 
         FILE *F, *OUT;
-        
+
         unsigned long long ct, FCOLL_SHORT_FACTOR, box_ct;
 
         int R_ct, i, ii, j, k, i_z, COMPUTE_Ts, x_e_ct, m_xHII_low, m_xHII_high, n_ct, zpp_gridpoint1_int;
@@ -187,12 +187,12 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
         double Radio_Prefix_ACG, Radio_Prefix_MCG, Fill_Fraction, Radio_Temp_ave, dzpp_Rct0, zpp_Rct0, H_Rct0, Tr_EoR, SFRD_EoR_MINI, SFRD_MINI_ave, Radio_Prefix_ACG_Rct, Radio_Prefix_MCG_Rct;
         int ArchiveSize, head, phi_idx, tk_idx, phi3_idx, zpp_idx, Radio_Silent;
         double HaloTab_Mmin, ClumpingFactor, MAX_TK_Collisional_Ionization;
-        
+
         FILE *OutputFile;
-	
+
         Radio_Prefix_ACG = 113.6161 * astro_params->fR * cosmo_params->OMb * (pow(cosmo_params->hlittle, 2)) * (astro_params->F_STAR10) * pow(astro_nu0 / 1.4276, astro_params->aR) * pow(1 + redshift, 3 + astro_params->aR);
         Radio_Prefix_MCG = 113.6161 * astro_params->fR_mini * cosmo_params->OMb * (pow(cosmo_params->hlittle, 2)) * (astro_params->F_STAR7_MINI) * pow(astro_nu0 / 1.4276, astro_params->aR_mini) * pow(1 + redshift, 3 + astro_params->aR_mini);
-        
+
         if (flag_options->USE_MASS_DEPENDENT_ZETA)
         {
             ION_EFF_FACTOR = global_params.Pop2_ion * astro_params->F_STAR10 * astro_params->F_ESC10;
@@ -214,7 +214,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
             unfiltered_box_baryons = (fftwf_complex *)fftwf_malloc(sizeof(fftwf_complex) * HII_KSPACE_NUM_PIXELS);
         }
         fftwf_complex *log10_Mcrit_LW_unfiltered, *log10_Mcrit_LW_filtered;
-        
+
         if (flag_options->USE_MINI_HALOS)
         {
             log10_Mcrit_LW_unfiltered = (fftwf_complex *)fftwf_malloc(sizeof(fftwf_complex) * HII_KSPACE_NUM_PIXELS);
@@ -251,7 +251,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                 delta_SDM_derivative = (fftwf_complex *)fftwf_malloc(sizeof(fftwf_complex) * HII_KSPACE_NUM_PIXELS);
             }
         }
-        
+
         // ---------------- Radio Excess Preflight checks ----------------
         if ((flag_options->USE_RADIO_MCG) && (!flag_options->USE_MINI_HALOS))
         {
@@ -267,7 +267,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
             Radio_Silent = 1;
         }
         Fill_Fraction = (double)previous_spin_temp->History_box[0] * History_box_DIM / ((double)HII_TOT_NUM_PIXELS);
-        
+
         if (Fill_Fraction > 0.8)
         {
             LOG_ERROR("History_box not large enough to record previous coevals, consider the following: increse HII_DIM, reduce z_prime_factor");
@@ -281,27 +281,27 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
         }
 
         // Try initializing history_box here
-        for (box_ct = 0;  box_ct< HII_TOT_NUM_PIXELS; box_ct++)
-	    {
-		    this_spin_temp->History_box[box_ct] = NAN;
-	    }
-	    for (box_ct = 0;  box_ct< 5; box_ct++)
-	    {
-		    this_spin_temp->IonBox_cache[box_ct] = NAN;
+        for (box_ct = 0; box_ct < HII_TOT_NUM_PIXELS; box_ct++)
+        {
+            this_spin_temp->History_box[box_ct] = NAN;
+        }
+        for (box_ct = 0; box_ct < 5; box_ct++)
+        {
+            this_spin_temp->IonBox_cache[box_ct] = NAN;
         }
         this_spin_temp->IonBox_cache[2] = 1994.0;
 
         if ((user_params->MANY_Z_SAMPLES_AT_COSMIC_DAWN) && (fabs(previous_spin_temp->IonBox_cache[3] - 2026.0) < 0.001))
         {
-            // Caching is a bit complicated in this case, sometimes IonBox call is skipped. If MINI_HALO call happened in Ion.c in previous time-step, 
+            // Caching is a bit complicated in this case, sometimes IonBox call is skipped. If MINI_HALO call happened in Ion.c in previous time-step,
             // copy Ion info which will be updated in Ion anyway
-                this_spin_temp->IonBox_cache[0] = previous_spin_temp->IonBox_cache[0];
-                this_spin_temp->IonBox_cache[1] = previous_spin_temp->IonBox_cache[1];
-                this_spin_temp->IonBox_cache[3] = previous_spin_temp->IonBox_cache[3];
-                this_spin_temp->IonBox_cache[4] = previous_spin_temp->IonBox_cache[4];
+            this_spin_temp->IonBox_cache[0] = previous_spin_temp->IonBox_cache[0];
+            this_spin_temp->IonBox_cache[1] = previous_spin_temp->IonBox_cache[1];
+            this_spin_temp->IonBox_cache[3] = previous_spin_temp->IonBox_cache[3];
+            this_spin_temp->IonBox_cache[4] = previous_spin_temp->IonBox_cache[4];
         }
 
-        // Above certain temperature, collisional ionization will strongly ionize H and kill 21cm signal. One can ignore heating above this threshold 
+        // Above certain temperature, collisional ionization will strongly ionize H and kill 21cm signal. One can ignore heating above this threshold
         if (flag_options->USE_COLLISIONAL_IONIZATION)
         {
             MAX_TK_Collisional_Ionization = 2.0E8;
@@ -660,7 +660,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
             }
         } // JordanFlitter: End of cosmic dawn condition
         // JordanFlitter: define EPSILON_THRES (for TCA-DM)
-        
+
         if (redshift > 100.)
         {
             EPSILON_THRES = global_params.EPSILON_THRESH_HIGH_Z;
@@ -937,7 +937,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
 
             // JordanFlitter: If we are at high redshifts, we simply want to evlove x_e and T_k with no astrophysics.
             //                This makes the code to run MUCH FASTER per redshift iteration
-            
+
             if (redshift > global_params.Z_HEAT_MAX)
             {
                 // allocate memory for the nonlinear density field
@@ -1188,7 +1188,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                                 tau21 = (3 * hplank * A10_HYPERFINE * C * Lambda_21 * Lambda_21 / 32. / PI / k_B) * ((1 - x_e) * No * pow(1. + zp, 3.) * (1. + curr_delNL0 * growth_factor_zp)) / prev_Ts / hubble(zp);
                             }
                             xCMB = Compute_xCMB(tau21); // xCMB can be NaN for small tau21, let's use analytic result for this case
-                            
+
                             // First let's do dxe_dzp //
                             if (!user_params->USE_HYREC)
                             {
@@ -1316,12 +1316,17 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                                 epsilon_gamma_b += epsilon_gamma_b * (dhubble_dz(zp) / hubble(zp) - dxe_dzp / ((1. + x_e) * x_e) - 4. / (1. + zp)) * dzp;
                                 Delta_T_gamma_b = epsilon_gamma_b * (2. * T - Trad_fast + (dspec_dzp + (dadia_dzp - 2. * T / (1.0 + zp))) * (1. + zp) + dSDM_b_heat_dzp * (1. + zp)); // K
                                 T = T_bar_gamma_b - Delta_T_gamma_b / 2.;                                                                                                             // K
-                                
                             }
                             // JordanFlitter: Otherwise, we evolve T_k with DM TCA!
                             else
                             {
                                 T = SDM_rates.T_bar_chi_b + SDM_rates.Delta_T_b_chi / 2.; // K
+                            }
+                            
+                            // Spurious bahaviour of SDM at some edge cases, we need to re-run them with higher z resolution
+                            if (T > MAX_TK_Collisional_Ionization)
+                            {
+                                T = MAX_TK_Collisional_Ionization;
                             }
                             if (T < 0)
                             { // spurious bahaviour of the trapazoidalintegrator. generally overcooling in underdensities
@@ -2820,7 +2825,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                         // #1: Gas temperature
                         T_IGM_ave += previous_spin_temp->Tk_box[box_ct];
                     }
-                    T_IGM_ave /= (double) HII_TOT_NUM_PIXELS;
+                    T_IGM_ave /= (double)HII_TOT_NUM_PIXELS;
                     ClumpingFactor = Find_Clumping_Factor(redshift, T_IGM_ave, HaloTab_Mmin, user_params, dicke(redshift), cosmo_params);
                 }
                 else
@@ -3541,12 +3546,12 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                                     {
                                         dxe_dzp = dt_dzp * (dxion_source_dt_box[box_ct] - dxion_sink_dt);
                                     }
-                                    
+
                                     if (flag_options->USE_COLLISIONAL_IONIZATION)
                                     {
                                         if (user_params->EVOLVE_BARYONS)
                                         {
-	                                        dxe_dz_collisional = Find_dxe_dz_Collisional(prev_redshift, x_e, T, hubble(prev_redshift), delta_baryons_local, ClumpingFactor);
+                                            dxe_dz_collisional = Find_dxe_dz_Collisional(prev_redshift, x_e, T, hubble(prev_redshift), delta_baryons_local, ClumpingFactor);
                                         }
                                         else
                                         {
@@ -3554,7 +3559,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                                         }
                                         dxe_dzp += dxe_dz_collisional;
                                     }
-                                    
+
                                     // Next, let's get the temperature components //
                                     // JordanFlitter: we can use the baryons density field
                                     if (user_params->EVOLVE_BARYONS)
@@ -3572,7 +3577,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                                     }
                                     // next heating due to the changing species
                                     dspec_dzp = -dxe_dzp * T / (1 + x_e);
-                                    
+
                                     // next, Compton heating
                                     //                dcomp_dzp = dT_comp(zp, T, x_e);
                                     // JordanFlitter: there shouldn't be any f_He at the Compton heating term, as x_e=n_e/(n_H+n_He). This was verified with Mesinger
@@ -3720,6 +3725,10 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                                     {
                                         T = SDM_rates.T_bar_chi_b + SDM_rates.Delta_T_b_chi / 2.; // K
                                     }
+                                    if (T > MAX_TK_Collisional_Ionization)
+                                    {
+                                        T = MAX_TK_Collisional_Ionization;
+                                    }
 
                                     // JordanFlitter: evolution equations for T_chi and V_chi_b in SDM universe
                                     if (user_params->SCATTERING_DM)
@@ -3746,7 +3755,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                                     // then the baryons temperature approaches the SDM temperature from above (it cannot be smaller than T_chi!)
                                     // This problem doesn't happen when the SDM number-density is comparable to the baryons number-density; in that case, both fluids are strongly
                                     // coupled to each other, effectively behaving as a single fluid, and their common temperature is increased by the X-rays.
-                                    
+
                                     if (!user_params->SCATTERING_DM)
                                     {
                                         if (T < 0)
@@ -3880,7 +3889,6 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                                                 // Junsong: adding Radio Excess contribution to Ts
                                                 TS_fast = (xCMB + xc_fast + xa_tilde_fast * T / (T + 0.402)) * pow(xCMB * Trad_inv + xa_tilde_fast * pow(T + 0.402, -1.) + xc_fast * T_inv, -1.);
                                                 TSold_fast = TS_fast;
-                                            
                                             }
                                             else
                                             {
@@ -3967,7 +3975,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                 xa_tilde_fast_arg, TS_fast, TSold_fast, xa_tilde_fast, prev_Ts, tau21, xCMB, eps_CMB, dCMBheat_dzp, dstarlya_cont_dt, dstarlya_inj_dt,        \
                 E_continuum, E_injected, Ndot_alpha_cont, Ndot_alpha_inj, eps_Lya_cont, eps_Lya_inj, Radio_Temp, dT_Radio,                                    \
                 T_chi, V_chi_b, dSDM_b_heat_dzp, dSDM_chi_heat_dzp, D_V_chi_b_dzp, SDM_rates, dT_b_2_dt_ext, dT_chi_2_dt_ext, dadia_dzp_SDM,                  \
-                delta_baryons_local, delta_baryons_derivative_local, delta_SDM_local, delta_SDM_derivative_local, Trad_inv)                                    \
+                delta_baryons_local, delta_baryons_derivative_local, delta_SDM_local, delta_SDM_derivative_local, Trad_inv)                                   \
     num_threads(user_params -> N_THREADS)
                     {
 #pragma omp for reduction(+ : J_alpha_ave, xalpha_ave, Xheat_ave, Xion_ave, Ts_ave, Tk_ave, x_e_ave)
@@ -4127,7 +4135,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                                 tau21 = (3 * hplank * A10_HYPERFINE * C * Lambda_21 * Lambda_21 / 32. / PI / k_B) * ((1 - x_e) * No * pow(1. + zp, 3.) * (1. + curr_delNL0 * growth_factor_zp)) / prev_Ts / hubble(zp);
                             }
                             xCMB = Compute_xCMB(tau21);
-                            
+
                             // First let's do dxe_dzp //
                             if (user_params->USE_HYREC)
                             {
@@ -4310,6 +4318,10 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                             else
                             {
                                 T = SDM_rates.T_bar_chi_b + SDM_rates.Delta_T_b_chi / 2.; // K
+                            }
+                            if (T > MAX_TK_Collisional_Ionization)
+                            {
+                                T = MAX_TK_Collisional_Ionization;
                             }
 
                             // JordanFlitter: evolution equations for T_chi and V_chi_b in SDM universe
@@ -4506,7 +4518,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                         }
                     }
                 }
-                
+
                 // ---- Computing averaged quantities ----
                 T_IGM_ave = 0.0;
                 Radio_Temp_ave = 0.0;
@@ -4530,7 +4542,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                     {
                         Phi = dfcoll_dz_val * (double)del_fcoll_Rct[box_ct] / dzpp_Rct0;
                         Phi_ave += Phi / ((double)HII_TOT_NUM_PIXELS);
-                        
+
                         if (flag_options->USE_MINI_HALOS)
                         {
                             Phi_mini = dfcoll_dz_val_MINI * (double)del_fcoll_Rct_MINI[box_ct] / dzpp_Rct0;
@@ -4547,16 +4559,16 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                     this_spin_temp->SFRD_MINI_box[box_ct] = Phi_2_SFRD(Phi_mini, zpp_Rct0, H_Rct0, astro_params, cosmo_params, 1);
 
                     // copying entire History_box
-                    if (Check_Astro_Call_Status(previous_spin_temp, 1)==1) // Astro called previously in Spin.c
+                    if (Check_Astro_Call_Status(previous_spin_temp, 1) == 1) // Astro called previously in Spin.c
                     {
                         this_spin_temp->History_box[box_ct] = previous_spin_temp->History_box[box_ct];
                     }
                 }
-                
+
                 // Print_HMF(redshift, user_params->HMF);
 
                 this_spin_temp->IonBox_cache[2] = 2026.0; // Confirm that Astro was called in Spin.c
-                
+
                 if (flag_options->Calibrate_EoR_feedback && flag_options->USE_MINI_HALOS)
                 {
                     // Computing Pop III SFRD, to be saved into history_box
@@ -4568,8 +4580,8 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                 }
 
                 // Caching averaged quantities
-                if (Check_Astro_Call_Status(previous_spin_temp, 1)==0)
-                {// Astro module has never been called in Spin.c before
+                if (Check_Astro_Call_Status(previous_spin_temp, 1) == 0)
+                {                                                            // Astro module has never been called in Spin.c before
                     this_spin_temp->History_box[0] = 1.0;                    // ArchiveSize
                     this_spin_temp->History_box[1] = redshift;               // redshift
                     this_spin_temp->History_box[2] = 0.0;                    // Phi
@@ -4587,7 +4599,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                 {
                     this_spin_temp->History_box[0] = previous_spin_temp->History_box[0] + 1.0; // updating archive size
                     ArchiveSize = (int)round(this_spin_temp->History_box[0]);                  // remember that this is for current box, at least 2 by now
-                    
+
                     // Save results for this redshift
                     head = (ArchiveSize - 1) * History_box_DIM + 1;
                     this_spin_temp->History_box[head] = redshift;
@@ -4595,7 +4607,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                     this_spin_temp->History_box[head + 2] = T_IGM_ave;
                     this_spin_temp->History_box[head + 3] = Phi_ave_mini;
                     this_spin_temp->History_box[head + 4] = zpp_for_evolve_list[0];
-                    if (Check_Astro_Call_Status(previous_spin_temp, 0)==0)
+                    if (Check_Astro_Call_Status(previous_spin_temp, 0) == 0)
                     {
                         // MNIHALO hasn't been called yet in Ion.c and mturn&xH are unassigned
                         this_spin_temp->History_box[head + 5] = 1.0E20;
@@ -4610,7 +4622,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                     }
                     this_spin_temp->History_box[head + 7] = SFRD_EoR_MINI; // SFRD_MINI_EOR
                 }
-                
+
                 if (flag_options->Calibrate_EoR_feedback && flag_options->USE_MINI_HALOS)
                 {
                     // Calibrating EoR feedback, coupling to Ts should be negligible by now since T21 would be dominated by xH
@@ -4635,14 +4647,14 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                     if (isfinite(this_spin_temp->Ts_box[box_ct]) == 0)
                     {
                         printf("This is odd, crash imminent: Ts = %15E,  Tk = %15E, xe = %15E, idx = %d\n", this_spin_temp->Ts_box[box_ct], this_spin_temp->Tk_box[box_ct], this_spin_temp->x_e_box[box_ct], box_ct);
-                        LOG_ERROR("Estimated spin temperature is either infinite of NaN!");
+                        LOG_ERROR("Estimated spin temperature is either infinite or NaN!");
                         //                Throw(ParameterError);
                         Throw(InfinityorNaNError);
                     }
 
-                    if (isfinite(this_spin_temp->Tk_box[box_ct]) == 0)
+                    if ((isfinite(this_spin_temp->Tk_box[box_ct]) == 0) || (this_spin_temp->Tk_box[box_ct] > MAX_TK_Collisional_Ionization))
                     {
-                        LOG_ERROR("Estimated kinetic temperature is either infinite of NaN!");
+                        LOG_ERROR("Estimated kinetic temperature is infinite, NaN or too large!");
                         Throw(InfinityorNaNError);
                     }
 
@@ -4653,7 +4665,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                     }
                     if (this_spin_temp->Tk_box[box_ct] >= MAX_TK_Collisional_Ionization)
                     {
-                        this_spin_temp->x_e_box[box_ct] = 1.0;
+                        this_spin_temp->x_e_box[box_ct] = 1.0 - FRACT_FLOAT_ERR;
                     }
                 }
 
@@ -4692,7 +4704,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                     }
                 }
             } // JordanFlitter: End of cosmic dawn condition
-            
+
             // JordanFlitter: We need to free HyRec memory
             if (user_params->USE_HYREC)
             {
@@ -4721,7 +4733,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
             }
             free(log10_Mcrit_LW);
         }
-        
+
         // JordanFlitter: We don't need these during the dark ages
         if (redshift <= global_params.Z_HEAT_MAX)
         {
