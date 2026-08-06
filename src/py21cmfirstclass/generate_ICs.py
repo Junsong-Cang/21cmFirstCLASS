@@ -88,6 +88,7 @@ def Check_CLASS_Sigma_Array(sigma, CLASS_params):
         ds_positive = ds[mask]
         corrupt_count += len(ds_positive)
     corrupt_fraction = corrupt_count / (nz * (nm-1))
+    
     if corrupt_count > 0:
         print("Crash imminent for params:")
         for k in CLASS_params.keys():

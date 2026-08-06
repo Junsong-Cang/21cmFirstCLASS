@@ -4654,13 +4654,13 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
 
                     if ((isfinite(this_spin_temp->Tk_box[box_ct]) == 0) || (this_spin_temp->Tk_box[box_ct] > MAX_TK_Collisional_Ionization))
                     {
-                        LOG_ERROR("Estimated kinetic temperature is infinite, NaN or too large!");
+                        LOG_ERROR("Estimated kinetic temperature is infinite, NaN or too large! Tk = %.4E\n", this_spin_temp->Tk_box[box_ct]);
                         Throw(InfinityorNaNError);
                     }
 
                     if (isfinite(this_spin_temp->Trad_box[box_ct]) == 0)
                     {
-                        LOG_ERROR("Estimated Radio temperature is either infinite of NaN!");
+                        LOG_ERROR("Estimated Radio temperature is either infinite of NaN! Tr = %.4E\n", this_spin_temp->Trad_box[box_ct]);
                         Throw(InfinityorNaNError);
                     }
                     if (this_spin_temp->Tk_box[box_ct] >= MAX_TK_Collisional_Ionization)
