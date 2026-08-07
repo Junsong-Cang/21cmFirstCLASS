@@ -3725,10 +3725,6 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                                     {
                                         T = SDM_rates.T_bar_chi_b + SDM_rates.Delta_T_b_chi / 2.; // K
                                     }
-                                    if (T > MAX_TK_Collisional_Ionization)
-                                    {
-                                        T = MAX_TK_Collisional_Ionization;
-                                    }
 
                                     // JordanFlitter: evolution equations for T_chi and V_chi_b in SDM universe
                                     if (user_params->SCATTERING_DM)
@@ -3776,6 +3772,11 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
                                                 T = previous_spin_temp->Tk_box[box_ct]; // Don't update T in that special scenario
                                             }
                                         }
+                                    }
+                                    
+                                    if (T > MAX_TK_Collisional_Ionization)
+                                    {
+                                        T = MAX_TK_Collisional_Ionization;
                                     }
 
                                     // JordanFlitter: similar logic for T_chi and V_chi_b in case of spurious bahaviour
