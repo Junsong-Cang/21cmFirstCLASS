@@ -30,6 +30,10 @@ m_p = 1.6735575e-27 # Proton mass in kg
 Tcmb0 = 2.728 # CMB temperature in K
 _not4_ = 3.9715 # This is the ratio between Helium to Hydrogen mass. It is not 4!
 
+class CLASS_Sigma_Error(Exception):
+    def __init__(self, MSG):
+        print(MSG)
+
 # Convert redshift to time in Gyr
 def z_to_time(z,cosmo_params):
     Omega_m0 = cosmo_params[2]
@@ -94,7 +98,8 @@ def Check_CLASS_Sigma_Array(sigma, CLASS_params):
         for k in CLASS_params.keys():
             print(k, CLASS_params[k])
         MSG = "Found corrupted sigma from CLASS. count = {:.0f}, fraction = {:.3E}".format(corrupt_count, corrupt_fraction)
-        raise Exception(MSG)
+        # raise Exception(MSG)
+        raise CLASS_Sigma_Error(MSG)
 
 #####################################################################################################################################################
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Differential equations for vcb correction %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
