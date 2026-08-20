@@ -188,8 +188,6 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
         int ArchiveSize, head, phi_idx, tk_idx, phi3_idx, zpp_idx, Radio_Silent;
         double HaloTab_Mmin, ClumpingFactor, MAX_TK_Collisional_Ionization;
 
-        FILE *OutputFile;
-
         Radio_Prefix_ACG = 113.6161 * astro_params->fR * cosmo_params->OMb * (pow(cosmo_params->hlittle, 2)) * (astro_params->F_STAR10) * pow(astro_nu0 / 1.4276, astro_params->aR) * pow(1 + redshift, 3 + astro_params->aR);
         Radio_Prefix_MCG = 113.6161 * astro_params->fR_mini * cosmo_params->OMb * (pow(cosmo_params->hlittle, 2)) * (astro_params->F_STAR7_MINI) * pow(astro_nu0 / 1.4276, astro_params->aR_mini) * pow(1 + redshift, 3 + astro_params->aR_mini);
 
@@ -3549,15 +3547,6 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
 
                                     if (flag_options->USE_COLLISIONAL_IONIZATION)
                                     {
-                                        // ====
-                                        if (redshift < 5.5)
-                                        {
-                                            OutputFile = fopen("/Users/cangtao/Desktop/tmp/tmp_Density.txt", "a");
-                                            fprintf(OutputFile, "%d   %.4E\n", box_ct, delta_baryons_local);
-                                            fclose(OutputFile);
-	                                    }
-                                        // ====
-
                                         if (user_params->EVOLVE_BARYONS)
                                         {
                                             dxe_dz_collisional = Find_dxe_dz_Collisional(prev_redshift, x_e, T, hubble(prev_redshift), delta_baryons_local, ClumpingFactor);
