@@ -3549,6 +3549,15 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
 
                                     if (flag_options->USE_COLLISIONAL_IONIZATION)
                                     {
+                                        // ====
+                                        if (redshift < 5.5)
+                                        {
+                                            OutputFile = fopen("/Users/cangtao/Desktop/tmp/tmp_Density.txt", "a");
+                                            fprintf(OutputFile, "%d   %.4E\n", box_ct, delta_baryons_local);
+                                            fclose(OutputFile);
+	                                    }
+                                        // ====
+
                                         if (user_params->EVOLVE_BARYONS)
                                         {
                                             dxe_dz_collisional = Find_dxe_dz_Collisional(prev_redshift, x_e, T, hubble(prev_redshift), delta_baryons_local, ClumpingFactor);
