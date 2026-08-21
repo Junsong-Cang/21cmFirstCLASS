@@ -181,6 +181,7 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
         int n_x, n_y, n_z;
         float delta_baryons_local, delta_baryons_derivative_local;
         float delta_SDM_local, delta_SDM_derivative_local;
+        FILE *OutputFile;
 
         // Junsong: added variables for radio excess
         double Radio_Temp, Radio_Temp_HMG, Trad_inv, zpp_max, Phi, Phi_mini, Radio_zpp, Phi_ave, Phi_ave_mini, T_IGM_ave, dT_Radio, dTdz_FF, dT_Radio_FF, dxe_dz_collisional;
@@ -3547,6 +3548,13 @@ int ComputeTsBox(float redshift, float prev_redshift, struct UserParams *user_pa
 
                                     if (flag_options->USE_COLLISIONAL_IONIZATION)
                                     {
+                                        if (fabs(redshift - 5.018) < 1.0E-2)
+                                        {
+                                            OutputFile = fopen("/Users/cangtao/Desktop/tmp/tmp_Density.txt", "a");
+                                		    fprintf(OutputFile, "%d    %.4E\n", box_ct, delta_baryons_local);
+                                            fclose(OutputFile);
+                                        }
+
                                         if (user_params->EVOLVE_BARYONS)
                                         {
                                             dxe_dz_collisional = Find_dxe_dz_Collisional(prev_redshift, x_e, T, hubble(prev_redshift), delta_baryons_local, ClumpingFactor);
